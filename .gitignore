@@ -52,7 +52,12 @@ ENV/
 # Consider using Git LFS for large files
 *.tif
 *.tiff
+*.kmz
+*.kml
 results_plots.zip
+data/
+KLHK_PL2024_Jambi_Full.geojson
+references/
 
 # Credentials (never commit these!)
 credentials*.json
