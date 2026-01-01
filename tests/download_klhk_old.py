@@ -77,7 +77,9 @@ def download_data_klhk():
             "f": "geojson",
             "resultOffset": offset,
             "resultRecordCount": step,
-            "geometryPrecision": 6
+            "geometryPrecision": 6,
+            "outSR": "4326",  # Explicit coordinate system
+            "spatialRel": "esriSpatialRelIntersects"  # Spatial relationship
         }
 
         try:

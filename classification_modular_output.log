@@ -1,0 +1,162 @@
+C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\sklearn\linear_model\_logistic.py:469: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+Traceback (most recent call last):
+  File "C:\Users\MyPC PRO\Documents\LandCover_Research\scripts\run_classification.py", line 228, in <module>
+    results = main()
+              ^^^^^^
+  File "C:\Users\MyPC PRO\Documents\LandCover_Research\scripts\run_classification.py", line 168, in main
+    results = train_all_models(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Users\MyPC PRO\Documents\LandCover_Research\scripts\..\modules\model_trainer.py", line 236, in train_all_models
+    result = train_single_model(
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MyPC PRO\Documents\LandCover_Research\scripts\..\modules\model_trainer.py", line 182, in train_single_model
+    pipeline.fit(X_train, y_train)
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\sklearn\base.py", line 1474, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\sklearn\pipeline.py", line 475, in fit
+    self._final_estimator.fit(Xt, y, **last_step_params["fit"])
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\xgboost\core.py", line 730, in inner_f
+    return func(**kwargs)
+           ^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\xgboost\sklearn.py", line 1471, in fit
+    raise ValueError(
+ValueError: Invalid classes inferred from unique values of `y`.  Expected: [0 1 2 3 4 5], got [0 1 4 5 6 7]
+
+ERROR conda.cli.main_run:execute(127): `conda run python scripts/run_classification.py` failed. (See above for error)
+======================================================================
+LAND COVER CLASSIFICATION - MODULAR WORKFLOW
+======================================================================
+
+Using:
+  - KLHK Reference: data/klhk/KLHK_PL2024_Jambi_Full_WithGeometry.geojson
+  - Sentinel-2 Tiles: 4 tiles
+  - Sample Size: 100,000
+  - Output Directory: results
+
+----------------------------------------------------------------------
+STEP 1: Loading KLHK Reference Data
+----------------------------------------------------------------------
+Loading KLHK data from data/klhk/KLHK_PL2024_Jambi_Full_WithGeometry.geojson...
+  Total polygons: 28,100
+  CRS: EPSG:4326
+
+  Class distribution:
+    0: Water - 205 polygons
+    1: Trees/Forest - 13,566 polygons
+    4: Crops/Agriculture - 7,938 polygons
+    5: Shrub/Scrub - 148 polygons
+    6: Built Area - 2,087 polygons
+    7: Bare Ground - 4,051 polygons
+
+----------------------------------------------------------------------
+STEP 2: Loading Sentinel-2 Imagery
+----------------------------------------------------------------------
+Loading 4 Sentinel-2 tiles...
+  Mosaic shape: (10, 11268, 18740)
+  Bands: 10
+  CRS: EPSG:4326
+
+----------------------------------------------------------------------
+STEP 3: Calculating Spectral Indices
+----------------------------------------------------------------------
+Calculating spectral indices...
+  Calculated 13 spectral indices
+  Shape: (13, 11268, 18740)
+
+Combining bands and indices...
+  Total features: 23
+  Shape: (23, 11268, 18740)
+
+----------------------------------------------------------------------
+STEP 4: Rasterizing KLHK Ground Truth
+----------------------------------------------------------------------
+Rasterizing KLHK data...
+  Rasterized shape: (11268, 18740)
+  Valid pixels: 123,053,612 (58.3%)
+
+----------------------------------------------------------------------
+STEP 5: Extracting Training Samples
+----------------------------------------------------------------------
+Preparing training data...
+  Total valid samples: 76,429,685
+  Subsampled to: 100,000
+
+  Class distribution in training data:
+    0: Water - 1,043 (1.0%)
+    1: Trees/Forest - 41,731 (41.7%)
+    4: Crops/Agriculture - 52,872 (52.9%)
+    5: Shrub/Scrub - 166 (0.2%)
+    6: Built Area - 2,820 (2.8%)
+    7: Bare Ground - 1,368 (1.4%)
+
+Final training data:
+  Feature matrix shape: (100000, 23)
+  Label vector shape: (100000,)
+
+Splitting into train/test sets (test_size=0.2)...
+  Training set: 80,000 samples
+  Test set: 20,000 samples
+
+----------------------------------------------------------------------
+STEP 6: Training Classifiers
+----------------------------------------------------------------------
+
+============================================================
+TRAINING AND EVALUATION
+============================================================
+
+Training set: 80,000 samples
+Test set: 20,000 samples
+
+--- Training Random Forest ---
+  Time: 3.97s
+  Accuracy: 0.7495
+  F1 (macro): 0.5421
+  F1 (weighted): 0.7439
+
+--- Training Extra Trees ---
+  Time: 1.01s
+  Accuracy: 0.7347
+  F1 (macro): 0.5393
+  F1 (weighted): 0.7324
+
+--- Training Logistic Regression ---
+  Time: 5.46s
+  Accuracy: 0.5576
+  F1 (macro): 0.3924
+  F1 (weighted): 0.6131
+
+--- Training Decision Tree ---
+  Time: 2.45s
+  Accuracy: 0.6362
+  F1 (macro): 0.4277
+  F1 (weighted): 0.6495
+
+--- Training Naive Bayes ---
+  Time: 0.06s
+  Accuracy: 0.4916
+  F1 (macro): 0.3366
+  F1 (weighted): 0.4582
+
+--- Training SGD ---
+  Time: 0.61s
+  Accuracy: 0.6845
+  F1 (macro): 0.4174
+  F1 (weighted): 0.6909
+
+--- Training LightGBM ---
+  Time: 1.34s
+  Accuracy: 0.7050
+  F1 (macro): 0.5194
+  F1 (weighted): 0.7199
+
+--- Training XGBoost ---
+

@@ -186,7 +186,7 @@ def load_klhk_data(geojson_path):
 
     # Identify the land cover code column
     code_col = None
-    for col in ['PL2024_ID', 'PL2024', 'KELAS', 'ID_PL', 'PL2023_ID_R']:
+    for col in ['ID Penutupan Lahan Tahun 2024', 'PL2024_ID', 'PL2024', 'KELAS', 'ID_PL']:
         if col in gdf.columns:
             code_col = col
             break
@@ -298,6 +298,54 @@ def load_sentinel2_data(tif_path):
         # Combine bands and indices
         data_combined = np.vstack([data, indices])
         print(f"  Final shape: {data_combined.shape}")
+
+    return data_combined, profile
+
+
+def load_and_mosaic_sentinel2_tiles(tile_paths):
+    """
+    Load multiple Sentinel-2 tiles and mosaic them into a single array.
+
+    Args:
+        tile_paths: List of paths to Sentinel-2 GeoTIFF tiles
+
+    Returns:
+        tuple: (mosaicked data array, merged profile/metadata)
+    """
+    print(f"Loading and mosaicking {len(tile_paths)} Sentinel-2 tiles...")
+
+    from rasterio.merge import merge
+
+    # Open all tiles
+    src_files = [rasterio.open(path) for path in tile_paths]
+
+    # Merge/mosaic tiles
+    mosaic, mosaic_transform = merge(src_files)
+
+    # Get profile from first tile and update with mosaic info
+    profile = src_files[0].profile.copy()
+    profile.update({
+        'height': mosaic.shape[1],
+        'width': mosaic.shape[2],
+        'transform': mosaic_transform
+    })
+
+    # Close files
+    for src in src_files:
+        src.close()
+
+    print(f"  Mosaic shape: {mosaic.shape}")
+    print(f"  CRS: {profile['crs']}")
+
+    # Calculate spectral indices
+    print(f"  Calculating spectral indices...")
+    indices = calculate_spectral_indices(mosaic)
+
+    # Combine bands and indices
+    data_combined = np.vstack([mosaic, indices])
+
+    print(f"  Final shape with indices: {data_combined.shape}")
+    print(f"  Total features: {data_combined.shape[0]} ({len(BAND_NAMES)} bands + {len(INDEX_NAMES)} indices)")
 
     return data_combined, profile
 
@@ -714,8 +762,13 @@ def main():
     print("=" * 70)
 
     # Configuration
-    KLHK_PATH = 'data/klhk/KLHK_PL2024_Jambi_Full.geojson'
-    # S2_PATH = 'data/sentinel/sentinel2_jambi_2024.tif'  # Update with your path
+    KLHK_PATH = 'data/klhk/KLHK_PL2024_Jambi_Full_WithGeometry.geojson'
+    S2_TILES = [
+        'data/sentinel/S2_jambi_2024_20m_AllBands-0000000000-0000000000.tif',
+        'data/sentinel/S2_jambi_2024_20m_AllBands-0000000000-0000065536.tif',
+        'data/sentinel/S2_jambi_2024_20m_AllBands-0000065536-0000000000.tif',
+        'data/sentinel/S2_jambi_2024_20m_AllBands-0000065536-0000065536.tif'
+    ]
     OUTPUT_DIR = 'results'
     SAMPLE_SIZE = 100000  # Limit samples for faster training (set None for all)
 
@@ -728,45 +781,32 @@ def main():
     print("-" * 50)
     gdf = load_klhk_data(KLHK_PATH)
 
-    # For now, without Sentinel-2 data, we'll demonstrate with synthetic data
-    # In real usage, uncomment the Sentinel-2 loading and rasterization
-
+    # Load Sentinel-2 tiles
     print("\n" + "-" * 50)
-    print("STEP 2: Preparing Training Data")
+    print("STEP 2: Loading Sentinel-2 Imagery")
     print("-" * 50)
+    s2_data, s2_profile = load_and_mosaic_sentinel2_tiles(S2_TILES)
 
-    # Create synthetic training data for demonstration
-    # Replace this with actual Sentinel-2 data in production
-    print("\nNOTE: Using KLHK class distribution for demonstration")
-    print("In production, load actual Sentinel-2 imagery")
+    # Rasterize KLHK to match Sentinel-2 grid
+    print("\n" + "-" * 50)
+    print("STEP 3: Rasterizing KLHK Ground Truth")
+    print("-" * 50)
+    klhk_raster = rasterize_klhk(gdf, s2_profile, class_column='class_simplified')
 
-    # Get class distribution from KLHK
-    class_counts = gdf['class_simplified'].value_counts().sort_index()
+    # Prepare training data
+    print("\n" + "-" * 50)
+    print("STEP 4: Extracting Training Samples")
+    print("-" * 50)
+    X, y = prepare_training_data(s2_data, klhk_raster, sample_size=SAMPLE_SIZE)
 
-    # Create synthetic features (23 features: 10 bands + 13 indices)
-    np.random.seed(42)
-    n_samples = min(SAMPLE_SIZE, len(gdf)) if SAMPLE_SIZE else len(gdf)
-    n_features = len(BAND_NAMES) + len(INDEX_NAMES)
-
-    # Sample from KLHK polygons
-    sample_gdf = gdf.sample(n=n_samples, random_state=42)
-    y = sample_gdf['class_simplified'].values
-
-    # Generate synthetic features based on class (for demonstration)
-    # In production, extract actual pixel values from Sentinel-2
-    X = np.random.randn(n_samples, n_features)
-
-    # Add class-specific patterns to make classification possible
-    for cls in np.unique(y):
-        mask = y == cls
-        X[mask, :] += cls * 0.5  # Add class offset
-
-    print(f"\nFeature matrix shape: {X.shape}")
-    print(f"Label vector shape: {y.shape}")
+    print(f"\nFinal training data:")
+    print(f"  Feature matrix shape: {X.shape}")
+    print(f"  Label vector shape: {y.shape}")
+    print(f"  Features: {len(BAND_NAMES)} bands + {len(INDEX_NAMES)} indices = {X.shape[1]} total")
 
     # Train and evaluate
     print("\n" + "-" * 50)
-    print("STEP 3: Training Classifiers")
+    print("STEP 5: Training Classifiers")
     print("-" * 50)
 
     results, X_train, X_test, y_train, y_test = train_and_evaluate(
@@ -793,7 +833,7 @@ def main():
 
     # Generate plots
     print("\n" + "-" * 50)
-    print("STEP 4: Generating Visualizations")
+    print("STEP 6: Generating Visualizations")
     print("-" * 50)
     plot_results(results, OUTPUT_DIR)
 
