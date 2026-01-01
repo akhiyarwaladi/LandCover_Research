@@ -1,0 +1,22 @@
+{
+  "user_prompt": "Graphical abstract for land cover classification paper showing workflow from left to right: 1. Input data: Jambi Province Indonesia map outline plus Sentinel-2 satellite imagery plus KLHK ground truth polygons shown as colorful land cover polygons, 2. Arrow to Data preprocessing showing KMZ download icon and cloud filtering, 3. Arrow to Feature engineering showing spectral bands being combined into 23 features with 10 bands plus 13 indices including NDVI NDWI icons, 4. Arrow to Machine learning showing Random Forest trees icon with 7 classifiers compared label, 5. Arrow to Results showing classified land cover map with 6 color-coded classes and 74.95 percent accuracy badge. Style: Clean professional landscape orientation suitable for journal table of contents, colorful but not overwhelming, clear flow arrows",
+  "doc_type": "journal",
+  "quality_threshold": 8.5,
+  "iterations": [
+    {
+      "iteration": 1,
+      "success": false,
+      "error": "API request failed (HTTP 402): {'message': 'This request requires more credits, or fewer max_tokens. You requested up to 32768 tokens, but can only afford 3333. To increase, visit https://openrouter.ai/settings/credits and upgrade to a paid account', 'code': 402, 'metadata': {'provider_name': None}}"
+    },
+    {
+      "iteration": 2,
+      "success": false,
+      "error": "API request failed (HTTP 402): {'message': 'This request requires more credits, or fewer max_tokens. You requested up to 32768 tokens, but can only afford 3333. To increase, visit https://openrouter.ai/settings/credits and upgrade to a paid account', 'code': 402, 'metadata': {'provider_name': None}}"
+    }
+  ],
+  "final_image": null,
+  "final_score": 0.0,
+  "success": false,
+  "early_stop": false,
+  "early_stop_reason": null
+}

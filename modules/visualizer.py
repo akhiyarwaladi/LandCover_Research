@@ -449,3 +449,123 @@ def plot_aoa_statistics(aoa_map, classification_map, save_dir='results', verbose
         print(f"Saved: {output_path}")
 
     return output_path
+
+
+# ============================================================================
+# DEEP LEARNING VISUALIZATION FUNCTIONS
+# ============================================================================
+
+def plot_training_curves(history, save_dir='results', verbose=True):
+    """
+    Plot training and validation loss/accuracy curves.
+    
+    Args:
+        history: Dictionary with 'train_loss', 'train_acc', 'val_loss', 'val_acc'
+        save_dir: Directory to save plot
+        verbose: Print save location
+    
+    Returns:
+        Path to saved plot
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    epochs = range(1, len(history['train_loss']) + 1)
+    
+    # Loss curves
+    axes[0].plot(epochs, history['train_loss'], 'b-', label='Training Loss', linewidth=2)
+    axes[0].plot(epochs, history['val_loss'], 'r-', label='Validation Loss', linewidth=2)
+    axes[0].set_xlabel('Epoch', fontsize=12)
+    axes[0].set_ylabel('Loss', fontsize=12)
+    axes[0].set_title('Training and Validation Loss', fontsize=14, fontweight='bold')
+    axes[0].legend(fontsize=10)
+    axes[0].grid(alpha=0.3)
+    
+    # Accuracy curves
+    axes[1].plot(epochs, history['train_acc'], 'b-', label='Training Accuracy', linewidth=2)
+    axes[1].plot(epochs, history['val_acc'], 'r-', label='Validation Accuracy', linewidth=2)
+    axes[1].set_xlabel('Epoch', fontsize=12)
+    axes[1].set_ylabel('Accuracy', fontsize=12)
+    axes[1].set_title('Training and Validation Accuracy', fontsize=14, fontweight='bold')
+    axes[1].legend(fontsize=10)
+    axes[1].grid(alpha=0.3)
+    axes[1].set_ylim([0, 1])
+    
+    plt.tight_layout()
+    
+    output_path = f'{save_dir}/training_curves.png'
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    if verbose:
+        print(f"Saved: {output_path}")
+    
+    return output_path
+
+
+def plot_ml_vs_dl_comparison(ml_results, dl_results, save_dir='results', verbose=True):
+    """
+    Compare traditional ML (Random Forest) vs Deep Learning (ResNet) results.
+    
+    Args:
+        ml_results: Dict with ML results (accuracy, f1_macro, f1_weighted)
+        dl_results: Dict with DL results (accuracy, f1_macro, f1_weighted)
+        save_dir: Directory to save plot
+        verbose: Print save location
+    
+    Returns:
+        Path to saved plot
+    """
+    fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+    
+    metrics = ['Accuracy', 'F1 (Macro)', 'F1 (Weighted)']
+    ml_scores = [ml_results['accuracy'], ml_results['f1_macro'], ml_results['f1_weighted']]
+    dl_scores = [dl_results['accuracy'], dl_results['f1_macro'], dl_results['f1_weighted']]
+    
+    x = np.arange(len(metrics))
+    width = 0.35
+    
+    bars1 = ax.bar(x - width/2, ml_scores, width, label='Random Forest (Traditional ML)',
+                   color='#2E7D32', alpha=0.8)
+    bars2 = ax.bar(x + width/2, dl_scores, width, label='ResNet50 (Deep Learning)',
+                   color='#1976D2', alpha=0.8)
+    
+    ax.set_xlabel('Metrics', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Score', fontsize=12, fontweight='bold')
+    ax.set_title('Traditional ML vs Deep Learning Comparison',
+                 fontsize=14, fontweight='bold')
+    ax.set_xticks(x)
+    ax.set_xticklabels(metrics)
+    ax.legend(fontsize=10)
+    ax.set_ylim([0, 1])
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Add value labels on bars
+    for bars in [bars1, bars2]:
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height,
+                   f'{height:.3f}',
+                   ha='center', va='bottom', fontsize=10, fontweight='bold')
+    
+    # Add improvement arrows
+    for i in range(len(metrics)):
+        improvement = dl_scores[i] - ml_scores[i]
+        if improvement > 0:
+            y_pos = max(ml_scores[i], dl_scores[i]) + 0.02
+            ax.annotate(f'+{improvement:.1%}',
+                       xy=(i, y_pos),
+                       ha='center',
+                       fontsize=9,
+                       color='green',
+                       fontweight='bold')
+    
+    plt.tight_layout()
+    
+    output_path = f'{save_dir}/ml_vs_dl_comparison.png'
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    if verbose:
+        print(f"Saved: {output_path}")
+    
+    return output_path

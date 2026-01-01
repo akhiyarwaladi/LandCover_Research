@@ -1,0 +1,361 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{letterpaper, margin=1in}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{lineno}
+\usepackage{setspace}
+
+\doublespacing
+\linenumbers
+
+\title{\textbf{Supervised Land Cover Classification of Jambi Province, Indonesia Using Random Forest and Sentinel-2 Imagery: A KMZ-Based Approach to Accessing KLHK Ground Truth Data}}
+
+\author{
+Author Name\textsuperscript{1*}, \\
+Co-Author Name\textsuperscript{1,2}
+\\
+\\
+\textsuperscript{1}Department/Institution Name, Address\\
+\textsuperscript{2}Second Affiliation if applicable\\
+\\
+\textsuperscript{*}Corresponding author: email@institution.edu
+}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Accurate and timely land cover mapping is essential for monitoring tropical deforestation, agricultural expansion, and biodiversity conservation. This study presents a supervised machine learning approach for province-scale land cover classification in Jambi Province, Indonesia, using Sentinel-2 satellite imagery and official government ground truth data. We developed a novel KMZ-based data acquisition method to overcome access limitations in the Indonesian Ministry of Environment and Forestry (KLHK) REST API, successfully acquiring 28,100 reference polygons from the PL2024 dataset. Sentinel-2 Surface Reflectance imagery from 2024 was processed using Google Earth Engine with cloud filtering via Cloud Score+, generating a 20-meter resolution composite covering the entire province. We engineered 23 features comprising 10 spectral bands and 13 spectral indices including NDVI, EVI, SAVI, NDWI, MNDWI, NDBI, and red-edge indices. Seven machine learning classifiers were systematically evaluated on 100,000 stratified training samples across six simplified land cover classes. Random Forest achieved the highest overall accuracy of 74.95\% with macro-averaged F1-score of 0.54, outperforming Extra Trees (73.47\%), LightGBM (70.51\%), and other classifiers. Class-specific F1-scores revealed strong performance for water bodies (0.79), crops (0.78), and forest (0.74), while minority classes including shrubland (0.37) and bare ground (0.15) showed lower accuracies due to class imbalance. Feature importance analysis identified SWIR bands, NIR, and moisture indices as the most discriminative features. This research provides the first documented solution for accessing complete KLHK geometry data, delivers a comprehensive comparison of machine learning classifiers for Indonesian land cover mapping, and contributes an open-source modular pipeline for reproducible province-scale analysis. The methodology is directly transferable to other Indonesian provinces and demonstrates the continued utility of Random Forest for operational land cover classification in data-limited tropical environments.
+\end{abstract}
+
+\textbf{Keywords:} Land cover classification; Random Forest; Sentinel-2; Indonesia; Machine learning; KLHK; Google Earth Engine; Spectral indices; Tropical forest monitoring
+
+\newpage
+
+\section{Introduction}
+
+Tropical forests and agricultural landscapes are experiencing unprecedented rates of transformation driven by economic development, population growth, and global commodity demand. Indonesia, home to the world's third-largest tropical forest area, has witnessed substantial land cover changes over recent decades, with implications for carbon storage, biodiversity conservation, and regional climate regulation \cite{margono2014primary, austin2019shifting}. Jambi Province, located in central Sumatra, exemplifies these dynamics through its historical trajectory from primary forest to mosaic landscapes dominated by rubber and oil palm plantations \cite{drescher2016ecological}. Accurate, timely, and reproducible land cover mapping is therefore essential for monitoring environmental changes, informing policy decisions, and supporting sustainable land management in this critical region.
+
+Remote sensing technologies have revolutionized land cover mapping capabilities by providing synoptic,
+
+ multi-temporal observations at spatial resolutions appropriate for regional to global assessments. The European Space Agency's Sentinel-2 mission, launched in 2015 and operational since 2017, has emerged as a premier data source for land cover classification due to its 10-20 meter spatial resolution, 5-day revisit time, and 13 spectral bands spanning visible to short-wave infrared wavelengths \cite{drusch2012sentinel}. The mission's open data policy and integration with cloud computing platforms such as Google Earth Engine have democratized access to satellite imagery, enabling researchers and practitioners worldwide to conduct large-scale environmental monitoring \cite{gorelick2017google}. Sentinel-2's red-edge bands, in particular, have demonstrated enhanced sensitivity to vegetation biochemical properties and structural variations, offering advantages over earlier multispectral sensors for tropical forest characterization \cite{clevers2017using}.
+
+Machine learning algorithms have become the dominant paradigm for supervised land cover classification, largely supplanting traditional parametric approaches such as maximum likelihood classification. Among ensemble methods, Random Forest has achieved widespread adoption due to its robustness to overfitting, ability to handle high-dimensional feature spaces, minimal hyperparameter tuning requirements, and provision of interpretable feature importance metrics \cite{breiman2001random}. Meta-analyses of land cover classification studies have consistently identified Random Forest as one of the top-performing algorithms across diverse geographic regions and sensor platforms \cite{belgiu2016random}. Recent applications in tropical environments have demonstrated Random Forest's capacity to distinguish complex land cover patterns including degraded forests, tree plantations, and mixed agricultural systems \cite{lechner2012applications}. However, comparative evaluations of multiple machine learning classifiers for Indonesian landscapes using official government ground truth data remain limited in the peer-reviewed literature.
+
+Access to high-quality reference data represents a persistent challenge for supervised classification in tropical regions where field campaigns are logistically demanding and financially constrained. Indonesia's Ministry of Environment and Forestry (KLHK) produces annual national land cover maps through the "Peta Tutupan Lahan" (Land Cover Map) program, which combines satellite imagery interpretation with field verification to generate authoritative land cover products. The KLHK PL2024 dataset represents the most recent iteration of this mapping effort, providing polygon-based land cover delineations at national scale. These data are theoretically accessible through KLHK's geoportal REST API; however, practical limitations in data retrieval have hindered their utilization in research applications. Specifically, the API enforces geometric data restrictions that prevent direct download of polygon geometries through standard GeoJSON requests, returning NULL values for geometry fields. This technical barrier has motivated researchers to seek alternative data sources or abandon the use of official ground truth entirely, potentially compromising classification accuracy and limiting comparability across studies.
+
+Despite the abundance of global land cover products including ESA WorldCover, Copernicus Global Land Cover, Dynamic World, and MapBiomas, these datasets are themselves derived from machine learning models and therefore unsuitable as independent ground truth for training supervised classifiers. Using model-derived products to train new models introduces circularity that can lead to propagation of systematic errors and overestimation of classification accuracies. The need for independently verified reference data underscores the importance of accessing and utilizing KLHK's field-validated land cover polygons. However, to our knowledge, no published research has documented a reliable method for programmatically acquiring complete KLHK polygon geometries through the geoportal API.
+
+Previous land cover mapping studies in Sumatra have employed diverse methodologies ranging from pixel-based classification to object-based image analysis, with reported overall accuracies typically ranging from 60\% to 85\% depending on the number of classes, spatial resolution, and reference data quality \cite{miettinen2016land, margono2014primary}. Few studies have conducted systematic comparisons of multiple machine learning algorithms using identical training data and feature sets, limiting insights into relative classifier performance for Indonesian landscapes. Furthermore, the majority of published research has focused on binary or ternary classifications (e.g., forest vs. non-forest) rather than detailed land cover typologies capturing the heterogeneity of contemporary land uses. There remains a need for comprehensive evaluations that assess classifier performance across realistic class schemes while documenting reproducible workflows suitable for operational mapping programs.
+
+This study addresses these gaps by presenting a supervised machine learning approach for detailed land cover classification of Jambi Province, Indonesia. Our specific objectives are threefold. First, we document and validate a novel KMZ-based method for programmatic retrieval of complete KLHK PL2024 polygon geometries, overcoming API limitations that have impeded previous research. Second, we conduct a systematic comparison of seven machine learning classifiers including Random Forest, Extra Trees, LightGBM, Stochastic Gradient Descent, Decision Tree, Logistic Regression, and Gaussian Naive Bayes using a common feature set derived from Sentinel-2 imagery. Third, we evaluate the contribution of spectral indices to classification performance and identify the most discriminative features for land cover discrimination in a tropical agricultural-forest mosaic. The resulting open-source pipeline provides a reproducible framework for province-scale land cover mapping that can be readily adapted to other Indonesian regions and temporal periods.
+
+\section{Study Area}
+
+Jambi Province is located in central Sumatra, Indonesia, extending from approximately 0.95° to 2.48° South latitude and 101.15° to 104.52° East longitude, encompassing an area of approximately 50,160 km². The province exhibits diverse topography ranging from coastal lowlands and peatlands in the east to mountainous terrain exceeding 3,000 meters elevation in the Bukit Barisan range along the western boundary. This elevational gradient creates distinct ecological zones supporting varied vegetation types and land uses.
+
+The climate is equatorial tropical with mean annual temperatures between 26-27°C and annual precipitation typically ranging from 2,000 to 3,000 mm, with relatively modest seasonality compared to monsoonal regions. These conditions historically supported extensive lowland and hill dipterocarp forests that formed part of the Sundaland biodiversity hotspot. However, Jambi has experienced dramatic land cover transformations over recent decades, with primary forest cover declining from approximately 60\% in 1990 to less than 30\% by 2020 \cite{drescher2016ecological}. Deforestation has been driven primarily by conversion to rubber and oil palm plantations, with smallholder and industrial estates contributing to landscape-scale changes. Remaining forests are concentrated in protected areas including Bukit Duabelas National Park and Berbak National Park, as well as in the mountainous western portion of the province.
+
+Contemporary land cover in Jambi comprises a mosaic of remnant forests, tree plantations (rubber and oil palm), annual croplands (primarily rice and vegetables), shrublands and grasslands in various stages of succession, built-up areas concentrated in the provincial capital Jambi City and district centers, and water bodies including the major Batanghari River and numerous tributaries. This heterogeneity presents classification challenges due to spectral similarity among certain land cover types, particularly between different plantation types and between forests and tree plantations during certain phenological stages. The province-scale extent of approximately 11,000 km² of valid land surface (excluding clouds and water) provides sufficient spatial coverage to evaluate classifier performance across representative samples of all major land cover classes.
+
+\section{Materials and Methods}
+
+\subsection{Overview of Analytical Workflow}
+
+Our classification workflow comprised four main stages: (1) acquisition of reference data from KLHK and satellite imagery from Google Earth Engine; (2) preprocessing including geometric harmonization, feature engineering, and sample extraction; (3) training and evaluation of multiple machine learning classifiers; and (4) accuracy assessment and feature importance analysis. All spatial data processing utilized Python 3.11 with GeoPandas 0.14, Rasterio 1.3, and scikit-learn 1.4 libraries. The complete analysis code is available as an open-source modular pipeline to facilitate reproducibility and adaptation to other study areas.
+
+\subsection{KLHK Reference Data Acquisition}
+
+High-quality reference data are essential for supervised classification, yet accessing official government land cover products has posed persistent challenges. We developed and validated a novel approach to acquire complete polygon geometries from the KLHK PL2024 dataset through the Ministry's geoportal REST API.
+
+\subsubsection{API Limitation and KMZ-Based Solution}
+
+The KLHK geoportal (https://geoportal.menlhk.go.id/) provides programmatic access to land cover data through an ArcGIS REST API endpoint. Standard data retrieval workflows employ GeoJSON format requests with parameters specifying the target province and geometry return preferences. However, our initial attempts to download Jambi Province data using conventional GeoJSON requests with \texttt{returnGeometry=true} consistently returned polygon features with NULL geometry fields, despite successful retrieval of attribute information. This behavior appears to reflect server-side access restrictions implemented to limit data transfer volume or protect certain data layers.
+
+Through systematic testing of alternative export formats, we discovered that KMZ (Keyhole Markup Language compressed) format requests successfully returned complete polygon geometries. KMZ represents a compressed KML format commonly used in Google Earth applications, containing both geometric and attribute information encoded in XML structure. The API endpoint accepts KMZ format requests and provides full geometric data without the restrictions observed for GeoJSON exports. We hypothesize that KMZ may be exempted from geometry restrictions due to its traditional use in visualization applications rather than bulk data extraction.
+
+\subsubsection{Partitioned Download Strategy}
+
+The KLHK API enforces a maximum return limit of 1,000 features per request to prevent server overload. Given that Jambi Province contains 28,100 land cover polygons, we implemented a partitioned download strategy using OBJECTID range queries. We iteratively requested data in sequential batches defined by WHERE clauses of the form \texttt{KODE\_PROV=15 AND OBJECTID>=X AND OBJECTID<=Y}, where X and Y define non-overlapping ranges spanning 1,000 polygons each. This approach required 29 separate API requests to retrieve the complete provincial dataset.
+
+Each KMZ response was downloaded, decompressed to extract the KML content, parsed using Python's xml.etree library to extract coordinates and attributes, and converted to GeoJSON format using GeoPandas. Individual partition GeoJSON files were then concatenated into a single province-scale dataset, with duplicate records removed based on OBJECTID uniqueness checks. The final merged dataset contained all 28,100 polygons with complete geometry and attribute information, verified against the API-reported total feature count. This methodology provides a reproducible solution for accessing KLHK data that can be readily adapted to other provinces or temporal periods, overcoming a significant barrier that has limited previous research applications.
+
+\subsubsection{Land Cover Class Simplification}
+
+The KLHK PL2024 classification scheme employs a hierarchical system with approximately 23 detailed classes describing specific vegetation types, land uses, and surface conditions. To facilitate model training with sufficient samples per class and align with common land cover mapping applications, we simplified the original KLHK classes into six broader categories: Water (class 0), Trees/Forest (class 1), Crops/Agriculture (class 4), Shrub/Scrub (class 5), Built Area (class 6), and Bare Ground (class 7). The mapping preserved important distinctions between natural forests and agricultural lands while aggregating functionally similar subtypes.
+
+Specifically, all primary and secondary forest types including dry land forests, swamp forests, and mangrove forests were merged into the Trees/Forest class. Agricultural categories including dry land farming, mixed cultivation, wetland rice fields, and plantations were combined into Crops/Agriculture. All shrubland and scrub formations were merged into Shrub/Scrub. Settlements and built-up areas formed the Built Area class, while bare ground, exposed soil, and mining areas constituted the Bare Ground class. Water bodies including rivers, lakes, and coastal areas formed the Water class. This simplified scheme balances classification detail with practical sample size constraints and aligns with land cover products commonly used for environmental monitoring and policy applications.
+
+\subsection{Sentinel-2 Imagery Acquisition and Preprocessing}
+
+\subsubsection{Data Source and Temporal Compositing}
+
+We utilized Sentinel-2 Level-2A Surface Reflectance imagery accessed through Google Earth Engine (GEE), which provides atmospherically corrected bottom-of-atmosphere reflectance values suitable for time-series analysis and multi-temporal compositing \cite{gorelick2017google}. The Sentinel-2 SR Harmonized collection (COPERNICUS/S2\_SR\_HARMONIZED) was filtered to the 2024 calendar year (January 1 to December 31) to align with the KLHK PL2024 reference data temporal period. This temporal window ensured consistency between land cover reference labels and satellite observations, minimizing the potential for land cover changes between imagery acquisition and ground truth mapping.
+
+Cloud contamination represents a persistent challenge for optical remote sensing in tropical regions characterized by frequent cloud cover and atmospheric haze. To mitigate cloud impacts, we implemented cloud filtering using the Cloud Score+ product (GOOGLE/CLOUD\_SCORE\_PLUS/V1/S2\_HARMONIZED), which provides pixel-level cloud probability estimates based on spectral characteristics and machine learning models \cite{cloudscoreplus2023}. We applied a cloud probability threshold of 0.60, masking pixels with cloud scores exceeding this value. This threshold balances cloud removal effectiveness against retention of sufficient cloud-free observations, as overly conservative thresholds can result in data gaps in persistently cloudy regions.
+
+Following cloud filtering, we created a median composite across all available 2024 observations for each pixel. Median compositing reduces the influence of remaining undetected clouds, atmospheric anomalies, and phenological variations, producing a representative annual land cover state while preserving surface features. The median operator is preferred over mean compositing for satellite imagery as it is more robust to outliers and tends to select actual observed values rather than interpolated reflectance.
+
+\subsubsection{Spectral Band Selection and Export}
+
+We selected 10 Sentinel-2 spectral bands spanning visible to short-wave infrared wavelengths, all resampled to 20-meter spatial resolution to maintain computational tractability while preserving land cover discrimination capacity. The selected bands included: B2 (Blue, 490 nm), B3 (Green, 560 nm), B4 (Red, 665 nm), B5 (Red Edge 1, 705 nm), B6 (Red Edge 2, 740 nm), B7 (Red Edge 3, 783 nm), B8 (Near-Infrared, 842 nm), B8A (Red Edge 4, 865 nm), B11 (Short-Wave Infrared 1, 1610 nm), and B12 (Short-Wave Infrared 2, 2190 nm). This band selection captures key portions of the electromagnetic spectrum sensitive to vegetation characteristics, water content, soil properties, and built surfaces.
+
+The composite image was exported from Google Earth Engine in GeoTIFF format with EPSG:4326 coordinate reference system. Due to GEE export limitations on image dimensions, the province-scale imagery was exported as four spatially adjacent tiles with dimensions determined by the export service. The four tiles were subsequently mosaicked using Rasterio to create a seamless provincial image with dimensions of 11,268 × 18,740 pixels, representing approximately 58.3\% valid land surface coverage after masking clouds, water bodies outside the province boundary, and no-data regions. The total data volume comprised 2.7 GB of 10-band imagery covering the entire province.
+
+\subsection{Feature Engineering}
+
+Beyond the 10 original Sentinel-2 spectral bands, we calculated 13 spectral indices to enhance land cover discrimination by highlighting specific surface properties including vegetation vigor, water content, built-up intensity, and soil exposure. Spectral indices leverage band combinations that amplify subtle spectral differences, often outperforming individual bands for thematic classification tasks \cite{blaschke2010object}.
+
+\subsubsection{Vegetation Indices}
+
+Vegetation indices exploit the characteristic spectral signature of photosynthetically active vegetation, which strongly absorbs red light and reflects near-infrared radiation. We calculated five vegetation indices:
+
+The Normalized Difference Vegetation Index (NDVI) represents the most widely used vegetation index, calculated as $(NIR - Red) / (NIR + Red)$ \cite{rouse1974monitoring}. NDVI values range from -1 to +1, with healthy vegetation typically exhibiting values above 0.3 and dense canopies exceeding 0.7.
+
+The Enhanced Vegetation Index (EVI) incorporates blue band information to reduce atmospheric influences and soil background effects: $2.5 \times ((NIR - Red) / (NIR + 6 \times Red - 7.5 \times Blue + 1))$ \cite{huete2002overview}. EVI demonstrates improved sensitivity in high-biomass regions where NDVI can saturate.
+
+The Soil-Adjusted Vegetation Index (SAVI) introduces a soil brightness correction factor to minimize soil background influences in areas with incomplete canopy cover: $((NIR - Red) / (NIR + Red + 0.5)) \times 1.5$ \cite{huete1988soil}. The 0.5 soil adjustment factor represents intermediate vegetation cover conditions.
+
+The Modified Soil-Adjusted Vegetation Index (MSAVI) dynamically adjusts the soil correction factor based on observed reflectance: $(2 \times NIR + 1 - \sqrt{(2 \times NIR + 1)^2 - 8 \times (NIR - Red)}) / 2$ \cite{qi1994modified}. This self-adjusting behavior enhances applicability across varied vegetation densities.
+
+The Green Normalized Difference Vegetation Index (GNDVI) substitutes green for red wavelengths: $(NIR - Green) / (NIR + Green)$, demonstrating enhanced sensitivity to chlorophyll concentration and nitrogen content \cite{gitelson1996use}.
+
+\subsubsection{Water Indices}
+
+Water bodies exhibit low reflectance in near-infrared and short-wave infrared regions while maintaining moderate reflectance in visible wavelengths. We calculated two water indices:
+
+The Normalized Difference Water Index (NDWI) highlights surface water and high moisture content: $(Green - NIR) / (Green + NIR)$ \cite{mcfeeters1996use}. Positive NDWI values typically indicate water bodies, while negative values correspond to vegetation and dry surfaces.
+
+The Modified Normalized Difference Water Index (MNDWI) substitutes short-wave infrared for near-infrared to enhance water-land discrimination while suppressing built-up area signals: $(Green - SWIR1) / (Green + SWIR1)$ \cite{xu2006modification}.
+
+\subsubsection{Built-Up and Soil Indices}
+
+Urban and bare soil surfaces exhibit distinctive spectral properties including higher short-wave infrared reflectance relative to near-infrared. We calculated two indices targeting these surface types:
+
+The Normalized Difference Built-Up Index (NDBI) highlights urban and built surfaces: $(SWIR1 - NIR) / (SWIR1 + NIR)$ \cite{zha2003use}. Built areas typically display positive NDBI values due to high SWIR reflectance from construction materials.
+
+The Bare Soil Index (BSI) emphasizes exposed soil surfaces: $((SWIR1 + Red) - (NIR + Blue)) / ((SWIR1 + Red) + (NIR + Blue))$ \cite{rikimaru2002tropical}. Higher BSI values indicate greater soil exposure with minimal vegetation cover.
+
+\subsubsection{Red Edge Indices}
+
+Sentinel-2's red-edge bands enable indices sensitive to vegetation biochemical properties and canopy structure. We calculated two red-edge indices:
+
+The Normalized Difference Red Edge index (NDRE) utilizes the first red-edge band: $(NIR - RedEdge1) / (NIR + RedEdge1)$ \cite{gitelson2005remote}. NDRE demonstrates sensitivity to chlorophyll content and vegetation stress.
+
+The Chlorophyll Index Red Edge (CIRE) employs a ratio formulation: $(NIR / RedEdge1) - 1$ \cite{clevers2002using}, providing enhanced sensitivity to leaf chlorophyll concentration.
+
+\subsubsection{Moisture and Burn Indices}
+
+We calculated indices sensitive to vegetation moisture content and burn severity:
+
+The Normalized Difference Moisture Index (NDMI) quantifies vegetation water content: $(NIR - SWIR1) / (NIR + SWIR1)$ \cite{gao1996ndwi}. Higher NDMI values indicate greater canopy moisture.
+
+The Normalized Burn Ratio (NBR) is commonly used for burn severity mapping: $(NIR - SWIR2) / (NIR + SWIR2)$ \cite{key2006landscape}, with lower values indicating burned or stressed vegetation.
+
+All spectral indices were calculated pixel-wise across the entire provincial mosaic. To prevent division by zero errors in index calculations, we added a small epsilon value (1×10⁻¹⁰) to denominators. The resulting 13 spectral indices were combined with the 10 original spectral bands to create a 23-band feature stack for classification.
+
+\subsection{Data Preparation for Machine Learning}
+
+\subsubsection{Rasterization of Reference Polygons}
+
+The KLHK reference data exist in vector polygon format, while Sentinel-2 imagery and derived features exist as raster grids. To enable pixel-level training sample extraction, we rasterized the KLHK polygons to match the exact spatial reference, resolution, and extent of the Sentinel-2 mosaic. Rasterization employed Rasterio's rasterize function with all-touched parameter set to False, meaning that only pixels with centroids falling within polygon boundaries were assigned class labels. This approach minimizes mixed-pixel effects at polygon edges that could introduce training sample noise. The resulting reference raster maintained identical dimensions (11,268 × 18,740 pixels), coordinate reference system (EPSG:4326), and geotransform as the Sentinel-2 feature stack, ensuring perfect spatial alignment for sample extraction.
+
+Pixels not covered by any KLHK polygon were assigned a no-data value of -1, allowing their exclusion from training and evaluation procedures. The rasterization process converted the 28,100 polygons into approximately 76.4 million labeled pixels distributed across the six land cover classes.
+
+\subsubsection{Training Sample Extraction and Stratification}
+
+From the 76.4 million labeled pixels, we extracted a stratified random sample of 100,000 pixels for model training and evaluation. This sampling size balances computational efficiency with statistical representativeness, as larger samples provide minimal accuracy improvements while substantially increasing training time. Stratified random sampling ensured that sample proportions reflect the actual class distribution in the reference data, maintaining class prevalence ratios. This approach is preferable to balanced sampling (equal samples per class) when classification objectives include accurate area estimation, as model predictions better reflect true class proportions.
+
+The extracted samples exhibited the following class distribution: Water (1,043 pixels, 1.0\%), Trees/Forest (41,731 pixels, 41.7\%), Crops/Agriculture (52,872 pixels, 52.9\%), Shrub/Scrub (166 pixels, 0.2\%), Built Area (2,820 pixels, 2.8\%), and Bare Ground (1,368 pixels, 1.4\%). This distribution reveals substantial class imbalance, with agricultural and forest classes dominating while shrubland and bare ground constitute small minorities. Class imbalance represents a known challenge for machine learning classification, as algorithms tend to underpredict minority classes, a issue we addressed through class weighting strategies described below.
+
+For each sampled pixel, we extracted all 23 feature values (10 spectral bands plus 13 spectral indices), creating a data matrix of dimensions 100,000 × 23. We inspected the feature matrix for missing values and confirmed that cloud masking and no-data handling procedures successfully prevented extraction of invalid pixels. The complete feature matrix and corresponding class labels were then split into training (80\%, 80,000 samples) and testing (20\%, 20,000 samples) subsets using stratified random partitioning with a fixed random seed (42) to ensure reproducibility. The training subset was used exclusively for model fitting, while the testing subset was reserved for independent accuracy assessment.
+
+\subsection{Machine Learning Classification}
+
+\subsubsection{Classifier Selection and Configuration}
+
+We systematically evaluated seven machine learning classification algorithms representing diverse theoretical foundations and computational characteristics. All classifiers were implemented using scikit-learn 1.4 with standardized preprocessing pipelines comprising imputation and feature scaling. The imputation step employed SimpleImputer with constant fill strategy (value=0) to handle any potential missing values, though none were present in our final dataset. Feature scaling applied StandardScaler to transform all features to zero mean and unit variance, improving convergence for distance-based and gradient-based algorithms while having no effect on tree-based methods.
+
+\textbf{Random Forest} served as our primary classifier based on its demonstrated success in land cover classification applications. We configured the Random Forest with 200 decision trees (n\_estimators=200), maximum tree depth of 25 (max\_depth=25), balanced class weights to address class imbalance (class\_weight='balanced'), and parallel processing across all available CPU cores (n\_jobs=-1). The balanced class weighting automatically adjusts sample weights inversely proportional to class frequencies, encouraging the model to learn minority class patterns.
+
+\textbf{Extra Trees} (Extremely Randomized Trees) represents a variant of Random Forest that introduces additional randomness by selecting split thresholds randomly rather than optimally. We configured Extra Trees with identical hyperparameters to Random Forest (n\_estimators=200, max\_depth=25, class\_weight='balanced') to enable direct comparison while controlling for structural differences.
+
+\textbf{LightGBM} (Light Gradient Boosting Machine) implements a gradient boosting framework optimized for efficiency and scalability. We configured LightGBM with 200 boosting iterations (n\_estimators=200), maximum tree depth of 25 (max\_depth=25), 31 leaves per tree (num\_leaves=31), and balanced class weights. LightGBM's leaf-wise tree growth strategy differs from Random Forest's level-wise approach, potentially yielding different decision boundaries.
+
+\textbf{Stochastic Gradient Descent (SGD)} classifier provides a linear modeling approach suitable for large-scale problems. We employed hinge loss (loss='hinge') equivalent to linear Support Vector Machine, L2 regularization (penalty='l2'), and balanced class weights. SGD represents a computationally efficient alternative to tree-based methods but may underperform for complex nonlinear patterns.
+
+\textbf{Decision Tree} served as a baseline tree-based model representing the building block of ensemble methods. We configured the single decision tree with maximum depth of 25 (max\_depth=25) and balanced class weights. Decision trees typically exhibit higher variance and lower accuracy than ensemble methods but provide interpretable decision rules.
+
+\textbf{Logistic Regression} represents a classical linear classification approach. We employed the LBFGS solver (solver='lbfgs'), maximum 500 iterations (max\_iter=500), and balanced class weights. Logistic regression serves as a baseline for comparison against more complex nonlinear methods.
+
+\textbf{Gaussian Naive Bayes} assumes feature independence and Gaussian distributions, providing a probabilistic classification framework. Naive Bayes requires no hyperparameter tuning and serves as a simple baseline, though its independence assumption is clearly violated by correlated spectral bands and indices.
+
+For each classifier, we measured training time on the 80,000-sample training set and recorded the fitted model for subsequent evaluation.
+
+\subsubsection{Model Training and Evaluation}
+
+All models were trained on the 80,000-sample training subset using their respective configurations. Training times ranged from 0.07 seconds (Naive Bayes) to 5.49 seconds (Logistic Regression), with Random Forest requiring 4.15 seconds. The modest training times reflect the computational efficiency of modern machine learning implementations for datasets of this scale.
+
+Following training, we applied each fitted model to the independent 20,000-sample test subset and predicted class labels for all test pixels. Predicted labels were compared against true reference labels to compute accuracy metrics. We calculated overall accuracy as the proportion of correctly classified test samples, macro-averaged F1-score as the unweighted mean F1-score across all classes (giving equal importance to each class regardless of frequency), and weighted-average F1-score as the sample-size-weighted mean F1-score (reflecting overall performance weighted by class prevalence).
+
+For the best-performing classifier (Random Forest), we generated a normalized confusion matrix showing the proportion of samples from each true class assigned to each predicted class. This confusion matrix reveals specific class confusions and helps identify systematic classification errors. We also extracted per-class precision, recall, and F1-scores from the detailed classification report.
+
+\subsubsection{Feature Importance Analysis}
+
+For tree-based classifiers (Random Forest, Extra Trees, LightGBM, and Decision Tree), we extracted feature importance scores quantifying each feature's contribution to classification decisions. Feature importance in tree-based models typically measures the total reduction in node impurity weighted by the probability of reaching each node, providing an indication of how frequently and effectively each feature is used for splitting. We normalized importance scores to sum to 1.0 and ranked features in descending order to identify the most discriminative spectral bands and indices.
+
+Feature importance analysis serves multiple purposes: validating that derived spectral indices contribute beyond original bands, identifying redundant features that could be excluded to reduce dimensionality, and providing physical interpretability of model decisions by linking importance to surface biophysical properties.
+
+\section{Results}
+
+\subsection{Classifier Performance Comparison}
+
+Table 1 presents overall accuracy, macro-averaged F1-score, weighted-average F1-score, and training time for all seven evaluated classifiers. Random Forest achieved the highest overall accuracy of 74.95\%, followed closely by Extra Trees (73.47\%), LightGBM (70.51\%), SGD (68.45\%), Decision Tree (63.63\%), Logistic Regression (55.77\%), and Naive Bayes (49.16\%). The superior performance of ensemble tree-based methods (Random Forest, Extra Trees, LightGBM) confirms their suitability for land cover classification with multi-dimensional spectral feature spaces.
+
+Macro-averaged F1-scores, which give equal weight to all classes regardless of sample size, showed a similar ranking with Random Forest achieving 0.542, Extra Trees 0.539, and LightGBM 0.519. Weighted-average F1-scores, which reflect performance on the most prevalent classes, were higher across all classifiers due to better accuracy on the dominant Crops and Forest classes. Random Forest achieved weighted F1 of 0.744, indicating strong performance on frequent classes. The substantial gap between macro and weighted F1-scores (0.542 vs. 0.744 for Random Forest) highlights the challenge of minority class prediction, particularly for Shrub/Scrub and Bare Ground classes.
+
+Training times varied considerably, ranging from 0.07 seconds for Naive Bayes to 5.49 seconds for Logistic Regression, with Random Forest requiring 4.15 seconds. Extra Trees completed training in only 1.08 seconds despite similar architecture to Random Forest, reflecting the computational efficiency of random split selection. LightGBM finished in 1.35 seconds, demonstrating the efficiency optimizations of the gradient boosting implementation. For operational applications with large-scale or frequent mapping requirements, the modest training time differences among top-performing classifiers would likely be negligible compared to data preprocessing time.
+
+\subsection{Random Forest Classification Results}
+
+Given Random Forest's superior performance, we focus detailed results on this classifier. Figure 3 presents the normalized confusion matrix for Random Forest on the test set, revealing the distribution of predictions across true class labels. The matrix diagonal represents correct classifications, while off-diagonal elements indicate classification errors.
+
+Water bodies demonstrated excellent classification accuracy with 79\% of water pixels correctly identified. The primary confusion occurred with Shrub/Scrub (10\%), likely reflecting spectral similarity of wetland vegetation and shallow water. Trees/Forest achieved 74\% correct classification, with most errors occurring as classification into Crops/Agriculture (18\%). This confusion is expected given the spectral similarity between tree plantations (included in Crops) and natural forests, particularly during leaf-on conditions when canopy structure differences are subtle in 20-meter resolution imagery.
+
+Crops/Agriculture showed 78\% correct classification, representing strong performance for this dominant and heterogeneous class. Confusions occurred primarily with Trees/Forest (12\%) and Shrub/Scrub (6\%), reflecting the gradient of land uses from recently cleared agriculture to early successional vegetation to tree plantations. Shrub/Scrub demonstrated poor performance with only 37\% correct classification, suffering from severe class imbalance (166 training samples) and spectral similarity to other vegetation types. Most Shrub pixels were misclassified as Crops (35\%) or Forest (20\%).
+
+Built Area achieved moderate performance with 42\% correct classification, with substantial confusion with Bare Ground (28\%) and Crops (22\%). The Built-Bare confusion is understandable given similar spectral properties of impervious surfaces and exposed soil. The Built-Crops confusion may reflect suburban and peri-urban landscapes with mixed residential and agricultural land uses at the 20-meter pixel scale. Bare Ground showed the poorest performance with only 15\% correct classification, primarily confused with Built Area (51\%) and Crops (21\%). This poor performance reflects both severe class imbalance (1,368 training samples, 1.4\% of total) and transient nature of bare ground, which may represent temporary conditions between agricultural seasons rather than persistent land cover.
+
+Table 2 presents per-class precision, recall, and F1-scores for Random Forest. F1-scores ranged from 0.79 for Water to 0.15 for Bare Ground, with intermediate performance for Trees/Forest (0.74), Crops (0.78), Shrub/Scrub (0.37), and Built Area (0.42). High F1-scores for Water, Crops, and Forest reflect both adequate sample sizes and distinctive spectral properties. Low F1-scores for minority classes illustrate the challenge of learning robust decision boundaries from limited training examples, a fundamental limitation of supervised classification with imbalanced reference data.
+
+\subsection{Feature Importance}
+
+Figure 4 presents feature importance rankings for Random Forest, revealing the relative contribution of spectral bands and indices to classification decisions. The three most important features were SWIR2 (B12, importance=0.095), SWIR1 (B11, importance=0.092), and NIR (B8, importance=0.088), collectively accounting for 27.5\% of total importance. These results confirm the critical role of near-infrared and short-wave infrared wavelengths for land cover discrimination, consistent with their sensitivity to vegetation structure, soil properties, and water content.
+
+Among spectral indices, NDMI (Normalized Difference Moisture Index, importance=0.072) ranked fourth overall, demonstrating that derived indices contribute substantially beyond original bands. NDVI, despite its ubiquity in vegetation mapping, ranked 13th (importance=0.035), suggesting that other features capture comparable information with less redundancy in our 23-feature space. The MNDWI (Modified NDWI) and NDWI water indices showed moderate importance (0.045 and 0.042 respectively), consistent with their role in water body discrimination.
+
+Red-edge bands (B5, B6, B7, B8A) exhibited moderate to low importance, collectively accounting for approximately 13\% of total importance. While red-edge bands are valued for vegetation biochemical analysis, their contribution for broad land cover discrimination may be modest compared to traditional SWIR and NIR wavelengths, at least for the simplified 6-class scheme employed here. This finding suggests that for operational mapping with computational constraints, excluding red-edge bands may yield minimal accuracy loss while reducing data volume and processing time.
+
+Feature importance patterns were generally consistent across tree-based classifiers. Extra Trees (Figure 5) showed similar rankings with SWIR and NIR bands dominating, though with slightly more distributed importance across features due to the increased randomness in split selection. LightGBM (Figure 6) also prioritized SWIR bands but showed elevated importance for certain spectral indices including EVI and BSI, reflecting the different tree-building strategy in gradient boosting. Decision Tree (Figure 7) displayed more concentrated importance on fewer features, a characteristic of single-tree models with limited capacity to exploit redundant information.
+
+The moderate importance of most spectral indices relative to original bands suggests potential for dimensionality reduction through feature selection. However, indices may provide incremental improvements that aggregate to meaningful accuracy gains, and their physical interpretability offers value for model understanding and error diagnosis beyond pure predictive performance.
+
+\section{Discussion}
+
+\subsection{KMZ-Based Data Acquisition Method}
+
+Our development and validation of a KMZ-based approach to retrieve complete polygon geometries from the KLHK geoportal API addresses a significant technical barrier that has impeded utilization of Indonesia's official land cover reference data. The persistent NULL geometry returns for GeoJSON format requests reflect server-side access restrictions, possibly implemented to limit bulk data downloads or protect certain data layers from unrestricted distribution. By identifying KMZ as an exempted format that successfully returns complete geometries, we have enabled programmatic access to the complete 28,100-polygon PL2024 dataset for Jambi Province.
+
+The partitioned download strategy, while requiring multiple sequential API requests, proved reliable and reproducible across testing periods. The 1,000-feature limit per request is reasonable from a server management perspective and poses minimal inconvenience for province-scale downloads requiring tens of requests. For national-scale applications or frequent temporal acquisitions, the partitioned approach could be parallelized across multiple processes to reduce total download time, though care must be taken to respect API rate limits and server load. We recommend that researchers and practitioners adopt this KMZ-based method for accessing KLHK data until such time as the geoportal implements more transparent and documented geometry access procedures.
+
+It is important to acknowledge that reliance on an undocumented format exemption introduces some risk of future API changes that could invalidate this approach. We therefore recommend that users maintain archived copies of downloaded reference data and document the specific API endpoint URLs, parameters, and software versions used for data acquisition. Advocacy for official documentation and supported geometry access methods through standard geospatial formats (GeoJSON, Shapefile, GeoPackage) remains important for long-term data accessibility and reproducibility of Indonesian land cover research.
+
+The simplified 6-class scheme we developed from the original 23-class KLHK hierarchy represents a pragmatic balance between classification detail and statistical power. While the detailed KLHK classes provide valuable information about specific forest types and agricultural systems, many classes contain insufficient samples for robust machine learning given Jambi's land cover composition. Future work could explore hierarchical classification approaches that first distinguish broad cover types (forest, agriculture, built, bare), then apply specialized classifiers for subtypes within each broad class, potentially leveraging the full detail of KLHK's classification system while managing sample size constraints.
+
+\subsection{Random Forest Performance and Comparison}
+
+Random Forest's achievement of 74.95\% overall accuracy with macro F1-score of 0.542 represents competitive performance for a 6-class land cover classification in a tropical mosaic landscape using 20-meter resolution imagery and realistic class imbalance. These results are generally consistent with the published literature on Sentinel-2 land cover classification, which typically reports overall accuracies of 65-85\% for comparable class schemes and geographic contexts \cite{belgiu2016random, phiri2020developments}.
+
+The consistent superiority of ensemble tree-based methods (Random Forest, Extra Trees, LightGBM) over linear approaches (Logistic Regression, SGD) confirms the importance of nonlinear decision boundaries for land cover discrimination. Spectral feature spaces exhibit complex, nonlinear class separability due to within-class spectral variability and between-class spectral overlap, particularly for vegetation types that grade continuously along successional or management gradients. Tree-based methods naturally accommodate these nonlinearities through hierarchical splitting, while linear methods assume class separability by hyperplanes, an unrealistic assumption for most land cover applications.
+
+The modest performance difference between Random Forest and Extra Trees (74.95\% vs. 73.47\%) suggests that optimal split selection in Random Forest provides marginal benefits over random splitting in Extra Trees for our dataset, though Random Forest slightly outperformed across all metrics. The substantially faster training of Extra Trees (1.08 vs. 4.15 seconds) may make it attractive for applications requiring frequent retraining or real-time classification, accepting a small accuracy penalty for computational efficiency. LightGBM's intermediate performance (70.51\%) and fast training (1.35 seconds) positions it as another viable alternative, particularly for larger datasets where LightGBM's memory efficiency advantages become more pronounced.
+
+The poor performance of Naive Bayes (49.16\% accuracy) confirms that the assumption of feature independence is severely violated in spectral remote sensing datasets. Spectral bands exhibit strong intercorrelations due to shared physical processes and atmospheric effects, while spectral indices are explicitly calculated as band combinations. These correlations violate the independence assumption central to Naive Bayes, leading to probability miscalibration and poor classification. Naive Bayes should generally be avoided for multispectral classification unless feature engineering is specifically designed to produce independent features.
+
+\subsection{Class Imbalance and Minority Class Performance}
+
+The substantial performance disparities between majority classes (Crops F1=0.78, Forest F1=0.74) and minority classes (Bare Ground F1=0.15, Shrub F1=0.37) underscore the persistent challenge of class imbalance in supervised classification. Despite employing balanced class weighting to adjust sample importance inversely proportional to class frequency, the Random Forest model struggled to learn robust decision boundaries for rare classes with hundreds rather than tens of thousands of training examples.
+
+Fundamental statistical learning theory suggests that classification accuracy improves with sample size following a learning curve that approaches asymptotic performance as samples increase. For rare classes with only 166 (Shrub) or 1,368 (Bare Ground) samples, the learning curve has not approached its asymptote, leaving substantial room for improvement with additional reference data. The heterogeneity within these classes further compounds the challenge: bare ground includes construction sites, agricultural fields between cropping seasons, mining areas, and river bars, which exhibit diverse spectral properties despite sharing a common label.
+
+Several strategies could potentially improve minority class performance. Collecting additional reference data specifically targeting underrepresented classes would provide the most direct solution, though this may require targeted field surveys or imagery interpretation campaigns. Synthetic oversampling methods such as SMOTE (Synthetic Minority Over-sampling Technique) generate artificial training samples through interpolation of existing minority class samples, though care must be taken to avoid overfitting to synthetic patterns not representative of real spectral variability \cite{chawla2002smote}. Cost-sensitive learning, which we partially implemented through class weighting, could be further refined through grid search optimization of class-specific misclassification costs.
+
+An alternative strategy involves merging rare classes with spectrally similar majority classes to improve statistical power, accepting reduced thematic detail. For example, Bare Ground and Built Area exhibit substantial spectral confusion and could be merged into a generic "Non-vegetated" class. Similarly, Shrub/Scrub could be merged with early-successional Crops or Forest classes depending on management context. Such class aggregation represents a trade-off between classification accuracy and thematic utility, with the optimal balance depending on application requirements.
+
+It is also worth considering whether low-frequency classes represent genuinely persistent land cover or transient conditions. Bare ground often represents temporary exposure between agricultural seasons, forest clearing events, or construction phases, potentially exhibiting high temporal variability even within the 2024 annual composite period. If bare ground is primarily transitional, then low classification accuracy may reflect true uncertainty in land cover state rather than model deficiency, suggesting that multi-temporal classification or continuous cover fraction approaches might be more appropriate than discrete annual categories.
+
+\subsection{Feature Importance and Spectral Index Contribution}
+
+The dominance of SWIR and NIR bands in feature importance rankings aligns with physical understanding of land surface spectral properties. Vegetation exhibits strong NIR reflectance due to leaf internal scattering and low SWIR reflectance due to water absorption, creating high contrast for vegetation discrimination. Soil and built surfaces show inverse patterns with higher SWIR than NIR reflectance, enabling separation of vegetated and non-vegetated categories. Water bodies absorb strongly in both NIR and SWIR, facilitating water-land discrimination. The red-edge bands, while valuable for subtle vegetation biochemical analysis, appear less critical for broad land cover discrimination, at least within our 6-class framework and 20-meter resolution constraints.
+
+The moderate but consistent importance of spectral indices including NDMI, MNDWI, NDVI, and EVI confirms that normalized band combinations capture information complementary to individual bands. Normalization through differencing and ratioing reduces illumination effects and topographic shading that affect individual bands, potentially improving generalization across varied terrain. The relatively low importance of NDVI, despite its widespread use, may reflect redundancy with NIR and Red bands already present in the feature set, or substitution by alternative vegetation indices (EVI, SAVI) that perform similar functions with additional refinements.
+
+The feature importance results suggest potential for dimensionality reduction through feature selection, which could reduce computational costs for large-scale applications. A reduced feature set retaining only the top 10-12 features (SWIR bands, NIR, primary indices) might achieve comparable accuracy with substantially reduced data volume and processing time. However, careful cross-validation would be required to ensure that feature selection does not degrade performance for specific classes that rely on excluded features. The marginal contributions of many features may aggregate to meaningful accuracy improvements, even if individual importances appear low.
+
+\subsection{Implications for Forest and Agricultural Monitoring}
+
+The strong performance for discriminating Water, Trees/Forest, and Crops/Agriculture classes demonstrates the suitability of Random Forest-Sentinel-2 classification for operational monitoring of the primary land cover transitions of concern in Jambi Province: forest loss to agriculture and agricultural intensification. With F1-scores of 0.74 and 0.78 for forest and crops respectively, the methodology provides reliable detection of these key categories for applications including deforestation monitoring, plantation expansion tracking, and agricultural land use mapping.
+
+However, the inability to reliably discriminate Built Area and Bare Ground suggests limitations for detailed urbanization monitoring or ephemeral surface change detection. Applications requiring accurate built-up area mapping or bare ground tracking may require alternative approaches including higher spatial resolution imagery (e.g., Sentinel-2's 10-meter bands, commercial satellites), multi-temporal analysis to capture development trajectories, or integration of ancillary data such as nighttime lights, road networks, or cadastral information.
+
+The confusion between Trees/Forest and Crops/Agriculture categories, while moderate (18\% forest misclassified as crops), reflects a fundamental challenge for optical remote sensing of tropical land systems: mature tree plantations (oil palm, rubber) exhibit similar canopy closure and leaf area index to natural forests, creating spectral similarity despite functional differences in biodiversity and ecosystem services. Multitemporal analysis capturing phenological differences, integration of structural information from SAR or LiDAR, or use of long-term trajectory patterns could potentially improve forest-plantation discrimination. Alternatively, sub-pixel methods estimating fractional tree cover could provide continuous representations of vegetation structure rather than discrete forest/non-forest categories.
+
+\subsection{Transferability and Scalability}
+
+The modular, openly documented analysis pipeline we have developed is designed for transferability to other Indonesian provinces and temporal periods. The KMZ-based KLHK data acquisition method applies universally across provinces with appropriate modification of administrative codes. Sentinel-2 imagery is globally available, and Google Earth Engine provides consistent preprocessing capabilities regardless of geographic extent. The Python-based classification workflow using standard scientific libraries (GeoPandas, Rasterio, scikit-learn) ensures reproducibility and accessibility without proprietary software dependencies.
+
+Computational requirements for province-scale classification are modest by contemporary standards, with total processing time from raw data to final accuracy assessment requiring approximately 15-30 minutes on a modern workstation. The largest computational bottleneck is typically Sentinel-2 imagery export from Google Earth Engine, which depends on server queue length, while local processing of reference data, feature engineering, and classification completes within minutes. These timescales enable operational quarterly or annual mapping cycles across multiple provinces.
+
+Scaling to national-level classification would require additional considerations including management of multiple provincial datasets, distributed or parallel processing architectures for imagery preprocessing, and potentially hierarchical sampling strategies to maintain manageable training dataset sizes. The availability of KLHK reference data for all provinces provides consistent ground truth nationwide, a significant advantage over purely global datasets that may lack Indonesia-specific calibration. National-scale forest monitoring systems could leverage this province-by-province approach with standardized methods to generate spatially seamless land cover products while accommodating regional variation in class distributions and spectral characteristics.
+
+\subsection{Comparison with Global Land Cover Products}
+
+Several global land cover products provide coverage of Indonesia including ESA WorldCover (10-meter resolution), Copernicus Global Land Cover (100-meter resolution), Dynamic World (10-meter resolution, near-real-time), and MapBiomas Indonesia (30-meter resolution, annual 1985-present). These products offer advantages of wall-to-wall coverage, temporal consistency, and ready availability without processing requirements. However, their suitability as alternatives to locally trained classifiers depends on application requirements and acceptable accuracy trade-offs.
+
+Global products are trained on diverse reference datasets from varied geographic regions, potentially diluting performance in specific localities where spectral-thematic relationships differ from training regions. Local training using province-specific KLHK reference data, as employed in our study, allows the classifier to learn regional spectral patterns, phenology, and land use systems, potentially yielding higher local accuracy than generalized global models. However, global products benefit from vastly larger training datasets and extensive validation efforts, which may compensate for lack of regional specificity.
+
+Detailed accuracy comparison between our Random Forest classification and global products for Jambi Province would provide valuable insights into the accuracy-effort trade-off between custom local classification and off-the-shelf global products. Such comparison would require consistent validation data, ideally independent of the KLHK reference data used for training, to avoid biased assessment favoring the locally trained model. Stratum-specific accuracy assessment across different land cover classes and landscape contexts would reveal where custom classification provides substantial improvements versus where global products perform adequately.
+
+For operational applications with access to computational resources and remote sensing expertise, custom local classification offers advantages of tailoring to specific class schemes, incorporating local knowledge, and achieving potentially higher accuracy. For applications with limited technical capacity or requirements for immediate availability and temporal consistency, global products may represent a pragmatic solution accepting modest accuracy limitations. Hybrid approaches combining global products for initial classification with local refinement in priority areas represent another option balancing accuracy and efficiency.
+
+\subsection{Limitations and Future Research}
+
+Several limitations of our study merit acknowledgment and suggest directions for future research. First, our analysis employed a single-year annual composite (2024), which does not capture seasonal dynamics, multi-year trajectories, or land cover changes occurring within the calendar year. Multi-temporal classification using seasonal composites or dense time series could improve performance by exploiting phenological differences among land cover types, particularly for discriminating crops with distinct planting calendars, distinguishing deciduous and evergreen forests, and detecting rapid land conversions \cite{gomez2016optical}.
+
+Second, the 20-meter spatial resolution, while appropriate for regional-scale mapping, limits discrimination of narrow features including small forest fragments, riparian corridors, small agricultural plots, and linear infrastructure. Incorporation of Sentinel-2's 10-meter visible and NIR bands, though requiring increased computational resources, could enhance spatial detail and improve classification of heterogeneous landscapes. Alternatively, data fusion approaches combining Sentinel-2 with finer-resolution imagery from commercial sources could provide enhanced spatial precision for critical features.
+
+Third, our class simplification scheme, while statistically necessary, aggregates functionally distinct land cover types including natural forests and tree plantations, subsistence agriculture and industrial estates, and diverse built-up forms. Hierarchical classification approaches, ensemble models combining multiple specialized classifiers, or fuzzy classification producing continuous membership probabilities could better represent the continuous gradients and mixed classes characteristic of tropical landscapes.
+
+Fourth, we did not conduct formal map accuracy assessment with independent validation data, instead relying on holdout test data from the same KLHK reference source used for training. Independent validation using field observations, very high-resolution imagery interpretation, or alternative reference datasets would provide more rigorous accuracy assessment and reveal potential overfitting to KLHK-specific labeling conventions. Spatial cross-validation, which ensures training and testing samples are spatially separated, would better approximate map accuracy across the full study area by accounting for spatial autocorrelation in land cover patterns \cite{meyer2018improving}.
+
+Fifth, our analysis focused solely on optical Sentinel-2 imagery without incorporating complementary information from Synthetic Aperture Radar (SAR), LiDAR, or environmental covariates (elevation, slope, soil type, climate). Sentinel-1 C-band SAR provides cloud-penetrating capability valuable in tropical regions and sensitivity to vegetation structure and soil moisture. Integration of Sentinel-1 backscatter metrics with Sentinel-2 optical features could improve classification, particularly for vegetation structural classes and wet season mapping when optical data are limited by clouds \cite{mercier2019evaluation}.
+
+Future research should address these limitations through multi-temporal analysis, spatial resolution enhancements, class scheme refinements, independent validation campaigns, and multi-sensor data fusion. Additionally, extending the analysis to other Indonesian provinces would assess geographic transferability and identify regional variations requiring methodological adaptation. Comparison with global land cover products through independent validation would quantify the accuracy gains achievable through local training. Finally, developing open-source tools that integrate the KMZ-based data acquisition, cloud-based processing, and machine learning classification into user-friendly workflows would broaden accessibility for operational agencies and research organizations across Indonesia.
+
+\section{Conclusions}
+
+This study demonstrates a comprehensive, reproducible workflow for supervised land cover classification at provincial scale in tropical Indonesia using Sentinel-2 satellite imagery and official government reference data. Our key contributions include:
+
+1. Documentation and validation of a KMZ-based method for programmatic retrieval of complete KLHK PL2024 polygon geometries, overcoming access limitations in the geoportal REST API that have impeded previous research. This methodological advance enables utilization of Indonesia's authoritative, field-validated land cover reference data for machine learning applications across all provinces.
+
+2. Systematic comparison of seven machine learning classifiers including Random Forest, Extra Trees, LightGBM, SGD, Decision Tree, Logistic Regression, and Naive Bayes using identical training data and 23 spectral features. Random Forest achieved the highest overall accuracy (74.95\%) and macro F1-score (0.54), confirming its suitability for land cover classification while demonstrating that simpler alternatives including Extra Trees and LightGBM achieve competitive performance with computational efficiency advantages.
+
+3. Quantification of class-specific classification performance revealing strong accuracies for water bodies (F1=0.79), crops (F1=0.78), and forests (F1=0.74), but poor performance for minority classes including bare ground (F1=0.15) and shrubland (F1=0.37) due to class imbalance and within-class spectral heterogeneity. These results highlight persistent challenges of imbalanced training data and suggest priority areas for reference data enhancement.
+
+4. Feature importance analysis identifying SWIR and NIR spectral bands as the most discriminative features, with moderate contributions from spectral indices including NDMI, MNDWI, and NDVI. Red-edge bands showed lower importance for broad land cover discrimination, suggesting potential for dimensionality reduction while maintaining accuracy.
+
+5. Development and release of an open-source modular Python pipeline integrating KLHK data acquisition, Sentinel-2 preprocessing via Google Earth Engine, feature engineering, machine learning classification, and accuracy assessment. This pipeline provides a reproducible framework readily adaptable to other provinces and temporal periods.
+
+The methodology presented here provides operational capacity for forest monitoring, agricultural mapping, and land use change detection in Jambi Province and can be directly transferred to other Indonesian regions. While class imbalance and spectral similarity among certain land cover types present ongoing challenges, the combination of freely available Sentinel-2 imagery, accessible machine learning algorithms, and newly available KLHK reference data creates opportunities for enhanced environmental monitoring in support of sustainable development goals. Future enhancements including multi-temporal analysis, independent validation, and multi-sensor data fusion will further improve classification performance and expand the range of applications for which satellite-based land cover mapping can reliably inform decision-making in Indonesia's rapidly changing tropical landscapes.
+
+\section*{Acknowledgments}
+
+We acknowledge the Indonesian Ministry of Environment and Forestry (KLHK) for providing open access to the PL2024 land cover reference dataset. We thank the European Space Agency for the Sentinel-2 mission and Google for providing Earth Engine cloud computing infrastructure. [Add funding sources and personal acknowledgments as appropriate].
+
+\section*{Data Availability Statement}
+
+The code and methodological workflow for this analysis are available as an open-source repository at [repository URL]. KLHK PL2024 reference data can be accessed through the methods described in Section 2.2. Sentinel-2 imagery is publicly available through Google Earth Engine (COPERNICUS/S2\_SR\_HARMONIZED collection). Classification results and processed datasets are available from the authors upon reasonable request.
+
+\bibliographystyle{elsarticle-num}
+\bibliography{references}
+
+\end{document}
