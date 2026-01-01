@@ -114,8 +114,15 @@ def crop_raster_to_boundary(raster_data, raster_profile, boundary):
         tmp_path = tmp.name
 
     try:
+        # Update profile to match actual band count
+        write_profile = raster_profile.copy()
+        if raster_data.ndim == 3:
+            write_profile.update({'count': raster_data.shape[0]})
+        else:
+            write_profile.update({'count': 1})
+
         # Write raster to temporary file
-        with rasterio.open(tmp_path, 'w', **raster_profile) as dst:
+        with rasterio.open(tmp_path, 'w', **write_profile) as dst:
             if raster_data.ndim == 3:
                 for i in range(raster_data.shape[0]):
                     dst.write(raster_data[i], i + 1)
