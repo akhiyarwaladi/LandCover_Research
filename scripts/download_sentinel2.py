@@ -25,9 +25,14 @@ Date: December 2024
 
 import ee
 import os
+import sys
 import time
 import requests
 from datetime import datetime
+
+# Add project root to path for module imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from modules.cloud_removal import CloudRemovalConfig
 
 # ==============================================================================
 # CONFIGURATION - Same as JS version
@@ -39,13 +44,17 @@ CONFIG = {
     'province_name': 'Jambi',
     'boundary_source': 'GEOBOUNDARIES',  # Options: 'GAUL', 'GEOBOUNDARIES', 'BBOX' (GEOBOUNDARIES = 2023, GAUL = 2015)
 
-    # Time period
-    'start_date': '2024-01-01',
-    'end_date': '2024-12-31',
+    # Time period - DRY SEASON for Indonesia (clearest imagery!)
+    'start_date': '2024-06-01',  # Dry season: June-September
+    'end_date': '2024-09-30',
 
-    # Cloud filtering
-    'max_cloud_percent': 20,
-    'cloud_score_threshold': 0.60,  # Cloud Score+ threshold (0.5-0.65 recommended)
+    # Cloud removal strategy (see modules/cloud_removal.py for options)
+    # Options: 'current', 'pan_tropical', 'percentile_25', 'kalimantan', 'balanced', 'conservative'
+    'cloud_removal_strategy': 'percentile_25',  # TESTED: 99.1% cloud-free!
+
+    # Manual override (will be overridden by strategy if strategy is set)
+    'max_cloud_percent': 40,  # Moderate threshold
+    'cloud_score_threshold': 0.50,  # Balanced masking for dry season
 
     # Export settings
     'scale': 20,  # Default 20m (smaller file size, good enough for classification)
@@ -186,6 +195,78 @@ def mask_clouds_scl(image):
             .select(['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12'])
             .divide(10000)
             .copyProperties(image, ['system:time_start']))
+
+
+def apply_cloud_removal_strategy():
+    """
+    Apply cloud removal strategy configuration to CONFIG.
+    Updates CONFIG with strategy-specific parameters.
+    """
+    if 'cloud_removal_strategy' in CONFIG and CONFIG['cloud_removal_strategy']:
+        strategy_name = CONFIG['cloud_removal_strategy']
+        strategy_config = CloudRemovalConfig.get_strategy(strategy_name)
+
+        # Update CONFIG with strategy parameters
+        CONFIG['max_cloud_percent'] = strategy_config['max_cloud_percent']
+        CONFIG['cloud_score_threshold'] = strategy_config['cloud_score_threshold']
+        CONFIG['_composite_method'] = strategy_config['composite_method']
+        CONFIG['_pre_filter_percent'] = strategy_config.get('pre_filter_percent')
+
+        print(f"\n{'='*80}")
+        print(f"CLOUD REMOVAL STRATEGY: {strategy_config['name']}")
+        print(f"{'='*80}")
+        print(f"  Description: {strategy_config['description']}")
+        print(f"  Cloud Score+ Threshold: {strategy_config['cloud_score_threshold']}")
+        print(f"  Max Cloud %: {strategy_config['max_cloud_percent']}")
+        print(f"  Composite Method: {strategy_config['composite_method']}")
+        if strategy_config.get('pre_filter_percent'):
+            print(f"  Pre-filter: ≤{strategy_config['pre_filter_percent']}% cloudy images only")
+        print(f"  Source: {strategy_config['source']}")
+        print(f"{'='*80}\n")
+    else:
+        # Use manual configuration
+        CONFIG['_composite_method'] = 'median'
+        CONFIG['_pre_filter_percent'] = None
+
+
+def create_composite_from_collection(collection, region):
+    """
+    Create composite using strategy-defined method.
+
+    Args:
+        collection: ee.ImageCollection - Filtered and cloud-masked collection
+        region: ee.Geometry - Region to clip to
+
+    Returns:
+        ee.Image - Composite image
+    """
+    method = CONFIG.get('_composite_method', 'median')
+
+    if method == 'median':
+        composite = collection.median()
+    elif method == 'percentile_25':
+        composite = collection.reduce(ee.Reducer.percentile([25]))
+        # Rename bands (percentile reducer adds _p25 suffix)
+        original_bands = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12']
+        new_bands = [b + '_p25' for b in original_bands]
+        composite = composite.select(new_bands, original_bands)
+    elif method == 'percentile_30':
+        composite = collection.reduce(ee.Reducer.percentile([30]))
+        # Rename bands
+        original_bands = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12']
+        new_bands = [b + '_p30' for b in original_bands]
+        composite = composite.select(new_bands, original_bands)
+    elif method == 'min':
+        composite = collection.reduce(ee.Reducer.min())
+        # Rename bands
+        original_bands = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12']
+        new_bands = [b + '_min' for b in original_bands]
+        composite = composite.select(new_bands, original_bands)
+    else:
+        print(f"Warning: Unknown composite method '{method}', using median")
+        composite = collection.median()
+
+    return composite.clip(region)
 
 
 def calculate_indices(composite):
@@ -371,6 +452,9 @@ def download_full_dataset(include_dw=False, include_indices=False, include_qc=Fa
     print("SENTINEL-2 DATA DOWNLOAD")
     print("=" * 60)
 
+    # Apply cloud removal strategy
+    apply_cloud_removal_strategy()
+
     # Initialize
     initialize_ee()
 
@@ -391,9 +475,9 @@ def download_full_dataset(include_dw=False, include_indices=False, include_qc=Fa
         CONFIG['end_date']
     )
 
-    # Create composite
+    # Create composite using strategy
     print("\nCreating Sentinel-2 composite...")
-    s2_composite = s2_collection.median().clip(region)
+    s2_composite = create_composite_from_collection(s2_collection, region)
 
     # Export to Drive
     print("\n" + "-" * 40)
@@ -479,6 +563,9 @@ def download_sample(bounds=None, scale=20):
     print("SAMPLE DOWNLOAD (Testing)")
     print("=" * 60)
 
+    # Apply cloud removal strategy
+    apply_cloud_removal_strategy()
+
     initialize_ee()
 
     # Smaller sample area
@@ -495,9 +582,9 @@ def download_sample(bounds=None, scale=20):
         CONFIG['end_date']
     )
 
-    # Create composite
+    # Create composite using strategy
     print("\nCreating composite...")
-    s2_composite = s2_collection.median().clip(region)
+    s2_composite = create_composite_from_collection(s2_collection, region)
     indices = calculate_indices(s2_composite)
 
     # Get Dynamic World

@@ -126,7 +126,7 @@ def crop_raster_to_boundary(raster_data, raster_profile, boundary):
     return cropped_data, cropped_profile
 
 
-def create_rgb_composite(sentinel2_bands, profile, boundary, output_path, title):
+def create_rgb_composite(sentinel2_bands, profile, boundary, output_path, title, skip_crop=False):
     """Create Sentinel-2 RGB composite with NoData as white."""
     print(f"\n  Creating: {os.path.basename(output_path)}...")
 
@@ -135,23 +135,38 @@ def create_rgb_composite(sentinel2_bands, profile, boundary, output_path, title)
     blue = sentinel2_bands[0]   # B2
 
     rgb = np.stack([red, green, blue], axis=0)
-    rgb_cropped, _ = crop_raster_to_boundary(rgb, profile, boundary)
 
-    # NoData mask
-    nodata_mask = np.all(rgb_cropped <= 0, axis=0)
+    if skip_crop:
+        # Use full mosaic without cropping (avoids NoData from irregular boundaries)
+        rgb_cropped = rgb
+    else:
+        rgb_cropped, _ = crop_raster_to_boundary(rgb, profile, boundary)
 
-    # Normalize with white background
-    rgb_display = np.ones_like(rgb_cropped, dtype=np.float32)
+    # NoData mask (include NaN values!)
+    nodata_mask = np.any(np.isnan(rgb_cropped), axis=0) | np.any(rgb_cropped <= 0, axis=0)
+
+    # Normalize with proper masking
+    rgb_display = np.zeros((rgb_cropped.shape[1], rgb_cropped.shape[2], 3), dtype=np.float32)
+
     for i in range(3):
         band = rgb_cropped[i]
-        valid = band[band > 0]
-        if len(valid) > 0:
-            p2, p98 = np.percentile(valid, [2, 98])
-            band_norm = np.clip((band - p2) / (p98 - p2), 0, 1)
-            rgb_display[i] = band_norm
+        # Get valid pixels only (excluding NoData and NaN)
+        valid_pixels = band[~nodata_mask]
+        valid_pixels = valid_pixels[~np.isnan(valid_pixels)]  # Remove any remaining NaN
 
-    rgb_display = np.transpose(rgb_display, (1, 2, 0))
+        if len(valid_pixels) > 0:
+            p2, p98 = np.nanpercentile(valid_pixels, [2, 98])  # NaN-safe percentile
+            # Normalize the band (NaN will remain NaN)
+            band_norm = np.clip((band - p2) / (p98 - p2), 0, 1)
+            rgb_display[:, :, i] = band_norm
+        else:
+            rgb_display[:, :, i] = 1.0  # All white if no valid data
+
+    # Set NoData (including NaN) to white AFTER normalization
     rgb_display[nodata_mask] = [1.0, 1.0, 1.0]
+
+    # Also set any remaining NaN to white (safety)
+    rgb_display = np.nan_to_num(rgb_display, nan=1.0)
 
     # Adjust figure size
     aspect = rgb_display.shape[1] / rgb_display.shape[0]
@@ -161,12 +176,17 @@ def create_rgb_composite(sentinel2_bands, profile, boundary, output_path, title)
         figsize = (12, 12/aspect)
 
     fig, ax = plt.subplots(figsize=figsize, dpi=300)
+    fig.patch.set_facecolor('white')  # Explicit white figure background
+    ax.patch.set_facecolor('white')   # Explicit white axes background
     ax.imshow(rgb_display)
     ax.axis('off')
-    ax.set_title(title, fontsize=14, fontweight='bold', pad=10)
 
-    plt.tight_layout(pad=0.1)
-    plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.05)
+    # Title without background box
+    title_obj = ax.set_title(title, fontsize=14, fontweight='bold', pad=15)
+    title_obj.set_bbox(dict(facecolor='none', edgecolor='none'))  # Remove title background
+
+    plt.tight_layout(pad=0.5)
+    plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.2, facecolor='white', edgecolor='none')
     plt.close()
 
 
@@ -195,10 +215,15 @@ def create_classification_map(class_map, profile, boundary, output_path, title):
         figsize = (12, 12/aspect)
 
     fig, ax = plt.subplots(figsize=figsize, dpi=300)
+    fig.patch.set_facecolor('white')  # Explicit white figure background
+    ax.patch.set_facecolor('white')   # Explicit white axes background
 
     im = ax.imshow(class_cropped, cmap=cmap, vmin=-1, vmax=7, interpolation='nearest')
     ax.axis('off')
-    ax.set_title(title, fontsize=14, fontweight='bold', pad=10)
+
+    # Title without background box
+    title_obj = ax.set_title(title, fontsize=14, fontweight='bold', pad=15)
+    title_obj.set_bbox(dict(facecolor='none', edgecolor='none'))  # Remove title background
 
     # Legend
     legend_elements = []
@@ -216,8 +241,8 @@ def create_classification_map(class_map, profile, boundary, output_path, title):
              framealpha=0.95,
              edgecolor='black')
 
-    plt.tight_layout(pad=0.1)
-    plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.05)
+    plt.tight_layout(pad=0.5)
+    plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.2, facecolor='white', edgecolor='none')
     plt.close()
 
 
@@ -264,16 +289,16 @@ def main():
     print("FINAL QUALITATIVE COMPARISON - JAMBI-OPTIMIZED COLORS")
     print("=" * 80)
 
-    # Configuration
+    # Configuration - UPDATED TO USE NEW DATA!
     KLHK_PATH = 'data/klhk/KLHK_PL2024_Jambi_Full_WithGeometry.geojson'
     SENTINEL2_TILES = [
-        'data/sentinel/S2_jambi_2024_20m_AllBands-0000000000-0000000000.tif',
-        'data/sentinel/S2_jambi_2024_20m_AllBands-0000000000-0000010496.tif',
-        'data/sentinel/S2_jambi_2024_20m_AllBands-0000010496-0000000000.tif',
-        'data/sentinel/S2_jambi_2024_20m_AllBands-0000010496-0000010496.tif'
+        'data/sentinel_new/S2_jambi_2024_20m_AllBands-0000000000-0000000000.tif',
+        'data/sentinel_new/S2_jambi_2024_20m_AllBands-0000000000-0000010496.tif',
+        'data/sentinel_new/S2_jambi_2024_20m_AllBands-0000010496-0000000000.tif',
+        'data/sentinel_new/S2_jambi_2024_20m_AllBands-0000010496-0000010496.tif'
     ]
-    OUTPUT_DIR_PROVINCE = 'results/qualitative_comparison_FINAL/province'
-    OUTPUT_DIR_CITY = 'results/qualitative_comparison_FINAL/city'
+    OUTPUT_DIR_PROVINCE = 'results/qualitative_FINAL_DRY_SEASON/province'
+    OUTPUT_DIR_CITY = 'results/qualitative_FINAL_DRY_SEASON/city'
 
     os.makedirs(OUTPUT_DIR_PROVINCE, exist_ok=True)
     os.makedirs(OUTPUT_DIR_CITY, exist_ok=True)
@@ -284,15 +309,32 @@ def main():
             print(f"ERROR: {tile} not found")
             return
 
-    # Load boundaries
+    # Load boundaries (BOTH from GeoBoundaries for consistency!)
     print("\nSTEP 1: Load Boundaries")
     print("-" * 80)
-    province_boundary = gpd.read_file(KLHK_PATH).dissolve()
-    city_boundary = create_city_boundary(
-        JAMBI_CITY_CENTER[0],
-        JAMBI_CITY_CENTER[1],
-        JAMBI_CITY_EXTENT
-    )
+
+    # Province boundary from GeoBoundaries (ADM1)
+    province_gb_path = 'data/klhk/Jambi_Province_Boundary_GeoBoundaries.geojson'
+    if os.path.exists(province_gb_path):
+        province_boundary = gpd.read_file(province_gb_path)
+        print(f"  ✅ Using GeoBoundaries Province boundary (ADM1)")
+    else:
+        print(f"  ⚠️  GeoBoundaries province not found, using KLHK fallback")
+        province_boundary = gpd.read_file(KLHK_PATH).dissolve()
+
+    # City boundary from GeoBoundaries (ADM2)
+    city_gb_path = 'data/klhk/Jambi_City_Boundary_GeoBoundaries.geojson'
+    if os.path.exists(city_gb_path):
+        city_boundary = gpd.read_file(city_gb_path)
+        print(f"  ✅ Using GeoBoundaries City boundary (ADM2)")
+    else:
+        print(f"  ⚠️  GeoBoundaries city not found, using rectangle fallback")
+        city_boundary = create_city_boundary(
+            JAMBI_CITY_CENTER[0],
+            JAMBI_CITY_CENTER[1],
+            JAMBI_CITY_EXTENT
+        )
+
     print(f"  Province: {province_boundary.total_bounds}")
     print(f"  City: {city_boundary.total_bounds}")
 
@@ -328,7 +370,8 @@ def main():
     create_rgb_composite(
         sentinel2_bands, s2_profile, province_boundary,
         os.path.join(OUTPUT_DIR_PROVINCE, 'sentinel2_rgb_jambi_province.png'),
-        'Sentinel-2 RGB Composite - Jambi Province'
+        'Sentinel-2 RGB Composite - Jambi Province',
+        skip_crop=True  # Don't crop - use full mosaic to avoid NoData areas
     )
 
     create_classification_map(

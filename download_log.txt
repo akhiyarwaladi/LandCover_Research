@@ -1,0 +1,29 @@
+============================================================
+SAMPLE DOWNLOAD (Testing)
+============================================================
+Earth Engine not authenticated. Starting authentication...
+Browser will open for Google authentication.
+
+To authorize access needed by Earth Engine, open the following URL in a web browser and follow the instructions. If the web browser does not start automatically, please manually browse the URL below.
+
+    https://accounts.google.com/o/oauth2/auth?client_id=517222506229-vsmmajv00ul0bs7p89v5m89qs8eb9359.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fearthengine+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdevstorage.full_control&redirect_uri=http%3A%2F%2Flocalhost%3A8085&response_type=code&code_challenge=AqFlcws6OvgmsnNlBy6A0_1W6Tbcpoo8JQ3W1Cx28Ww&code_challenge_method=S256
+
+Waiting for successful authorization from web browser ...
+
+Successfully saved authorization token.
+Earth Engine initialized successfully! (Project: ee-akhiyarwaladi)
+Sample bounds: [103.5, -1.8, 103.8, -1.5]
+
+Loading Sentinel-2 data: 2024-06-01 to 2024-09-30
+  Total images found: 12
+
+Creating composite...
+
+Loading Dynamic World data...
+  Dynamic World images: 18
+
+Attempting direct download...
+
+Direct download failed: Total request size (1116228100 bytes) must be less than or equal to 50331648 bytes.
+Falling back to Drive export...
+  Started: S2_sample_combined (10m)

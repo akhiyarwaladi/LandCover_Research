@@ -1,0 +1,25 @@
+============================================================
+SENTINEL-2 DATA DOWNLOAD
+============================================================
+Earth Engine initialized successfully! (Project: ee-akhiyarwaladi)
+Using geoBoundaries for: Jambi
+  Area: 49,224 km²
+
+Loading Sentinel-2 data: 2024-06-01 to 2024-09-30
+  Total images found: 81
+
+Creating Sentinel-2 composite...
+
+----------------------------------------
+STARTING EXPORTS TO GOOGLE DRIVE
+Folder: GEE_Exports
+----------------------------------------
+  Started: S2_jambi_2024_20m_AllBands (20m)
+
+============================================================
+EXPORT TASKS STARTED
+============================================================
+
+Total tasks: 1
+Check Google Drive folder: GEE_Exports
+Monitor progress: https://code.earthengine.google.com/tasks
