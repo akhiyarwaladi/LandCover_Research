@@ -139,17 +139,30 @@ def extract_patches(features, labels, patch_size=32, stride=16,
         X_patches = X_patches[indices]
         y_patches = y_patches[indices]
 
+    # Remap non-sequential labels to sequential [0,1,2,3,4,5...]
+    # This is CRITICAL for PyTorch which expects class indices to be in range [0, n_classes)
+    unique_labels = np.unique(y_patches)
+    label_mapping = {old_label: new_label for new_label, old_label in enumerate(unique_labels)}
+
     if verbose:
-        print(f"   Final patches: {len(X_patches):,}")
+        print(f"\n   ⚠️  Remapping non-sequential labels for PyTorch:")
+        for old, new in label_mapping.items():
+            print(f"     {old} → {new}")
+
+    # Apply mapping
+    y_patches_remapped = np.array([label_mapping[label] for label in y_patches])
+
+    if verbose:
+        print(f"\n   Final patches: {len(X_patches):,}")
         print(f"   Patch shape: {X_patches[0].shape}")
 
         # Class distribution
-        unique, counts = np.unique(y_patches, return_counts=True)
-        print(f"\n   Class distribution:")
+        unique, counts = np.unique(y_patches_remapped, return_counts=True)
+        print(f"\n   Class distribution (after remapping):")
         for cls, count in zip(unique, counts):
-            print(f"     Class {cls}: {count:,} ({count/len(y_patches)*100:.1f}%)")
+            print(f"     Class {cls}: {count:,} ({count/len(y_patches_remapped)*100:.1f}%)")
 
-    return X_patches, y_patches
+    return X_patches, y_patches_remapped
 
 
 # ============================================================================

@@ -971,3 +971,77 @@ earthengine authenticate
 **Updated By:** Claude Sonnet 4.5
 **Status:** Complete & Current
 
+
+---
+
+## 🏗️ ResNet Architecture Comparison (2026-01-03)
+
+### Overview
+Extension to compare multiple ResNet architectures (18, 34, 50, 101, 152) for land cover classification.
+
+### Status
+- ✅ ResNet50 trained (79.80% accuracy)
+- 🔄 ResNet18, 34, 101, 152 training in progress
+- ⏳ Architecture comparison visualizations pending
+
+### Centralized Scripts (⚠️ IMPORTANT)
+
+**DO NOT create duplicate scripts!** Use these centralized scripts:
+
+1. **Training:** `scripts/train_all_resnet_variants_simple.py`
+   - Trains ALL ResNet variants (18, 34, 101, 152)
+   - ResNet50 already trained separately
+   - Output: `models/resnet{XX}_best.pth`, `results/resnet{XX}/`
+
+2. **Visualization:** `scripts/run_resnet_visualization.py`
+   - Works for ANY ResNet variant
+   - Usage: `--variant resnet18` or `--all` for all variants
+   - Reads from saved models (no retraining needed)
+   - Output: SEPARATE files per variant in `results/{variant}/visualizations/`
+
+### Key Principles
+
+**❌ DO NOT:**
+- Create side-by-side comparison images in code
+- Create new visualization scripts (extend existing ones)
+- Hardcode multi-panel layouts
+- Auto-combine images
+
+**✅ DO:**
+- Generate SEPARATE files for each architecture
+- Use centralized scripts with arguments
+- Let user combine manually in Microsoft Word
+- Make visualizations regenerable from saved models
+
+### File Organization
+
+```
+models/
+├── resnet18_best.pth
+├── resnet34_best.pth
+├── resnet50_best.pth  ✅ done
+├── resnet101_best.pth
+└── resnet152_best.pth
+
+results/
+├── resnet18/visualizations/  (4 separate PNG files)
+├── resnet34/visualizations/  (4 separate PNG files)
+├── resnet50/visualizations/  (4 separate PNG files) ✅ done
+├── resnet101/visualizations/ (4 separate PNG files)
+└── resnet152/visualizations/ (4 separate PNG files)
+```
+
+### Workflow
+
+1. **Train all variants** (once): `python scripts/train_all_resnet_variants_simple.py`
+2. **Generate visualizations** (anytime): `python scripts/run_resnet_visualization.py --all`
+3. **Combine in Word** (manual): User imports separate files and creates custom layouts
+
+### Documentation
+
+- `ARCHITECTURE_COMPARISON_GUIDE.md` - Complete workflow guide
+- `TRAINING_MONITOR.md` - Training progress monitoring
+- `RESNET_ARCHITECTURE_STATUS.md` - Current status of all variants
+
+---
+

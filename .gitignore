@@ -59,6 +59,14 @@ data/
 KLHK_PL2024_Jambi_Full.geojson
 references/
 
+# Large model files (>50MB)
+models/*.pth
+*.pth
+
+# Large prediction files
+results/resnet/predictions.npy
+*.npy
+
 # Credentials (never commit these!)
 credentials*.json
 *.pem

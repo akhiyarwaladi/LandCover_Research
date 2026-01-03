@@ -245,7 +245,7 @@ def train_model(model, train_loader, val_loader, num_epochs=20,
 
     # Learning rate scheduler
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='max', factor=0.5, patience=3, verbose=True
+        optimizer, mode='max', factor=0.5, patience=3
     )
 
     # Training history
