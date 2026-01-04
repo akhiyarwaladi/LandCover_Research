@@ -292,10 +292,10 @@ def main():
     # Configuration - UPDATED TO USE NEW DATA!
     KLHK_PATH = 'data/klhk/KLHK_PL2024_Jambi_Full_WithGeometry.geojson'
     SENTINEL2_TILES = [
-        'data/sentinel_new/S2_jambi_2024_20m_AllBands-0000000000-0000000000.tif',
-        'data/sentinel_new/S2_jambi_2024_20m_AllBands-0000000000-0000010496.tif',
-        'data/sentinel_new/S2_jambi_2024_20m_AllBands-0000010496-0000000000.tif',
-        'data/sentinel_new/S2_jambi_2024_20m_AllBands-0000010496-0000010496.tif'
+        'data/sentinel_new_cloudfree/S2_jambi_2024_20m_AllBands-0000000000-0000000000.tif',
+        'data/sentinel_new_cloudfree/S2_jambi_2024_20m_AllBands-0000000000-0000010496.tif',
+        'data/sentinel_new_cloudfree/S2_jambi_2024_20m_AllBands-0000010496-0000000000.tif',
+        'data/sentinel_new_cloudfree/S2_jambi_2024_20m_AllBands-0000010496-0000010496.tif'
     ]
     OUTPUT_DIR_PROVINCE = 'results/qualitative_FINAL_DRY_SEASON/province'
     OUTPUT_DIR_CITY = 'results/qualitative_FINAL_DRY_SEASON/city'
@@ -322,13 +322,18 @@ def main():
         print(f"  ⚠️  GeoBoundaries province not found, using KLHK fallback")
         province_boundary = gpd.read_file(KLHK_PATH).dissolve()
 
-    # City boundary from GeoBoundaries (ADM2)
+    # City boundary - CUSTOM ADMINISTRATIVE (13 sub-districts with clipped corners)
+    city_custom_path = 'data/jambi_subdistrict_clipped_corners_boundary.geojson'
     city_gb_path = 'data/klhk/Jambi_City_Boundary_GeoBoundaries.geojson'
-    if os.path.exists(city_gb_path):
+
+    if os.path.exists(city_custom_path):
+        city_boundary = gpd.read_file(city_custom_path)
+        print(f"  ✅ Using CUSTOM Administrative boundary (13 sub-districts, clipped)")
+    elif os.path.exists(city_gb_path):
         city_boundary = gpd.read_file(city_gb_path)
         print(f"  ✅ Using GeoBoundaries City boundary (ADM2)")
     else:
-        print(f"  ⚠️  GeoBoundaries city not found, using rectangle fallback")
+        print(f"  ⚠️  No custom boundary found, using rectangle fallback")
         city_boundary = create_city_boundary(
             JAMBI_CITY_CENTER[0],
             JAMBI_CITY_CENTER[1],
