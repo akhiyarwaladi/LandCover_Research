@@ -23,6 +23,72 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix, classification_report, f1_score
 import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+
+# ============================================================================
+# EXCEL FORMATTING FUNCTION
+# ============================================================================
+
+def format_excel_table(file_path, header_row=2):
+    """
+    Apply beautiful formatting to Excel file with auto-adjusted columns.
+
+    Args:
+        file_path: Path to Excel file
+        header_row: Row number containing headers (1-indexed)
+    """
+    wb = load_workbook(file_path)
+    ws = wb.active
+
+    # Header styling
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+
+    # Apply formatting to all cells
+    for row in ws.iter_rows():
+        for cell in row:
+            cell.border = border
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+
+            # Header row
+            if cell.row == header_row:
+                cell.fill = header_fill
+                cell.font = header_font
+            # Data rows
+            else:
+                cell.font = Font(size=10)
+
+            # First column left-aligned and bold
+            if cell.column == 1:
+                cell.alignment = Alignment(horizontal='left', vertical='center')
+                cell.font = Font(bold=True)
+
+    # Auto-adjust column widths
+    for column in ws.columns:
+        max_length = 0
+        column_letter = get_column_letter(column[0].column)
+        for cell in column:
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+        adjusted_width = min(max_length + 3, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+
+    # Header row height
+    ws.row_dimensions[header_row].height = 25
+
+    wb.save(file_path)
+    print(f"✓ Formatted Excel: {os.path.basename(file_path)}")
 
 # ============================================================================
 # CONFIGURATION
@@ -91,10 +157,11 @@ for variant in VARIANTS:
 
 df = pd.DataFrame(table_data)
 
-# Save as CSV
-csv_path = os.path.join(OUTPUT_DIR, 'performance_table.csv')
-df.to_csv(csv_path, index=False)
-print(f"✓ Saved CSV: {csv_path}")
+# Save as Excel with beautiful formatting
+xlsx_path = os.path.join(OUTPUT_DIR, 'performance_table.xlsx')
+df.to_excel(xlsx_path, index=False, sheet_name='Performance Comparison')
+format_excel_table(xlsx_path, header_row=1)
+print(f"✓ Saved Excel: {xlsx_path}")
 
 # Save as LaTeX
 latex_path = os.path.join(OUTPUT_DIR, 'performance_table.tex')
@@ -363,19 +430,21 @@ for variant in VARIANTS:
 
 df_class = pd.DataFrame(class_table_data)
 
-# Save as CSV
-class_csv_path = os.path.join(OUTPUT_DIR, 'per_class_performance.csv')
-df_class.to_csv(class_csv_path, index=False)
-print(f"✓ Saved: {class_csv_path}")
+# Save as Excel with beautiful formatting
+class_xlsx_path = os.path.join(OUTPUT_DIR, 'per_class_performance.xlsx')
+df_class.to_excel(class_xlsx_path, index=False, sheet_name='Per-Class Performance')
+format_excel_table(class_xlsx_path, header_row=1)
+print(f"✓ Saved Excel: {class_xlsx_path}")
 
 # Create pivot table for better visualization
 df_pivot = df_class.pivot_table(index='Class', columns='Model',
                                  values='F1-Score', aggfunc='first')
 
-# Save pivot table
-pivot_path = os.path.join(OUTPUT_DIR, 'per_class_f1_pivot.csv')
-df_pivot.to_csv(pivot_path)
-print(f"✓ Saved pivot table: {pivot_path}")
+# Save pivot table as Excel
+pivot_path = os.path.join(OUTPUT_DIR, 'per_class_f1_pivot.xlsx')
+df_pivot.to_excel(pivot_path, sheet_name='F1-Score Pivot')
+format_excel_table(pivot_path, header_row=1)
+print(f"✓ Saved Excel pivot table: {pivot_path}")
 
 # ============================================================================
 # SUMMARY
@@ -387,15 +456,15 @@ print("="*80)
 
 print(f"\n📁 All files saved to: {OUTPUT_DIR}/")
 print("\n✓ Generated files:")
-print("  1. performance_table.csv - Overall metrics (CSV)")
+print("  1. performance_table.xlsx - Overall metrics (Excel, auto-formatted)")
 print("  2. performance_table.tex - LaTeX table")
 print("  3. performance_table.png - Visual table")
 print("  4. confusion_matrices_all.png - 2x2 grid of confusion matrices")
 print("  5. per_class_f1_comparison.png - Grouped bar chart")
 print("  6. overall_metrics_comparison.png - Overall metrics bars")
 print("  7. training_curves_comparison.png - Training/validation curves")
-print("  8. per_class_performance.csv - Detailed per-class metrics")
-print("  9. per_class_f1_pivot.csv - Pivot table of F1 scores")
+print("  8. per_class_performance.xlsx - Detailed per-class metrics (Excel)")
+print("  9. per_class_f1_pivot.xlsx - Pivot table of F1 scores (Excel)")
 
 print("\n✨ All visualizations are publication-ready (300 DPI)!")
 print("✨ Tables are formatted for Microsoft Word and LaTeX!")
