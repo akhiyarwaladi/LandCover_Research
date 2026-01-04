@@ -40,7 +40,7 @@ warnings.filterwarnings('ignore')
 from modules.data_loader import load_klhk_data, load_sentinel2_tiles
 from modules.feature_engineering import calculate_spectral_indices, combine_bands_and_indices
 from modules.preprocessor import rasterize_klhk, prepare_training_data
-from modules.data_preparation import LandCoverPatchDataset
+from modules.data_preparation import LandCoverPatchDataset, get_augmentation_transforms
 from modules.dl_predictor import predict_spatial
 from modules.model_factory import create_model
 from modules.model_registry import get_model_info, RECOMMENDED_MODELS
@@ -188,11 +188,20 @@ def train_model(model_name, X_train, y_train, X_test, y_test,
 
     # Create datasets
     print(f"\n📦 Creating datasets...")
+
+    # Normalize data using channel statistics
+    X_train_norm = (X_train - channel_means[None, :, None, None]) / (channel_stds[None, :, None, None] + 1e-8)
+    X_test_norm = (X_test - channel_means[None, :, None, None]) / (channel_stds[None, :, None, None] + 1e-8)
+
+    # Get augmentation transforms
+    train_transform = get_augmentation_transforms('train')
+    test_transform = get_augmentation_transforms('test')
+
     train_dataset = LandCoverPatchDataset(
-        X_train, y_train, channel_means, channel_stds, augment=True
+        X_train_norm, y_train, transform=train_transform, normalize=False
     )
     test_dataset = LandCoverPatchDataset(
-        X_test, y_test, channel_means, channel_stds, augment=False
+        X_test_norm, y_test, transform=test_transform, normalize=False
     )
 
     train_loader = DataLoader(
@@ -385,10 +394,10 @@ all_summaries = []
 
 for i, variant in enumerate(MODELS_TO_TRAIN, 1):
     print(f"\n\n{'#'*80}")
-    print(f"# VARIANT {i}/{len(VARIANTS)}: {variant.upper()}")
+    print(f"# MODEL {i}/{len(MODELS_TO_TRAIN)}: {variant.upper()}")
     print(f"{'#'*80}")
 
-    summary = train_resnet_variant(
+    summary = train_model(
         variant, X_train, y_train, X_test, y_test,
         channel_means, channel_stds, CONFIG
     )
@@ -444,16 +453,16 @@ for model_name in MODELS_TO_TRAIN:
 # ============================================================================
 
 print("\n\n" + "="*80)
-print("ALL RESNET VARIANTS TRAINING COMPLETE!")
+print("ALL MODELS TRAINING COMPLETE!")
 print("="*80)
 
-print(f"\n📊 SUMMARY OF ALL VARIANTS:")
+print(f"\n📊 SUMMARY OF ALL MODELS:")
 print("-"*80)
-print(f"{'Variant':<12} {'Params (M)':<12} {'Test Acc (%)':<14} {'F1 (Macro)':<12} {'Time (min)':<12}")
+print(f"{'Model':<20} {'Params (M)':<12} {'Test Acc (%)':<14} {'F1 (Macro)':<12} {'Time (min)':<12}")
 print("-"*80)
 
 for summary in all_summaries:
-    print(f"{summary['variant']:<12} "
+    print(f"{summary['variant']:<20} "
           f"{summary['parameters']/1e6:<12.1f} "
           f"{summary['test_acc']*100:<14.2f} "
           f"{summary['f1_macro']:<12.4f} "
@@ -463,10 +472,10 @@ print("-"*80)
 
 # Save combined summary
 import json
-with open('results/all_resnet_variants_summary.json', 'w') as f:
+with open('results/all_models_summary.json', 'w') as f:
     json.dump(all_summaries, f, indent=2)
 
-print(f"\n✅ Combined summary saved to: results/all_resnet_variants_summary.json")
+print(f"\n✅ Combined summary saved to: results/all_models_summary.json")
 
 total_time = sum(s['training_time_minutes'] for s in all_summaries)
 print(f"\n⏱️  Total Training Time: {total_time:.1f} minutes ({total_time/60:.2f} hours)")
