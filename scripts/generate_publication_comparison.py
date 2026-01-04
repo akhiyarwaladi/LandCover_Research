@@ -172,7 +172,26 @@ def merge_cells_by_value(ws, column_idx, header_row):
 # CONFIGURATION
 # ============================================================================
 
-VARIANTS = ['resnet18', 'resnet34', 'resnet101', 'resnet152']
+# Auto-detect all trained models in results/models/
+import os as _os
+MODELS_DIR = 'results/models'
+VARIANTS = []
+if _os.path.exists(MODELS_DIR):
+    for model_name in sorted(_os.listdir(MODELS_DIR)):
+        model_path = _os.path.join(MODELS_DIR, model_name)
+        if _os.path.isdir(model_path):
+            # Check if test_results.npz exists
+            test_file = _os.path.join(model_path, 'test_results.npz')
+            if _os.path.exists(test_file):
+                VARIANTS.append(model_name)
+
+# Fallback to original if no models found
+if not VARIANTS:
+    print("⚠️  No trained models found in results/models/, using default list")
+    VARIANTS = ['resnet18', 'resnet34', 'resnet101', 'resnet152']
+else:
+    print(f"✓ Found {len(VARIANTS)} trained models: {', '.join(VARIANTS)}")
+
 CLASS_NAMES = ['Water', 'Trees', 'Crops', 'Shrub', 'Built', 'Bare']
 
 # New centralized paths

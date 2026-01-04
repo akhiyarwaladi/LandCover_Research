@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 """
-Train All ResNet Variants - Comprehensive Architecture Comparison
-==================================================================
+Train Multiple Model Architectures - Comprehensive Comparison
+==============================================================
 
-Trains ResNet18, ResNet34, ResNet101, ResNet152 for architecture comparison.
-ResNet50 is already trained - will be skipped.
+Trains diverse model architectures for land cover classification comparison:
+- ResNet50 (baseline)
+- EfficientNet-B3 (efficient compound scaling)
+- ConvNeXt-Tiny (modern CNN)
+- DenseNet-121 (dense connections)
+- Inception-V3 (multi-scale features)
 
-Each variant will:
+Each model will:
 1. Train on same dataset (80k train, 20k test)
 2. Save best model to models/
-3. Save training history to results/resnetXX/
-4. Save test results to results/resnetXX/
-5. Generate spatial predictions to results/resnetXX/
+3. Save training history to results/models/{model_name}/
+4. Save test results to results/models/{model_name}/
+
+Uses model factory for easy addition of new architectures.
 
 Author: Claude Sonnet 4.5
-Date: 2026-01-03
+Date: 2026-01-04
 """
 
 import sys
@@ -37,9 +42,11 @@ from modules.feature_engineering import calculate_spectral_indices, combine_band
 from modules.preprocessor import rasterize_klhk, prepare_training_data
 from modules.data_preparation import LandCoverPatchDataset
 from modules.dl_predictor import predict_spatial
+from modules.model_factory import create_model
+from modules.model_registry import get_model_info, RECOMMENDED_MODELS
 
 print("\n" + "="*80)
-print("TRAINING ALL RESNET VARIANTS")
+print("TRAINING MULTIPLE MODEL ARCHITECTURES")
 print("="*80)
 print(f"Start Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print("="*80)
@@ -48,16 +55,18 @@ print("="*80)
 # Configuration
 # ============================================================================
 
-# Variants to train (ResNet50 already trained, skip it)
-VARIANTS = ['resnet18', 'resnet34', 'resnet101', 'resnet152']
+# Models to train - use recommended models for research comparison
+# Comment/uncomment models as needed
+MODELS_TO_TRAIN = [
+    'resnet50',         # Baseline - already trained, will skip if exists
+    'efficientnet_b3',  # Efficient compound scaling
+    'convnext_tiny',    # Modern CNN (likely winner)
+    'densenet121',      # Lightweight dense connections
+    'inception_v3',     # Multi-scale feature extraction
+]
 
-# Architecture specs
-ARCH_SPECS = {
-    'resnet18': {'params': 11.7e6, 'depth': 18, 'expected_time_min': 15},
-    'resnet34': {'params': 21.8e6, 'depth': 34, 'expected_time_min': 20},
-    'resnet101': {'params': 44.5e6, 'depth': 101, 'expected_time_min': 45},
-    'resnet152': {'params': 60.2e6, 'depth': 152, 'expected_time_min': 60}
-}
+# Get architecture specs from model registry
+ARCH_SPECS = {model: get_model_info(model) for model in MODELS_TO_TRAIN}
 
 # Training config (same as ResNet50 for fair comparison)
 CONFIG = {
@@ -77,11 +86,11 @@ CONFIG = {
 
 print(f"\n🖥️  Device: {CONFIG['device']}")
 print(f"📊 Training samples: {CONFIG['sample_size']}")
-print(f"🔢 Variants to train: {len(VARIANTS)}")
-for variant in VARIANTS:
-    specs = ARCH_SPECS[variant]
-    print(f"   - {variant.upper()}: {specs['params']/1e6:.1f}M params, "
-          f"~{specs['expected_time_min']} min expected")
+print(f"🔢 Models to train: {len(MODELS_TO_TRAIN)}")
+for model_name in MODELS_TO_TRAIN:
+    specs = ARCH_SPECS[model_name]
+    print(f"   - {specs['display_name']}: {specs['params']/1e6:.1f}M params, "
+          f"{specs['family'].upper()} family")
 
 # ============================================================================
 # Load Data (once, reuse for all variants)
@@ -156,25 +165,25 @@ print(f"✓ Test set: {X_test.shape[0]:,} samples")
 # Training Function
 # ============================================================================
 
-def train_resnet_variant(variant_name, X_train, y_train, X_test, y_test,
-                         channel_means, channel_stds, config):
-    """Train a single ResNet variant."""
+def train_model(model_name, X_train, y_train, X_test, y_test,
+                channel_means, channel_stds, config):
+    """Train a single model (works with any architecture)."""
 
     print("\n" + "="*80)
-    print(f"TRAINING {variant_name.upper()}")
+    model_info = get_model_info(model_name)
+    print(f"TRAINING {model_info['display_name']} ({model_info['family'].upper()})")
     print("="*80)
 
     start_time = time.time()
-    specs = ARCH_SPECS[variant_name]
 
-    # Create output directories
+    # Create output directories (centralized structure)
     model_dir = 'models'
-    results_dir = f'results/{variant_name}'
+    results_dir = f'results/models/{model_name}'
     os.makedirs(model_dir, exist_ok=True)
     os.makedirs(results_dir, exist_ok=True)
 
     print(f"\n📁 Output:")
-    print(f"   Model: {model_dir}/{variant_name}_best.pth")
+    print(f"   Model: {model_dir}/{model_name}_best.pth")
     print(f"   Results: {results_dir}/")
 
     # Create datasets
@@ -198,36 +207,14 @@ def train_resnet_variant(variant_name, X_train, y_train, X_test, y_test,
     print(f"✓ Train batches: {len(train_loader)}")
     print(f"✓ Test batches: {len(test_loader)}")
 
-    # Create model
-    print(f"\n🏗️  Creating {variant_name} model...")
-    from torchvision import models
-
-    if variant_name == 'resnet18':
-        model = models.resnet18(pretrained=True)
-    elif variant_name == 'resnet34':
-        model = models.resnet34(pretrained=True)
-    elif variant_name == 'resnet101':
-        model = models.resnet101(pretrained=True)
-    elif variant_name == 'resnet152':
-        model = models.resnet152(pretrained=True)
-
-    # Modify first conv layer for 23 channels
-    model.conv1 = nn.Conv2d(
-        config['input_channels'], 64, kernel_size=7,
-        stride=2, padding=3, bias=False
+    # Create model using factory (handles all architectures automatically!)
+    model, _ = create_model(
+        model_name,
+        num_classes=config['num_classes'],
+        input_channels=config['input_channels'],
+        pretrained=True,  # Use ImageNet pretrained weights
+        device=config['device']
     )
-
-    # Modify final FC layer for 6 classes
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, config['num_classes'])
-
-    model = model.to(config['device'])
-
-    # Count parameters
-    total_params = sum(p.numel() for p in model.parameters())
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"✓ Total parameters: {total_params:,} ({total_params/1e6:.2f}M)")
-    print(f"✓ Trainable parameters: {trainable_params:,}")
 
     # Loss and optimizer
     criterion = nn.CrossEntropyLoss()
@@ -396,7 +383,7 @@ def train_resnet_variant(variant_name, X_train, y_train, X_test, y_test,
 
 all_summaries = []
 
-for i, variant in enumerate(VARIANTS, 1):
+for i, variant in enumerate(MODELS_TO_TRAIN, 1):
     print(f"\n\n{'#'*80}")
     print(f"# VARIANT {i}/{len(VARIANTS)}: {variant.upper()}")
     print(f"{'#'*80}")
@@ -417,15 +404,20 @@ for i, variant in enumerate(VARIANTS, 1):
 # ============================================================================
 
 print("\n\n" + "="*80)
-print("GENERATING SPATIAL PREDICTIONS FOR ALL VARIANTS")
+print("GENERATING SPATIAL PREDICTIONS FOR ALL MODELS")
 print("="*80)
 
-for variant in VARIANTS:
-    print(f"\n🗺️  Generating predictions for {variant.upper()}...")
+for model_name in MODELS_TO_TRAIN:
+    model_path = f'models/{model_name}_best.pth'
+    if not os.path.exists(model_path):
+        print(f"\n⏭️  Skipping {model_name} - model not trained")
+        continue
+
+    print(f"\n🗺️  Generating predictions for {ARCH_SPECS[model_name]['display_name']}...")
 
     try:
         predictions, results = predict_spatial(
-            model=f'models/{variant}_best.pth',
+            model=model_path,
             features=features,
             labels=klhk_raster,
             channel_means=channel_means,
@@ -480,17 +472,24 @@ total_time = sum(s['training_time_minutes'] for s in all_summaries)
 print(f"\n⏱️  Total Training Time: {total_time:.1f} minutes ({total_time/60:.2f} hours)")
 
 print(f"\n📁 Models saved to: models/")
-for variant in VARIANTS:
-    model_path = f'models/{variant}_best.pth'
+for model_name in MODELS_TO_TRAIN:
+    model_path = f'models/{model_name}_best.pth'
     if os.path.exists(model_path):
         size_mb = os.path.getsize(model_path) / (1024**2)
-        print(f"   ✓ {variant}_best.pth ({size_mb:.1f} MB)")
+        print(f"   ✓ {model_name}_best.pth ({size_mb:.1f} MB)")
 
 print(f"\n📁 Results saved to:")
-for variant in VARIANTS:
-    print(f"   ✓ results/{variant}/")
+for model_name in MODELS_TO_TRAIN:
+    results_dir = f'results/models/{model_name}'
+    if os.path.exists(results_dir):
+        print(f"   ✓ {results_dir}/")
 
 print("\n" + "="*80)
 print(f"End Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print("="*80)
-print("\n🎉 ALL DONE! Ready for architecture comparison!")
+print("\n🎉 ALL DONE! Ready for multi-architecture comparison!")
+print("\n📊 Next steps:")
+print("   1. Run scripts/generate_publication_comparison.py")
+print("   2. Run scripts/generate_statistical_analysis.py")
+print("   3. Compare results across all model families!")
+print("\n" + "="*80)
