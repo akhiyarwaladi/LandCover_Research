@@ -1,0 +1,12 @@
+{
+  "variant": "resnet50",
+  "parameters": 23583046,
+  "depth": 50,
+  "best_epoch": 29,
+  "best_val_acc": 0.79085,
+  "test_acc": 0.79085,
+  "f1_macro": 0.5725450273138686,
+  "f1_weighted": 0.7777600503862002,
+  "training_time_minutes": 44.29049473603566,
+  "timestamp": "2026-01-05 00:22:11"
+}
