@@ -41,34 +41,90 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ============================================================================
-# EXCEL FORMATTING FUNCTION
+# EXCEL FORMATTING FUNCTIONS - Professional Journal-Ready
 # ============================================================================
 
-def format_excel_table(file_path, header_row=1):
-    """Apply beautiful formatting to Excel file."""
+def format_excel_table(file_path, header_row=1, theme='professional', merge_column=None):
+    """
+    Apply professional journal-ready formatting to Excel file.
+
+    Args:
+        file_path: Path to Excel file
+        header_row: Row number containing headers (1-indexed)
+        theme: 'grayscale', 'professional', or 'minimal'
+        merge_column: Column index (1-indexed) to merge repeated values
+    """
     wb = load_workbook(file_path)
     ws = wb.active
 
-    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    header_font = Font(bold=True, color="FFFFFF", size=11)
-    border = Border(
+    # Professional journal-ready themes
+    themes = {
+        'grayscale': {
+            'header_fill': PatternFill(start_color="404040", end_color="404040", fill_type="solid"),
+            'header_font': Font(name='Calibri', bold=True, color="FFFFFF", size=11),
+            'alt_row_fill': PatternFill(start_color="F8F8F8", end_color="F8F8F8", fill_type="solid"),
+            'data_font': Font(name='Calibri', size=10)
+        },
+        'professional': {
+            'header_fill': PatternFill(start_color="2C3E50", end_color="2C3E50", fill_type="solid"),
+            'header_font': Font(name='Calibri', bold=True, color="FFFFFF", size=11),
+            'alt_row_fill': PatternFill(start_color="ECF0F1", end_color="ECF0F1", fill_type="solid"),
+            'data_font': Font(name='Calibri', size=10)
+        },
+        'minimal': {
+            'header_fill': PatternFill(start_color="E8E8E8", end_color="E8E8E8", fill_type="solid"),
+            'header_font': Font(name='Calibri', bold=True, color="000000", size=11),
+            'alt_row_fill': None,
+            'data_font': Font(name='Calibri', size=10)
+        }
+    }
+
+    theme_style = themes.get(theme, themes['professional'])
+
+    # Border styles
+    thin_border = Border(
         left=Side(style='thin'), right=Side(style='thin'),
         top=Side(style='thin'), bottom=Side(style='thin')
     )
+    thick_top_border = Border(
+        top=Side(style='medium'), left=Side(style='thin'),
+        right=Side(style='thin'), bottom=Side(style='thin')
+    )
 
+    # Apply formatting to all cells
     for row in ws.iter_rows():
         for cell in row:
-            cell.border = border
-            cell.alignment = Alignment(horizontal='center', vertical='center')
+            # Border
             if cell.row == header_row:
-                cell.fill = header_fill
-                cell.font = header_font
+                cell.border = thick_top_border
             else:
-                cell.font = Font(size=10)
+                cell.border = thin_border
+
+            # Alignment
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+
+            # Header row
+            if cell.row == header_row:
+                cell.fill = theme_style['header_fill']
+                cell.font = theme_style['header_font']
+            # Data rows
+            else:
+                cell.font = theme_style['data_font']
+                # Alternating row colors
+                if theme_style['alt_row_fill'] and cell.row % 2 == 0:
+                    cell.fill = theme_style['alt_row_fill']
+
+            # First column left-aligned and bold
             if cell.column == 1:
                 cell.alignment = Alignment(horizontal='left', vertical='center')
-                cell.font = Font(bold=True)
+                if cell.row != header_row:
+                    cell.font = Font(name='Calibri', bold=True, size=10)
 
+    # Merge repeated values in specified column
+    if merge_column:
+        merge_cells_by_value(ws, merge_column, header_row)
+
+    # Auto-adjust column widths
     for column in ws.columns:
         max_length = 0
         column_letter = get_column_letter(column[0].column)
@@ -78,10 +134,52 @@ def format_excel_table(file_path, header_row=1):
                     max_length = max(max_length, len(str(cell.value)))
             except:
                 pass
-        ws.column_dimensions[column_letter].width = min(max_length + 3, 50)
+        adjusted_width = min(max_length + 3, 40)
+        ws.column_dimensions[column_letter].width = adjusted_width
 
+    # Header row height
     ws.row_dimensions[header_row].height = 25
+
     wb.save(file_path)
+    print(f"✓ Formatted Excel ({theme}): {os.path.basename(file_path)}")
+
+
+def merge_cells_by_value(ws, column_idx, header_row):
+    """
+    Merge cells with same consecutive values in specified column.
+
+    Args:
+        ws: Worksheet object
+        column_idx: Column index (1-indexed)
+        header_row: Header row number (1-indexed)
+    """
+    from openpyxl.utils import get_column_letter
+
+    col_letter = get_column_letter(column_idx)
+    max_row = ws.max_row
+
+    start_row = header_row + 1
+    current_value = ws[f"{col_letter}{start_row}"].value
+    merge_start = start_row
+
+    for row in range(start_row + 1, max_row + 2):
+        if row <= max_row:
+            cell_value = ws[f"{col_letter}{row}"].value
+        else:
+            cell_value = None  # Trigger final merge
+
+        if cell_value != current_value:
+            # Merge cells if range > 1
+            if row - 1 > merge_start:
+                ws.merge_cells(f"{col_letter}{merge_start}:{col_letter}{row-1}")
+                # Center the merged cell vertically
+                ws[f"{col_letter}{merge_start}"].alignment = Alignment(
+                    horizontal='left', vertical='center'
+                )
+
+            # Start new merge group
+            merge_start = row
+            current_value = cell_value
 
 # ============================================================================
 # CONFIGURATION
@@ -202,7 +300,7 @@ for i, var1 in enumerate(VARIANTS):
 df_mcnemar = pd.DataFrame(mcnemar_results)
 mcnemar_path = os.path.join(TABLES_DIR, 'mcnemar_test_pairwise.xlsx')
 df_mcnemar.to_excel(mcnemar_path, index=False, sheet_name='McNemar Test')
-format_excel_table(mcnemar_path)
+format_excel_table(mcnemar_path, theme='professional')
 print(f"✓ McNemar pairwise tests: {mcnemar_path}")
 
 # Create p-value matrix visualization
@@ -267,7 +365,7 @@ for variant in VARIANTS:
 df_efficiency = pd.DataFrame(efficiency_data)
 efficiency_path = os.path.join(TABLES_DIR, 'computational_efficiency.xlsx')
 df_efficiency.to_excel(efficiency_path, index=False, sheet_name='Computational Efficiency')
-format_excel_table(efficiency_path)
+format_excel_table(efficiency_path, theme='professional')
 print(f"✓ Computational efficiency: {efficiency_path}")
 
 # ============================================================================
@@ -323,7 +421,7 @@ for variant in VARIANTS:
 df_accuracy = pd.DataFrame(accuracy_data)
 accuracy_path = os.path.join(TABLES_DIR, 'producer_user_accuracy.xlsx')
 df_accuracy.to_excel(accuracy_path, index=False, sheet_name='Producer-User Accuracy')
-format_excel_table(accuracy_path)
+format_excel_table(accuracy_path, theme='professional', merge_column=1)  # Merge Model column
 print(f"✓ Producer/User accuracy: {accuracy_path}")
 
 # ============================================================================
@@ -360,7 +458,7 @@ for variant in VARIANTS:
 df_errors = pd.DataFrame(error_data)
 errors_path = os.path.join(TABLES_DIR, 'omission_commission_errors.xlsx')
 df_errors.to_excel(errors_path, index=False, sheet_name='Error Analysis')
-format_excel_table(errors_path)
+format_excel_table(errors_path, theme='professional', merge_column=1)  # Merge Model column
 print(f"✓ Omission/Commission errors: {errors_path}")
 
 # ============================================================================
@@ -400,7 +498,7 @@ for variant in VARIANTS:
 df_kappa = pd.DataFrame(kappa_data)
 kappa_path = os.path.join(TABLES_DIR, 'kappa_analysis.xlsx')
 df_kappa.to_excel(kappa_path, index=False, sheet_name='Kappa Analysis')
-format_excel_table(kappa_path)
+format_excel_table(kappa_path, theme='professional')
 print(f"✓ Kappa analysis: {kappa_path}")
 
 # ============================================================================

@@ -28,48 +28,88 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 # ============================================================================
-# EXCEL FORMATTING FUNCTION
+# EXCEL FORMATTING FUNCTIONS
 # ============================================================================
 
-def format_excel_table(file_path, header_row=2):
+def format_excel_table(file_path, header_row=1, theme='grayscale', merge_column=None):
     """
-    Apply beautiful formatting to Excel file with auto-adjusted columns.
+    Apply professional journal-ready formatting to Excel file.
 
     Args:
         file_path: Path to Excel file
         header_row: Row number containing headers (1-indexed)
+        theme: 'grayscale', 'color', or 'minimal'
+        merge_column: Column index (1-indexed) to merge repeated values
     """
     wb = load_workbook(file_path)
     ws = wb.active
 
-    # Header styling
-    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    header_font = Font(bold=True, color="FFFFFF", size=11)
-    border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
+    # Professional journal-ready themes
+    themes = {
+        'grayscale': {
+            'header_fill': PatternFill(start_color="404040", end_color="404040", fill_type="solid"),
+            'header_font': Font(name='Calibri', bold=True, color="FFFFFF", size=11),
+            'alt_row_fill': PatternFill(start_color="F8F8F8", end_color="F8F8F8", fill_type="solid"),
+            'data_font': Font(name='Calibri', size=10)
+        },
+        'professional': {
+            'header_fill': PatternFill(start_color="2C3E50", end_color="2C3E50", fill_type="solid"),
+            'header_font': Font(name='Calibri', bold=True, color="FFFFFF", size=11),
+            'alt_row_fill': PatternFill(start_color="ECF0F1", end_color="ECF0F1", fill_type="solid"),
+            'data_font': Font(name='Calibri', size=10)
+        },
+        'minimal': {
+            'header_fill': PatternFill(start_color="E8E8E8", end_color="E8E8E8", fill_type="solid"),
+            'header_font': Font(name='Calibri', bold=True, color="000000", size=11),
+            'alt_row_fill': None,
+            'data_font': Font(name='Calibri', size=10)
+        }
+    }
+
+    theme_style = themes.get(theme, themes['grayscale'])
+
+    # Border styles
+    thin_border = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
+    thick_top_border = Border(
+        top=Side(style='medium'), left=Side(style='thin'),
+        right=Side(style='thin'), bottom=Side(style='thin')
     )
 
     # Apply formatting to all cells
     for row in ws.iter_rows():
         for cell in row:
-            cell.border = border
-            cell.alignment = Alignment(horizontal='center', vertical='center')
+            # Border
+            if cell.row == header_row:
+                cell.border = thick_top_border
+            else:
+                cell.border = thin_border
+
+            # Alignment
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
 
             # Header row
             if cell.row == header_row:
-                cell.fill = header_fill
-                cell.font = header_font
+                cell.fill = theme_style['header_fill']
+                cell.font = theme_style['header_font']
             # Data rows
             else:
-                cell.font = Font(size=10)
+                cell.font = theme_style['data_font']
+                # Alternating row colors
+                if theme_style['alt_row_fill'] and cell.row % 2 == 0:
+                    cell.fill = theme_style['alt_row_fill']
 
             # First column left-aligned and bold
             if cell.column == 1:
                 cell.alignment = Alignment(horizontal='left', vertical='center')
-                cell.font = Font(bold=True)
+                if cell.row != header_row:
+                    cell.font = Font(name='Calibri', bold=True, size=10)
+
+    # Merge repeated values in specified column
+    if merge_column:
+        merge_cells_by_value(ws, merge_column, header_row)
 
     # Auto-adjust column widths
     for column in ws.columns:
@@ -81,14 +121,52 @@ def format_excel_table(file_path, header_row=2):
                     max_length = max(max_length, len(str(cell.value)))
             except:
                 pass
-        adjusted_width = min(max_length + 3, 50)
+        adjusted_width = min(max_length + 3, 40)
         ws.column_dimensions[column_letter].width = adjusted_width
 
     # Header row height
     ws.row_dimensions[header_row].height = 25
 
     wb.save(file_path)
-    print(f"✓ Formatted Excel: {os.path.basename(file_path)}")
+    print(f"✓ Formatted Excel ({theme}): {os.path.basename(file_path)}")
+
+
+def merge_cells_by_value(ws, column_idx, header_row):
+    """
+    Merge cells with same consecutive values in specified column.
+
+    Args:
+        ws: Worksheet object
+        column_idx: Column index (1-indexed)
+        header_row: Header row number (1-indexed)
+    """
+    from openpyxl.utils import get_column_letter
+
+    col_letter = get_column_letter(column_idx)
+    max_row = ws.max_row
+
+    start_row = header_row + 1
+    current_value = ws[f"{col_letter}{start_row}"].value
+    merge_start = start_row
+
+    for row in range(start_row + 1, max_row + 2):
+        if row <= max_row:
+            cell_value = ws[f"{col_letter}{row}"].value
+        else:
+            cell_value = None  # Trigger final merge
+
+        if cell_value != current_value:
+            # Merge cells if range > 1
+            if row - 1 > merge_start:
+                ws.merge_cells(f"{col_letter}{merge_start}:{col_letter}{row-1}")
+                # Center the merged cell vertically
+                ws[f"{col_letter}{merge_start}"].alignment = Alignment(
+                    horizontal='left', vertical='center'
+                )
+
+            # Start new merge group
+            merge_start = row
+            current_value = cell_value
 
 # ============================================================================
 # CONFIGURATION
@@ -122,8 +200,8 @@ all_results = {}
 all_training = {}
 
 for variant in VARIANTS:
-    test_path = f'results/{variant}/test_results.npz'
-    train_path = f'results/{variant}/training_history.npz'
+    test_path = f'results/models/{variant}/test_results.npz'
+    train_path = f'results/models/{variant}/training_history.npz'
 
     if os.path.exists(test_path):
         data = np.load(test_path)
@@ -163,10 +241,10 @@ for variant in VARIANTS:
 
 df = pd.DataFrame(table_data)
 
-# Save as Excel with beautiful formatting
+# Save as Excel with professional formatting
 xlsx_path = os.path.join(TABLES_DIR, 'performance_table.xlsx')
 df.to_excel(xlsx_path, index=False, sheet_name='Performance Comparison')
-format_excel_table(xlsx_path, header_row=1)
+format_excel_table(xlsx_path, header_row=1, theme='professional')
 print(f"✓ Saved Excel: {xlsx_path}")
 
 # Save as LaTeX
@@ -276,15 +354,15 @@ plt.close()
 print(f"✓ Saved: {curves_path}")
 
 # ============================================================================
-# 4. PER-CLASS PERFORMANCE TABLES (Excel)
+# 4. PER-CLASS PERFORMANCE TABLES (Multiple Layouts)
 # ============================================================================
 
 print("\n" + "-"*80)
-print("4/4: Generating Per-Class Performance Tables")
+print("4/4: Generating Per-Class Performance Tables (Multiple Layouts)")
 print("-"*80)
 
-# Create detailed per-class table
-class_table_data = []
+# Create detailed per-class table data (keep numeric for pivoting)
+class_table_data_numeric = []
 for variant in VARIANTS:
     if variant not in all_results:
         continue
@@ -294,32 +372,64 @@ for variant in VARIANTS:
                                   target_names=CLASS_NAMES, output_dict=True)
 
     for cls in CLASS_NAMES:
-        class_table_data.append({
+        class_table_data_numeric.append({
             'Model': variant.upper(),
             'Class': cls,
-            'Precision': f"{report[cls]['precision']:.3f}",
-            'Recall': f"{report[cls]['recall']:.3f}",
-            'F1-Score': f"{report[cls]['f1-score']:.3f}",
+            'Precision': report[cls]['precision'],
+            'Recall': report[cls]['recall'],
+            'F1-Score': report[cls]['f1-score'],
             'Support': int(report[cls]['support'])
         })
 
-df_class = pd.DataFrame(class_table_data)
+df_class_numeric = pd.DataFrame(class_table_data_numeric)
 
-# Save as Excel with beautiful formatting
-class_xlsx_path = os.path.join(TABLES_DIR, 'per_class_performance.xlsx')
-df_class.to_excel(class_xlsx_path, index=False, sheet_name='Per-Class Performance')
-format_excel_table(class_xlsx_path, header_row=1)
-print(f"✓ Saved Excel: {class_xlsx_path}")
+# LAYOUT 1: Long format with merged cells (formatted for display)
+df_class_formatted = df_class_numeric.copy()
+df_class_formatted['Precision'] = df_class_formatted['Precision'].apply(lambda x: f"{x:.3f}")
+df_class_formatted['Recall'] = df_class_formatted['Recall'].apply(lambda x: f"{x:.3f}")
+df_class_formatted['F1-Score'] = df_class_formatted['F1-Score'].apply(lambda x: f"{x:.3f}")
 
-# Create pivot table for better visualization
-df_pivot = df_class.pivot_table(index='Class', columns='Model',
-                                 values='F1-Score', aggfunc='first')
+class_long_path = os.path.join(TABLES_DIR, 'per_class_detailed_long.xlsx')
+df_class_formatted.to_excel(class_long_path, index=False, sheet_name='Per-Class Performance')
+format_excel_table(class_long_path, header_row=1, theme='professional', merge_column=1)
+print(f"✓ Long format (merged): {os.path.basename(class_long_path)}")
 
-# Save pivot table as Excel
-pivot_path = os.path.join(TABLES_DIR, 'per_class_f1_pivot.xlsx')
-df_pivot.to_excel(pivot_path, sheet_name='F1-Score Pivot')
-format_excel_table(pivot_path, header_row=1)
-print(f"✓ Saved Excel pivot table: {pivot_path}")
+# LAYOUT 2: Transposed format for each metric (compact for journals)
+# Precision table (Classes as rows, Models as columns)
+df_precision = df_class_numeric.pivot_table(index='Class', columns='Model', values='Precision', aggfunc='first')
+precision_path = os.path.join(TABLES_DIR, 'per_class_precision_transposed.xlsx')
+df_precision.to_excel(precision_path, sheet_name='Precision by Class')
+format_excel_table(precision_path, header_row=1, theme='professional')
+print(f"✓ Precision transposed: {os.path.basename(precision_path)}")
+
+# Recall table
+df_recall = df_class_numeric.pivot_table(index='Class', columns='Model', values='Recall', aggfunc='first')
+recall_path = os.path.join(TABLES_DIR, 'per_class_recall_transposed.xlsx')
+df_recall.to_excel(recall_path, sheet_name='Recall by Class')
+format_excel_table(recall_path, header_row=1, theme='professional')
+print(f"✓ Recall transposed: {os.path.basename(recall_path)}")
+
+# F1-Score table
+df_f1 = df_class_numeric.pivot_table(index='Class', columns='Model', values='F1-Score', aggfunc='first')
+f1_path = os.path.join(TABLES_DIR, 'per_class_f1_transposed.xlsx')
+df_f1.to_excel(f1_path, sheet_name='F1-Score by Class')
+format_excel_table(f1_path, header_row=1, theme='professional')
+print(f"✓ F1-Score transposed: {os.path.basename(f1_path)}")
+
+# LAYOUT 3: Comprehensive transposed (all metrics, very compact)
+# Create multi-index for Class + Metric
+metrics_compact = []
+for metric in ['Precision', 'Recall', 'F1-Score']:
+    df_metric = df_class_numeric.pivot_table(index='Class', columns='Model', values=metric, aggfunc='first')
+    df_metric['Metric'] = metric
+    metrics_compact.append(df_metric)
+
+df_compact = pd.concat(metrics_compact)
+df_compact = df_compact.reset_index().set_index(['Class', 'Metric'])
+compact_path = os.path.join(TABLES_DIR, 'per_class_all_metrics_compact.xlsx')
+df_compact.to_excel(compact_path, sheet_name='All Metrics Compact')
+format_excel_table(compact_path, header_row=1, theme='professional')
+print(f"✓ All metrics compact: {os.path.basename(compact_path)}")
 
 # ============================================================================
 # SUMMARY
@@ -333,18 +443,30 @@ print(f"\n📁 Files saved to centralized structure:")
 print(f"  📊 Tables: {TABLES_DIR}/")
 print(f"  📈 Figures: results/figures/ (confusion_matrices/, training_curves/)")
 
-print("\n📊 TABLES (for exact numerical values):")
+print("\n📊 TABLES - Professional journal-ready formatting:")
+print("\nOverall Performance:")
 print("  1. performance_table.xlsx - Overall metrics (Accuracy, F1-Macro, F1-Weighted)")
 print("  2. performance_table.tex - LaTeX format (for journal submission)")
-print("  3. per_class_performance.xlsx - Detailed per-class Precision/Recall/F1")
-print("  4. per_class_f1_pivot.xlsx - Quick lookup matrix (Class × Model)")
+
+print("\nPer-Class Performance (Multiple Layouts):")
+print("  3. per_class_detailed_long.xlsx - Long format with merged cells (24 rows)")
+print("  4. per_class_precision_transposed.xlsx - Compact (6 classes × 4 models)")
+print("  5. per_class_recall_transposed.xlsx - Compact (6 classes × 4 models)")
+print("  6. per_class_f1_transposed.xlsx - Compact (6 classes × 4 models)")
+print("  7. per_class_all_metrics_compact.xlsx - Ultra-compact (all metrics, 18 rows)")
 
 print("\n📈 FIGURES (for patterns & relationships):")
-print("  5. confusion_matrices_all.png - ERROR PATTERNS (which classes confused)")
-print("  6. training_curves_comparison.png - CONVERGENCE (learning over time)")
+print("  8. confusion_matrices_all.png - ERROR PATTERNS (which classes confused)")
+print("  9. training_curves_comparison.png - CONVERGENCE (learning over time)")
+
+print("\n✨ Professional Theme:")
+print("  • Calibri font (journal standard)")
+print("  • Dark gray headers (#2C3E50)")
+print("  • Alternating row colors for readability")
+print("  • Merged cells for repeated model names")
+print("  • Transposed layouts fit journal page widths")
 
 print("\n✨ No redundancy - Tables show exact values, Figures show patterns!")
-print("✨ Excel tables: Auto-formatted, beautiful, ready for Microsoft Word!")
-print("✨ Figures: Publication-ready 300 DPI, unique visual information!")
+print("✨ Multiple layouts: Choose based on journal requirements!")
 
 print("\n" + "="*80)
