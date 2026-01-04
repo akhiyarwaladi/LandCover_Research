@@ -181,45 +181,12 @@ with open(latex_path, 'w') as f:
     f.write("\\end{table}\n")
 print(f"✓ Saved LaTeX: {latex_path}")
 
-# Create visual table
-fig, ax = plt.subplots(figsize=(10, 4))
-ax.axis('tight')
-ax.axis('off')
-
-table = ax.table(cellText=df.values, colLabels=df.columns,
-                cellLoc='center', loc='center',
-                colWidths=[0.3, 0.25, 0.25, 0.25])
-table.auto_set_font_size(False)
-table.set_fontsize(11)
-table.scale(1, 2)
-
-# Style header
-for i in range(len(df.columns)):
-    table[(0, i)].set_facecolor('#4472C4')
-    table[(0, i)].set_text_props(weight='bold', color='white')
-
-# Highlight best values
-best_acc_idx = df['Accuracy (%)'].astype(float).idxmax()
-best_f1m_idx = df['F1-Macro'].astype(float).idxmax()
-best_f1w_idx = df['F1-Weighted'].astype(float).idxmax()
-
-table[(best_acc_idx+1, 1)].set_facecolor('#C6E0B4')
-table[(best_f1m_idx+1, 2)].set_facecolor('#C6E0B4')
-table[(best_f1w_idx+1, 3)].set_facecolor('#C6E0B4')
-
-plt.title('ResNet Architecture Performance Comparison', fontsize=14, fontweight='bold', pad=20)
-plt.tight_layout()
-table_img_path = os.path.join(OUTPUT_DIR, 'performance_table.png')
-plt.savefig(table_img_path, dpi=300, bbox_inches='tight', facecolor='white')
-plt.close()
-print(f"✓ Saved image: {table_img_path}")
-
 # ============================================================================
-# 2. CONFUSION MATRICES (All 4 models)
+# 2. CONFUSION MATRICES (All 4 models) - UNIQUE: Shows error patterns
 # ============================================================================
 
 print("\n" + "-"*80)
-print("2/6: Generating Confusion Matrices")
+print("2/4: Generating Confusion Matrices (Error Pattern Analysis)")
 print("-"*80)
 
 fig, axes = plt.subplots(2, 2, figsize=(16, 14))
@@ -250,109 +217,11 @@ plt.close()
 print(f"✓ Saved: {cm_path}")
 
 # ============================================================================
-# 3. PER-CLASS F1 SCORES COMPARISON
+# 3. TRAINING CURVES - UNIQUE: Shows convergence over time
 # ============================================================================
 
 print("\n" + "-"*80)
-print("3/6: Generating Per-Class F1 Comparison")
-print("-"*80)
-
-# Calculate per-class F1 for each model
-per_class_f1 = {}
-for variant in VARIANTS:
-    if variant not in all_results:
-        continue
-
-    r = all_results[variant]
-    report = classification_report(r['targets'], r['predictions'],
-                                  target_names=CLASS_NAMES, output_dict=True)
-    per_class_f1[variant] = [report[cls]['f1-score'] for cls in CLASS_NAMES]
-
-# Create grouped bar chart
-x = np.arange(len(CLASS_NAMES))
-width = 0.2
-fig, ax = plt.subplots(figsize=(14, 6))
-
-for idx, (variant, f1_scores) in enumerate(per_class_f1.items()):
-    offset = width * (idx - 1.5)
-    bars = ax.bar(x + offset, f1_scores, width, label=variant.upper())
-
-    # Add value labels on bars
-    for bar in bars:
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2., height,
-                f'{height:.2f}',
-                ha='center', va='bottom', fontsize=8)
-
-ax.set_xlabel('Land Cover Class', fontsize=12, fontweight='bold')
-ax.set_ylabel('F1-Score', fontsize=12, fontweight='bold')
-ax.set_title('Per-Class F1-Score Comparison Across ResNet Architectures',
-             fontsize=14, fontweight='bold')
-ax.set_xticks(x)
-ax.set_xticklabels(CLASS_NAMES, fontsize=11)
-ax.legend(fontsize=10, loc='upper right')
-ax.grid(axis='y', alpha=0.3, linestyle='--')
-ax.set_ylim(0, 1.0)
-
-plt.tight_layout()
-f1_comp_path = os.path.join(OUTPUT_DIR, 'per_class_f1_comparison.png')
-plt.savefig(f1_comp_path, dpi=300, bbox_inches='tight', facecolor='white')
-plt.close()
-print(f"✓ Saved: {f1_comp_path}")
-
-# ============================================================================
-# 4. OVERALL METRICS BAR CHART
-# ============================================================================
-
-print("\n" + "-"*80)
-print("4/6: Generating Overall Metrics Comparison")
-print("-"*80)
-
-metrics = ['Accuracy', 'F1-Macro', 'F1-Weighted']
-fig, ax = plt.subplots(figsize=(12, 6))
-
-x = np.arange(len(VARIANTS))
-width = 0.25
-
-for idx, metric in enumerate(metrics):
-    if metric == 'Accuracy':
-        values = [all_results[v]['accuracy'] for v in VARIANTS if v in all_results]
-    elif metric == 'F1-Macro':
-        values = [all_results[v]['f1_macro'] for v in VARIANTS if v in all_results]
-    else:
-        values = [all_results[v]['f1_weighted'] for v in VARIANTS if v in all_results]
-
-    offset = width * (idx - 1)
-    bars = ax.bar(x + offset, values, width, label=metric)
-
-    # Add value labels
-    for bar in bars:
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2., height,
-                f'{height:.3f}',
-                ha='center', va='bottom', fontsize=9)
-
-ax.set_xlabel('Model Architecture', fontsize=12, fontweight='bold')
-ax.set_ylabel('Score', fontsize=12, fontweight='bold')
-ax.set_title('Overall Performance Metrics Comparison', fontsize=14, fontweight='bold')
-ax.set_xticks(x)
-ax.set_xticklabels([v.upper() for v in VARIANTS if v in all_results], fontsize=11)
-ax.legend(fontsize=10)
-ax.grid(axis='y', alpha=0.3, linestyle='--')
-ax.set_ylim(0, 1.0)
-
-plt.tight_layout()
-overall_path = os.path.join(OUTPUT_DIR, 'overall_metrics_comparison.png')
-plt.savefig(overall_path, dpi=300, bbox_inches='tight', facecolor='white')
-plt.close()
-print(f"✓ Saved: {overall_path}")
-
-# ============================================================================
-# 5. TRAINING CURVES COMPARISON
-# ============================================================================
-
-print("\n" + "-"*80)
-print("5/6: Generating Training Curves Comparison")
+print("3/4: Generating Training Curves (Convergence Analysis)")
 print("-"*80)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
@@ -401,11 +270,11 @@ plt.close()
 print(f"✓ Saved: {curves_path}")
 
 # ============================================================================
-# 6. PER-CLASS PERFORMANCE TABLE
+# 4. PER-CLASS PERFORMANCE TABLES (Excel)
 # ============================================================================
 
 print("\n" + "-"*80)
-print("6/6: Generating Per-Class Performance Table")
+print("4/4: Generating Per-Class Performance Tables")
 print("-"*80)
 
 # Create detailed per-class table
@@ -455,18 +324,18 @@ print("PUBLICATION COMPARISON COMPLETE!")
 print("="*80)
 
 print(f"\n📁 All files saved to: {OUTPUT_DIR}/")
-print("\n✓ Generated files:")
-print("  1. performance_table.xlsx - Overall metrics (Excel, auto-formatted)")
-print("  2. performance_table.tex - LaTeX table")
-print("  3. performance_table.png - Visual table")
-print("  4. confusion_matrices_all.png - 2x2 grid of confusion matrices")
-print("  5. per_class_f1_comparison.png - Grouped bar chart")
-print("  6. overall_metrics_comparison.png - Overall metrics bars")
-print("  7. training_curves_comparison.png - Training/validation curves")
-print("  8. per_class_performance.xlsx - Detailed per-class metrics (Excel)")
-print("  9. per_class_f1_pivot.xlsx - Pivot table of F1 scores (Excel)")
+print("\n📊 TABLES (for exact numerical values):")
+print("  1. performance_table.xlsx - Overall metrics (Accuracy, F1-Macro, F1-Weighted)")
+print("  2. performance_table.tex - LaTeX format (for journal submission)")
+print("  3. per_class_performance.xlsx - Detailed per-class Precision/Recall/F1")
+print("  4. per_class_f1_pivot.xlsx - Quick lookup matrix (Class × Model)")
 
-print("\n✨ All visualizations are publication-ready (300 DPI)!")
-print("✨ Tables are formatted for Microsoft Word and LaTeX!")
+print("\n📈 FIGURES (for patterns & relationships):")
+print("  5. confusion_matrices_all.png - ERROR PATTERNS (which classes confused)")
+print("  6. training_curves_comparison.png - CONVERGENCE (learning over time)")
+
+print("\n✨ No redundancy - Tables show exact values, Figures show patterns!")
+print("✨ Excel tables: Auto-formatted, beautiful, ready for Microsoft Word!")
+print("✨ Figures: Publication-ready 300 DPI, unique visual information!")
 
 print("\n" + "="*80)
