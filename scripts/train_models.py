@@ -28,11 +28,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
 import time
+import random
 from datetime import datetime
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -44,6 +45,45 @@ from modules.data_preparation import LandCoverPatchDataset, get_augmentation_tra
 from modules.dl_predictor import predict_spatial
 from modules.model_factory import create_model
 from modules.model_registry import get_model_info, RECOMMENDED_MODELS
+
+# ============================================================================
+# AUGMENTED DATASET CLASS (proven working pattern from ResNet training)
+# ============================================================================
+
+class AugmentedPatchDataset(Dataset):
+    """Dataset with data augmentation for training."""
+
+    def __init__(self, X, y, augment=False, flip_prob=0.5, rot_prob=0.5):
+        self.X = torch.FloatTensor(X)
+        self.y = torch.LongTensor(y)
+        self.augment = augment
+        self.flip_prob = flip_prob
+        self.rot_prob = rot_prob
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        patch = self.X[idx]
+        label = self.y[idx]
+
+        if self.augment:
+            # Random horizontal flip
+            if random.random() < self.flip_prob:
+                patch = torch.flip(patch, [2])
+            # Random vertical flip
+            if random.random() < self.flip_prob:
+                patch = torch.flip(patch, [1])
+            # Random rotation (90/180/270)
+            if random.random() < self.rot_prob:
+                k = random.randint(1, 3)
+                patch = torch.rot90(patch, k, [1, 2])
+
+        return patch, label
+
+# ============================================================================
+# MAIN TRAINING SCRIPT
+# ============================================================================
 
 print("\n" + "="*80)
 print("TRAINING MULTIPLE MODEL ARCHITECTURES")
@@ -123,6 +163,17 @@ indices = calculate_spectral_indices(sentinel2_bands, verbose=False)
 features = combine_bands_and_indices(sentinel2_bands, indices)
 print(f"✓ Total features: {features.shape[0]} bands")
 
+# Clean NaN/Inf values (CRITICAL - must be done BEFORE normalization!)
+print("\n🧹 Cleaning NaN/Inf values...")
+has_nan = np.isnan(features).any()
+has_inf = np.isinf(features).any()
+if has_nan or has_inf:
+    print(f"   Found NaN: {has_nan}, Inf: {has_inf}")
+    features = np.nan_to_num(features, nan=0.0, posinf=0.0, neginf=0.0)
+    print("   ✓ Replaced with 0")
+else:
+    print("   ✓ No NaN/Inf found")
+
 # Rasterize KLHK
 print("\n4/4 Rasterizing KLHK labels...")
 klhk_raster = rasterize_klhk(klhk_gdf, s2_profile, verbose=False)
@@ -142,18 +193,34 @@ X_patches, y_patches = extract_patches(
 )
 print(f"✓ Extracted patches: X={X_patches.shape}, y={y_patches.shape}")
 
-# Calculate normalization params (same for all models)
-print("\n📊 Calculating normalization parameters...")
-channel_means = X_patches.mean(axis=(0, 2, 3))
-channel_stds = X_patches.std(axis=(0, 2, 3))
-print(f"✓ Means shape: {channel_means.shape}")
-print(f"✓ Stds shape: {channel_stds.shape}")
+# Normalize EACH CHANNEL INDEPENDENTLY (proven working approach!)
+print("\n📊 Normalizing each channel independently...")
+n_samples, n_channels, height, width = X_patches.shape
+X_flat = X_patches.reshape(n_samples, n_channels, -1)
+
+for c in range(n_channels):
+    channel_data = X_flat[:, c, :].flatten()
+    mean = np.mean(channel_data)
+    std = np.std(channel_data)
+
+    # Avoid division by zero
+    if std < 1e-10:
+        std = 1.0
+
+    # Normalize this channel
+    X_patches[:, c, :, :] = (X_patches[:, c, :, :] - mean) / std
+
+    if c % 5 == 0 or c == n_channels - 1:
+        print(f"   Channel {c:2d}: mean={mean:8.4f}, std={std:8.4f}")
+
+X_normalized = X_patches
+print(f"✓ Normalized to X_normalized shape: {X_normalized.shape}")
 
 # Split train/test (same for all models)
 from sklearn.model_selection import train_test_split
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X_patches, y_patches,
+    X_normalized, y_patches,
     test_size=CONFIG['test_size'],
     random_state=CONFIG['random_state'],
     stratify=y_patches
@@ -165,9 +232,8 @@ print(f"✓ Test set: {X_test.shape[0]:,} samples")
 # Training Function
 # ============================================================================
 
-def train_model(model_name, X_train, y_train, X_test, y_test,
-                channel_means, channel_stds, config):
-    """Train a single model (works with any architecture)."""
+def train_model(model_name, X_train, y_train, X_test, y_test, config):
+    """Train a single model (works with any architecture using proven working approach)."""
 
     print("\n" + "="*80)
     model_info = get_model_info(model_name)
@@ -186,27 +252,14 @@ def train_model(model_name, X_train, y_train, X_test, y_test,
     print(f"   Model: {model_dir}/{model_name}_best.pth")
     print(f"   Results: {results_dir}/")
 
-    # Create datasets
+    # Create datasets (data already normalized!)
     print(f"\n📦 Creating datasets...")
 
-    # Normalize data using channel statistics
-    # Use a larger epsilon and clip to prevent NaN
-    X_train_norm = (X_train - channel_means[None, :, None, None]) / (channel_stds[None, :, None, None] + 1e-6)
-    X_test_norm = (X_test - channel_means[None, :, None, None]) / (channel_stds[None, :, None, None] + 1e-6)
-
-    # Clip extreme values to prevent NaN during training
-    X_train_norm = np.clip(X_train_norm, -10, 10)
-    X_test_norm = np.clip(X_test_norm, -10, 10)
-
-    # Get augmentation transforms
-    train_transform = get_augmentation_transforms('train')
-    test_transform = get_augmentation_transforms('test')
-
-    train_dataset = LandCoverPatchDataset(
-        X_train_norm, y_train, transform=train_transform, normalize=False
+    train_dataset = AugmentedPatchDataset(
+        X_train, y_train, augment=True, flip_prob=0.5, rot_prob=0.5
     )
-    test_dataset = LandCoverPatchDataset(
-        X_test_norm, y_test, transform=test_transform, normalize=False
+    test_dataset = AugmentedPatchDataset(
+        X_test, y_test, augment=False
     )
 
     train_loader = DataLoader(
@@ -410,8 +463,7 @@ for i, variant in enumerate(MODELS_TO_TRAIN, 1):
     print(f"{'#'*80}")
 
     summary = train_model(
-        variant, X_train, y_train, X_test, y_test,
-        channel_means, channel_stds, CONFIG
+        variant, X_train, y_train, X_test, y_test, CONFIG
     )
 
     all_summaries.append(summary)
