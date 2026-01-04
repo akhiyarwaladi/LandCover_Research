@@ -189,3 +189,243 @@ Epoch [13/30] Train Loss: 0.5865 Acc: 77.50% | Val Loss: 0.5909 Acc: 77.30% | Ti
 Epoch [14/30] Train Loss: 0.5836 Acc: 77.68% | Val Loss: 0.7521 Acc: 76.09% | Time: 179.6s 
 Epoch [15/30] Train Loss: 0.5801 Acc: 77.87% | Val Loss: 0.6323 Acc: 76.93% | Time: 178.3s 
 Epoch [16/30] Train Loss: 0.5748 Acc: 77.96% | Val Loss: 0.6100 Acc: 77.01% | Time: 181.5s 
+Epoch [17/30] Train Loss: 0.5720 Acc: 78.02% | Val Loss: 0.6946 Acc: 76.62% | Time: 178.2s 
+Epoch [18/30] Train Loss: 0.5685 Acc: 78.20% | Val Loss: 0.6588 Acc: 65.25% | Time: 180.2s 
+Epoch [19/30] Train Loss: 0.5667 Acc: 78.21% | Val Loss: 0.5876 Acc: 77.91% | Time: 169.6s 
+Epoch [20/30] Train Loss: 0.5655 Acc: 78.48% | Val Loss: 0.6449 Acc: 77.59% | Time: 173.6s 
+Epoch [21/30] Train Loss: 0.5606 Acc: 78.50% | Val Loss: 0.6450 Acc: 77.09% | Time: 158.7s 
+Epoch [22/30] Train Loss: 0.5607 Acc: 78.53% | Val Loss: 0.6375 Acc: 76.91% | Time: 160.0s 
+Epoch [23/30] Train Loss: 0.5566 Acc: 78.66% | Val Loss: 0.6674 Acc: 77.66% | Time: 160.4s 
+Epoch [24/30] Train Loss: 0.5557 Acc: 78.83% | Val Loss: 0.6123 Acc: 77.53% | Time: 156.1s 
+Epoch [25/30] Train Loss: 0.5513 Acc: 78.92% | Val Loss: 0.6216 Acc: 77.59% | Time: 165.8s 
+Epoch [26/30] Train Loss: 0.5468 Acc: 79.05% | Val Loss: 0.6051 Acc: 77.98% | Time: 162.0s ✓ BEST
+Epoch [27/30] Train Loss: 0.5459 Acc: 79.11% | Val Loss: 0.6743 Acc: 65.66% | Time: 164.9s 
+Epoch [28/30] Train Loss: 0.5462 Acc: 79.18% | Val Loss: 0.6353 Acc: 65.49% | Time: 170.2s 
+Epoch [29/30] Train Loss: 0.5431 Acc: 79.30% | Val Loss: 0.6151 Acc: 78.33% | Time: 159.7s ✓ BEST
+Epoch [30/30] Train Loss: 0.5399 Acc: 79.41% | Val Loss: 0.6007 Acc: 77.98% | Time: 159.4s 
+
+📊 Final evaluation (best model from epoch 29)...
+
+✅ Test Accuracy: 78.33%
+✅ F1-Score (Macro): 0.5342
+✅ F1-Score (Weighted): 0.7669
+
+⏱️  Training Time: 86.6 minutes
+📊 Best Epoch: 29
+📊 Best Val Acc: 78.33%
+
+✅ EFFICIENTNET_B3 COMPLETE!
+   Accuracy: 78.33%
+   Time: 86.6 minutes
+
+
+################################################################################
+# MODEL 3/5: CONVNEXT_TINY
+################################################################################
+
+================================================================================
+TRAINING ConvNeXt-Tiny (CONVNEXT)
+================================================================================
+
+📁 Output:
+   Model: models/convnext_tiny_best.pth
+   Results: results/models/convnext_tiny/
+
+📦 Creating datasets...
+✓ Train batches: 5000
+✓ Test batches: 1250
+
+🏗️  Creating ConvNeXt-Tiny...
+   Family: convnext
+   Pretrained: Yes (ImageNet)
+   Input: 23 channels → 6 classes
+   ✓ Total parameters: 27,855,462 (27.86M)
+   ✓ Trainable: 27,855,462 (27.86M)
+   ✓ Device: cuda
+
+🚀 Training for 30 epochs...
+Epoch [ 1/30] Train Loss: 0.7026 Acc: 73.16% | Val Loss: 0.6254 Acc: 75.59% | Time: 91.3s ✓ BEST
+Epoch [ 2/30] Train Loss: 0.6303 Acc: 75.83% | Val Loss: 0.6357 Acc: 76.21% | Time: 89.1s ✓ BEST
+Epoch [ 3/30] Train Loss: 0.6089 Acc: 76.50% | Val Loss: 0.5902 Acc: 76.89% | Time: 92.5s ✓ BEST
+Epoch [ 4/30] Train Loss: 0.5960 Acc: 76.97% | Val Loss: 0.5733 Acc: 77.84% | Time: 86.7s ✓ BEST
+Epoch [ 5/30] Train Loss: 0.5847 Acc: 77.29% | Val Loss: 0.5853 Acc: 77.74% | Time: 89.3s 
+Epoch [ 6/30] Train Loss: 0.5751 Acc: 77.75% | Val Loss: 0.5694 Acc: 78.14% | Time: 90.0s ✓ BEST
+Epoch [ 7/30] Train Loss: 0.5662 Acc: 78.09% | Val Loss: 0.5670 Acc: 78.02% | Time: 89.1s 
+Epoch [ 8/30] Train Loss: 0.5607 Acc: 78.31% | Val Loss: 0.5823 Acc: 77.69% | Time: 87.3s 
+Epoch [ 9/30] Train Loss: 0.5548 Acc: 78.56% | Val Loss: 0.5745 Acc: 78.25% | Time: 92.3s ✓ BEST
+Epoch [10/30] Train Loss: 0.5470 Acc: 78.74% | Val Loss: 0.5611 Acc: 78.49% | Time: 89.2s ✓ BEST
+Epoch [11/30] Train Loss: 0.5428 Acc: 78.94% | Val Loss: 0.5659 Acc: 78.34% | Time: 84.3s 
+Epoch [12/30] Train Loss: 0.5486 Acc: 78.97% | Val Loss: 0.5695 Acc: 78.42% | Time: 86.2s 
+Epoch [13/30] Train Loss: 0.5378 Acc: 79.31% | Val Loss: 0.5773 Acc: 78.14% | Time: 86.6s 
+Epoch [14/30] Train Loss: 0.5287 Acc: 79.57% | Val Loss: 0.5590 Acc: 78.72% | Time: 91.4s ✓ BEST
+Epoch [15/30] Train Loss: 0.5216 Acc: 79.83% | Val Loss: 0.5905 Acc: 78.29% | Time: 94.6s 
+Epoch [16/30] Train Loss: 0.5154 Acc: 79.98% | Val Loss: 0.5551 Acc: 78.81% | Time: 93.7s ✓ BEST
+Epoch [17/30] Train Loss: 0.5062 Acc: 80.35% | Val Loss: 0.5711 Acc: 78.55% | Time: 92.0s 
+Epoch [18/30] Train Loss: 0.5011 Acc: 80.68% | Val Loss: 0.5768 Acc: 78.42% | Time: 88.3s 
+Epoch [19/30] Train Loss: 0.4959 Acc: 80.85% | Val Loss: 0.5691 Acc: 78.82% | Time: 92.3s ✓ BEST
+Epoch [20/30] Train Loss: 0.4873 Acc: 81.25% | Val Loss: 0.5751 Acc: 79.14% | Time: 89.1s ✓ BEST
+Epoch [21/30] Train Loss: 0.4794 Acc: 81.55% | Val Loss: 0.6140 Acc: 78.52% | Time: 90.8s 
+Epoch [22/30] Train Loss: 0.4744 Acc: 81.78% | Val Loss: 0.6202 Acc: 78.41% | Time: 91.7s 
+Epoch [23/30] Train Loss: 0.4675 Acc: 82.10% | Val Loss: 0.6109 Acc: 78.30% | Time: 84.1s 
+Epoch [24/30] Train Loss: 0.4631 Acc: 82.26% | Val Loss: 0.6242 Acc: 77.86% | Time: 91.5s 
+Epoch [25/30] Train Loss: 0.4556 Acc: 82.59% | Val Loss: 0.6369 Acc: 78.64% | Time: 92.1s 
+Epoch [26/30] Train Loss: 0.4504 Acc: 82.84% | Val Loss: 0.6453 Acc: 78.03% | Time: 95.1s 
+Epoch [27/30] Train Loss: 0.4451 Acc: 83.09% | Val Loss: 0.6582 Acc: 78.82% | Time: 85.8s 
+Epoch [28/30] Train Loss: 0.4417 Acc: 83.22% | Val Loss: 0.6525 Acc: 78.55% | Time: 89.3s 
+Epoch [29/30] Train Loss: 0.4359 Acc: 83.57% | Val Loss: 0.6673 Acc: 78.52% | Time: 90.9s 
+Epoch [30/30] Train Loss: 0.4277 Acc: 83.90% | Val Loss: 0.7124 Acc: 78.66% | Time: 94.5s 
+
+📊 Final evaluation (best model from epoch 20)...
+
+✅ Test Accuracy: 79.14%
+✅ F1-Score (Macro): 0.5469
+✅ F1-Score (Weighted): 0.7785
+
+⏱️  Training Time: 45.1 minutes
+📊 Best Epoch: 20
+📊 Best Val Acc: 79.14%
+
+✅ CONVNEXT_TINY COMPLETE!
+   Accuracy: 79.14%
+   Time: 45.1 minutes
+
+
+################################################################################
+# MODEL 4/5: DENSENET121
+################################################################################
+
+================================================================================
+TRAINING DenseNet-121 (DENSENET)
+================================================================================
+
+📁 Output:
+   Model: models/densenet121_best.pth
+   Results: results/models/densenet121/
+
+📦 Creating datasets...
+✓ Train batches: 5000
+✓ Test batches: 1250
+
+🏗️  Creating DenseNet-121...
+   Family: densenet
+   Pretrained: Yes (ImageNet)
+   Input: 23 channels → 6 classes
+   ✓ Total parameters: 7,022,726 (7.02M)
+   ✓ Trainable: 7,022,726 (7.02M)
+   ✓ Device: cuda
+
+🚀 Training for 30 epochs...
+Epoch [ 1/30] Train Loss: 0.7266 Acc: 71.79% | Val Loss: 0.6345 Acc: 75.52% | Time: 205.3s ✓ BEST
+Epoch [ 2/30] Train Loss: 0.6587 Acc: 74.64% | Val Loss: 0.6176 Acc: 75.93% | Time: 209.7s ✓ BEST
+Epoch [ 3/30] Train Loss: 0.6328 Acc: 75.60% | Val Loss: 0.6196 Acc: 76.32% | Time: 204.4s ✓ BEST
+Epoch [ 4/30] Train Loss: 0.6174 Acc: 76.14% | Val Loss: 0.5930 Acc: 77.00% | Time: 198.9s ✓ BEST
+Epoch [ 5/30] Train Loss: 0.6082 Acc: 76.55% | Val Loss: 0.5815 Acc: 77.42% | Time: 197.7s ✓ BEST
+Epoch [ 6/30] Train Loss: 0.5970 Acc: 76.84% | Val Loss: 0.5942 Acc: 77.42% | Time: 194.7s 
+Epoch [ 7/30] Train Loss: 0.5919 Acc: 77.04% | Val Loss: 0.5729 Acc: 77.44% | Time: 202.2s ✓ BEST
+Epoch [ 8/30] Train Loss: 0.5848 Acc: 77.33% | Val Loss: 0.5690 Acc: 78.06% | Time: 198.8s ✓ BEST
+Epoch [ 9/30] Train Loss: 0.5815 Acc: 77.43% | Val Loss: 0.5637 Acc: 78.17% | Time: 210.4s ✓ BEST
+Epoch [10/30] Train Loss: 0.5768 Acc: 77.61% | Val Loss: 0.5656 Acc: 78.03% | Time: 196.0s 
+Epoch [11/30] Train Loss: 0.5737 Acc: 77.71% | Val Loss: 0.5609 Acc: 78.11% | Time: 194.0s 
+Epoch [12/30] Train Loss: 0.5676 Acc: 77.98% | Val Loss: 0.5557 Acc: 78.44% | Time: 191.3s ✓ BEST
+Epoch [13/30] Train Loss: 0.5633 Acc: 78.13% | Val Loss: 0.5685 Acc: 78.59% | Time: 203.6s ✓ BEST
+Epoch [14/30] Train Loss: 0.5636 Acc: 78.18% | Val Loss: 0.5533 Acc: 78.64% | Time: 208.2s ✓ BEST
+Epoch [15/30] Train Loss: 0.5573 Acc: 78.40% | Val Loss: 0.5553 Acc: 78.52% | Time: 201.3s 
+Epoch [16/30] Train Loss: 0.5551 Acc: 78.48% | Val Loss: 0.5650 Acc: 77.83% | Time: 198.2s 
+Epoch [17/30] Train Loss: 0.5520 Acc: 78.61% | Val Loss: 0.5635 Acc: 78.33% | Time: 216.9s 
+Epoch [18/30] Train Loss: 0.5497 Acc: 78.74% | Val Loss: 0.5850 Acc: 78.45% | Time: 194.9s 
+Epoch [19/30] Train Loss: 0.5451 Acc: 78.82% | Val Loss: 0.5541 Acc: 78.69% | Time: 212.3s ✓ BEST
+Epoch [20/30] Train Loss: 0.5424 Acc: 78.95% | Val Loss: 0.5679 Acc: 78.29% | Time: 200.9s 
+Epoch [21/30] Train Loss: 0.5420 Acc: 78.94% | Val Loss: 0.5597 Acc: 78.70% | Time: 206.7s ✓ BEST
+Epoch [22/30] Train Loss: 0.5387 Acc: 79.04% | Val Loss: 0.6049 Acc: 66.15% | Time: 220.2s 
+Epoch [23/30] Train Loss: 0.5356 Acc: 79.25% | Val Loss: 0.5830 Acc: 77.95% | Time: 195.4s 
+Epoch [24/30] Train Loss: 0.5335 Acc: 79.32% | Val Loss: 0.6072 Acc: 66.03% | Time: 199.9s 
+Epoch [25/30] Train Loss: 0.5327 Acc: 79.45% | Val Loss: 0.5520 Acc: 78.84% | Time: 220.0s ✓ BEST
+Epoch [26/30] Train Loss: 0.5307 Acc: 79.46% | Val Loss: 0.5759 Acc: 78.50% | Time: 205.9s 
+Epoch [27/30] Train Loss: 0.5272 Acc: 79.65% | Val Loss: 0.6351 Acc: 65.67% | Time: 202.0s 
+Epoch [28/30] Train Loss: 0.5244 Acc: 79.64% | Val Loss: 0.8574 Acc: 76.18% | Time: 208.3s 
+Epoch [29/30] Train Loss: 0.5214 Acc: 79.84% | Val Loss: 0.6100 Acc: 66.14% | Time: 217.3s 
+Epoch [30/30] Train Loss: 0.5185 Acc: 79.91% | Val Loss: 0.5686 Acc: 78.23% | Time: 199.3s 
+
+📊 Final evaluation (best model from epoch 25)...
+
+✅ Test Accuracy: 78.84%
+✅ F1-Score (Macro): 0.5390
+✅ F1-Score (Weighted): 0.7751
+
+⏱️  Training Time: 102.1 minutes
+📊 Best Epoch: 25
+📊 Best Val Acc: 78.84%
+
+✅ DENSENET121 COMPLETE!
+   Accuracy: 78.84%
+   Time: 102.1 minutes
+
+
+################################################################################
+# MODEL 5/5: INCEPTION_V3
+################################################################################
+
+================================================================================
+TRAINING Inception-V3 (INCEPTION)
+================================================================================
+
+📁 Output:
+   Model: models/inception_v3_best.pth
+   Results: results/models/inception_v3/
+
+📦 Creating datasets...
+✓ Train batches: 5000
+✓ Test batches: 1250
+
+🏗️  Creating Inception-V3...
+   Family: inception
+   Pretrained: Yes (ImageNet)
+   Input: 23 channels → 6 classes
+Downloading: "https://download.pytorch.org/models/inception_v3_google-0cc3c7bd.pth" to C:\Users\MyPC PRO/.cache\torch\hub\checkpoints\inception_v3_google-0cc3c7bd.pth
+  0%|          | 0.00/104M [00:00<?, ?B/s]  0%|          | 384k/104M [00:00<00:31, 3.48MB/s]  1%|▏         | 1.50M/104M [00:00<00:13, 8.08MB/s]  3%|▎         | 2.75M/104M [00:00<00:10, 9.86MB/s]  4%|▍         | 4.00M/104M [00:00<00:09, 10.7MB/s]  5%|▍         | 5.12M/104M [00:00<00:09, 11.0MB/s]  6%|▌         | 6.38M/104M [00:00<00:09, 11.3MB/s]  7%|▋         | 7.62M/104M [00:00<00:08, 11.5MB/s]  9%|▊         | 8.88M/104M [00:00<00:08, 11.6MB/s] 10%|▉         | 10.1M/104M [00:00<00:08, 11.7MB/s] 11%|█         | 11.4M/104M [00:01<00:08, 11.7MB/s] 12%|█▏        | 12.6M/104M [00:01<00:08, 11.8MB/s] 13%|█▎        | 13.8M/104M [00:01<00:08, 11.8MB/s] 14%|█▍        | 15.0M/104M [00:01<00:07, 11.8MB/s] 16%|█▌        | 16.2M/104M [00:01<00:08, 11.3MB/s] 17%|█▋        | 17.4M/104M [00:01<00:08, 11.0MB/s] 18%|█▊        | 18.5M/104M [00:01<00:08, 10.8MB/s] 19%|█▉        | 19.6M/104M [00:01<00:08, 10.6MB/s] 20%|█▉        | 20.8M/104M [00:01<00:08, 10.5MB/s] 21%|██        | 21.9M/104M [00:02<00:08, 10.4MB/s] 22%|██▏       | 22.9M/104M [00:02<00:08, 10.4MB/s] 23%|██▎       | 23.9M/104M [00:02<00:08, 10.3MB/s] 24%|██▍       | 24.9M/104M [00:02<00:07, 10.4MB/s] 25%|██▍       | 25.9M/104M [00:02<00:07, 10.3MB/s] 26%|██▌       | 26.9M/104M [00:02<00:07, 10.3MB/s] 27%|██▋       | 27.9M/104M [00:02<00:07, 10.3MB/s] 28%|██▊       | 28.9M/104M [00:02<00:07, 10.2MB/s] 29%|██▉       | 29.9M/104M [00:02<00:07, 10.3MB/s] 30%|██▉       | 30.9M/104M [00:03<00:07, 10.3MB/s] 31%|███       | 31.9M/104M [00:03<00:07, 10.3MB/s] 32%|███▏      | 32.9M/104M [00:03<00:07, 10.3MB/s] 33%|███▎      | 33.9M/104M [00:03<00:07, 10.3MB/s] 34%|███▎      | 34.9M/104M [00:03<00:07, 10.3MB/s] 35%|███▍      | 35.9M/104M [00:03<00:06, 10.2MB/s] 36%|███▌      | 37.0M/104M [00:03<00:06, 10.3MB/s] 37%|███▋      | 38.0M/104M [00:03<00:06, 10.3MB/s] 38%|███▊      | 39.0M/104M [00:03<00:06, 10.3MB/s] 38%|███▊      | 40.0M/104M [00:03<00:06, 10.3MB/s] 39%|███▉      | 41.0M/104M [00:04<00:06, 10.2MB/s] 40%|████      | 42.0M/104M [00:04<00:06, 10.3MB/s] 41%|████▏     | 43.0M/104M [00:04<00:06, 10.2MB/s] 42%|████▏     | 44.0M/104M [00:04<00:06, 10.3MB/s] 43%|████▎     | 45.0M/104M [00:04<00:06, 10.2MB/s] 44%|████▍     | 46.0M/104M [00:04<00:05, 10.2MB/s] 45%|████▌     | 47.0M/104M [00:04<00:05, 10.3MB/s] 46%|████▌     | 48.0M/104M [00:04<00:05, 10.2MB/s] 47%|████▋     | 49.0M/104M [00:04<00:05, 10.3MB/s] 48%|████▊     | 50.0M/104M [00:04<00:05, 10.2MB/s] 49%|████▉     | 51.0M/104M [00:05<00:05, 10.1MB/s] 50%|█████     | 52.0M/104M [00:05<00:05, 10.1MB/s] 51%|█████     | 53.0M/104M [00:05<00:05, 10.2MB/s] 52%|█████▏    | 54.0M/104M [00:05<00:05, 10.2MB/s] 53%|█████▎    | 55.0M/104M [00:05<00:05, 10.2MB/s] 54%|█████▍    | 56.0M/104M [00:05<00:04, 10.2MB/s] 55%|█████▍    | 57.0M/104M [00:05<00:04, 10.2MB/s] 56%|█████▌    | 58.0M/104M [00:05<00:04, 10.2MB/s] 57%|█████▋    | 59.0M/104M [00:05<00:04, 10.2MB/s] 58%|█████▊    | 60.0M/104M [00:06<00:04, 10.2MB/s] 59%|█████▊    | 61.0M/104M [00:06<00:04, 10.2MB/s] 60%|█████▉    | 62.0M/104M [00:06<00:04, 10.3MB/s] 61%|██████    | 63.0M/104M [00:06<00:04, 10.3MB/s] 62%|██████▏   | 64.0M/104M [00:06<00:04, 10.3MB/s] 63%|██████▎   | 65.0M/104M [00:06<00:03, 10.2MB/s] 64%|██████▎   | 66.0M/104M [00:06<00:03, 10.3MB/s] 64%|██████▍   | 67.0M/104M [00:06<00:03, 10.2MB/s] 65%|██████▌   | 68.0M/104M [00:06<00:03, 10.3MB/s] 66%|██████▋   | 69.0M/104M [00:06<00:03, 10.3MB/s] 67%|██████▋   | 70.0M/104M [00:07<00:03, 10.2MB/s] 68%|██████▊   | 71.0M/104M [00:07<00:03, 10.3MB/s] 69%|██████▉   | 72.0M/104M [00:07<00:03, 10.3MB/s] 70%|███████   | 73.0M/104M [00:07<00:03, 10.3MB/s] 71%|███████   | 74.0M/104M [00:07<00:03, 10.2MB/s] 72%|███████▏  | 75.0M/104M [00:07<00:02, 10.2MB/s] 73%|███████▎  | 76.0M/104M [00:07<00:02, 10.2MB/s] 74%|███████▍  | 77.0M/104M [00:07<00:02, 10.3MB/s] 75%|███████▌  | 78.0M/104M [00:07<00:02, 10.2MB/s] 76%|███████▌  | 79.0M/104M [00:07<00:02, 10.2MB/s] 77%|███████▋  | 80.0M/104M [00:08<00:02, 10.3MB/s] 78%|███████▊  | 81.0M/104M [00:08<00:02, 10.3MB/s] 79%|███████▉  | 82.0M/104M [00:08<00:02, 10.3MB/s] 80%|███████▉  | 83.0M/104M [00:08<00:02, 10.3MB/s] 81%|████████  | 84.0M/104M [00:08<00:02, 10.3MB/s] 82%|████████▏ | 85.0M/104M [00:08<00:01, 10.2MB/s] 83%|████████▎ | 86.0M/104M [00:08<00:01, 10.3MB/s] 84%|████████▎ | 87.0M/104M [00:08<00:01, 10.2MB/s] 85%|████████▍ | 88.0M/104M [00:08<00:01, 10.3MB/s] 86%|████████▌ | 89.0M/104M [00:08<00:01, 10.2MB/s] 87%|████████▋ | 90.0M/104M [00:09<00:01, 10.3MB/s] 88%|████████▊ | 91.0M/104M [00:09<00:01, 10.3MB/s] 89%|████████▊ | 92.0M/104M [00:09<00:01, 10.2MB/s] 90%|████████▉ | 93.0M/104M [00:09<00:01, 10.2MB/s] 90%|█████████ | 94.0M/104M [00:09<00:01, 10.3MB/s] 91%|█████████▏| 95.0M/104M [00:09<00:00, 10.2MB/s] 92%|█████████▏| 96.0M/104M [00:09<00:00, 10.3MB/s] 93%|█████████▎| 97.0M/104M [00:09<00:00, 10.2MB/s] 94%|█████████▍| 98.0M/104M [00:09<00:00, 10.3MB/s] 95%|█████████▌| 99.0M/104M [00:10<00:00, 10.2MB/s] 96%|█████████▌| 100M/104M [00:10<00:00, 10.3MB/s]  97%|█████████▋| 101M/104M [00:10<00:00, 5.74MB/s] 98%|█████████▊| 102M/104M [00:10<00:00, 6.87MB/s] 99%|█████████▉| 103M/104M [00:10<00:00, 7.91MB/s]100%|██████████| 104M/104M [00:10<00:00, 10.2MB/s]
+   ✓ Total parameters: 24,365,932 (24.37M)
+   ✓ Trainable: 24,365,932 (24.37M)
+   ✓ Device: cuda
+
+🚀 Training for 30 epochs...
+Traceback (most recent call last):
+  File "C:\Users\MyPC PRO\Documents\LandCover_Research\scripts\train_models.py", line 465, in <module>
+    summary = train_model(
+              ^^^^^^^^^^^^
+  File "C:\Users\MyPC PRO\Documents\LandCover_Research\scripts\train_models.py", line 318, in train_model
+    outputs = model(inputs)
+              ^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torch\nn\modules\module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torch\nn\modules\module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torchvision\models\inception.py", line 166, in forward
+    x, aux = self._forward(x)
+             ^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torchvision\models\inception.py", line 105, in _forward
+    x = self.Conv2d_1a_3x3(x)
+        ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torch\nn\modules\module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torch\nn\modules\module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torchvision\models\inception.py", line 405, in forward
+    x = self.conv(x)
+        ^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torch\nn\modules\module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torch\nn\modules\module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torch\nn\modules\conv.py", line 554, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\envs\landcover_jambi\Lib\site-packages\torch\nn\modules\conv.py", line 549, in _conv_forward
+    return F.conv2d(
+           ^^^^^^^^^
+RuntimeError: Given groups=1, weight of size [32, 23, 3, 3], expected input[16, 3, 32, 32] to have 23 channels, but got 3 channels instead
