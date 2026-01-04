@@ -299,7 +299,7 @@ def train_model(model_name, X_train, y_train, X_test, y_test,
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             best_epoch = epoch + 1
-            torch.save(model.state_dict(), f'{model_dir}/{variant_name}_best.pth')
+            torch.save(model.state_dict(), f'{model_dir}/{model_name}_best.pth')
 
         epoch_time = time.time() - epoch_start
 
@@ -320,7 +320,7 @@ def train_model(model_name, X_train, y_train, X_test, y_test,
 
     # Final evaluation on test set with best model
     print(f"\n📊 Final evaluation (best model from epoch {best_epoch})...")
-    model.load_state_dict(torch.load(f'{model_dir}/{variant_name}_best.pth'))
+    model.load_state_dict(torch.load(f'{model_dir}/{model_name}_best.pth'))
     model.eval()
 
     all_preds = []
@@ -368,7 +368,7 @@ def train_model(model_name, X_train, y_train, X_test, y_test,
 
     # Save summary
     summary = {
-        'variant': variant_name,
+        'variant': model_name,
         'parameters': total_params,
         'depth': specs['depth'],
         'best_epoch': best_epoch,
