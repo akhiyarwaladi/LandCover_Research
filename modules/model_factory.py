@@ -126,14 +126,12 @@ def _create_resnet(model_name, num_classes, input_channels, pretrained):
             kernel_size=7, stride=2, padding=3, bias=False
         )
 
-        # Initialize new channels randomly, copy RGB weights if pretrained
+        # Initialize using PROVEN working approach (avg RGB, repeat for all channels)
         if pretrained:
             with torch.no_grad():
-                # Copy first 3 channels from pretrained weights
-                model.conv1.weight[:, :3, :, :] = original_conv.weight
-                # Initialize remaining channels randomly
-                nn.init.kaiming_normal_(model.conv1.weight[:, 3:, :, :],
-                                       mode='fan_out', nonlinearity='relu')
+                weight = original_conv.weight.data  # (64, 3, 7, 7)
+                # Average across RGB channels, then repeat for all 23 channels
+                model.conv1.weight.data = weight.mean(dim=1, keepdim=True).repeat(1, input_channels, 1, 1)
 
     # Adapt final FC layer for num_classes
     num_ftrs = model.fc.in_features
@@ -219,14 +217,11 @@ def _create_densenet(model_name, num_classes, input_channels, pretrained):
             kernel_size=7, stride=2, padding=3, bias=False
         )
 
-        # Initialize new channels
+        # Initialize using PROVEN working approach (avg RGB, repeat)
         if pretrained:
             with torch.no_grad():
-                # Copy first 3 channels from pretrained weights
-                model.features.conv0.weight[:, :3, :, :] = original_conv.weight
-                # Initialize remaining channels randomly
-                nn.init.kaiming_normal_(model.features.conv0.weight[:, 3:, :, :],
-                                       mode='fan_out', nonlinearity='relu')
+                weight = original_conv.weight.data
+                model.features.conv0.weight.data = weight.mean(dim=1, keepdim=True).repeat(1, input_channels, 1, 1)
 
     # Adapt final FC layer for num_classes
     num_ftrs = model.classifier.in_features
@@ -255,14 +250,11 @@ def _create_inception(model_name, num_classes, input_channels, pretrained):
             kernel_size=3, stride=2, bias=False
         )
 
-        # Initialize new channels
+        # Initialize using PROVEN working approach (avg RGB, repeat)
         if pretrained:
             with torch.no_grad():
-                # Copy first 3 channels from pretrained weights
-                model.Conv2d_1a_3x3.conv.weight[:, :3, :, :] = original_conv.weight
-                # Initialize remaining channels randomly
-                nn.init.kaiming_normal_(model.Conv2d_1a_3x3.conv.weight[:, 3:, :, :],
-                                       mode='fan_out', nonlinearity='relu')
+                weight = original_conv.weight.data
+                model.Conv2d_1a_3x3.conv.weight.data = weight.mean(dim=1, keepdim=True).repeat(1, input_channels, 1, 1)
 
     # Adapt final FC layer for num_classes
     num_ftrs = model.fc.in_features
