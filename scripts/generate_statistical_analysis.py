@@ -210,7 +210,7 @@ print("-"*80)
 
 all_results = {}
 for variant in VARIANTS:
-    test_path = f'results/{variant}/test_results.npz'
+    test_path = f'results/models/{variant}/test_results.npz'
     if os.path.exists(test_path):
         data = np.load(test_path)
         all_results[variant] = {
