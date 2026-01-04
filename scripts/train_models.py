@@ -190,8 +190,13 @@ def train_model(model_name, X_train, y_train, X_test, y_test,
     print(f"\n📦 Creating datasets...")
 
     # Normalize data using channel statistics
-    X_train_norm = (X_train - channel_means[None, :, None, None]) / (channel_stds[None, :, None, None] + 1e-8)
-    X_test_norm = (X_test - channel_means[None, :, None, None]) / (channel_stds[None, :, None, None] + 1e-8)
+    # Use a larger epsilon and clip to prevent NaN
+    X_train_norm = (X_train - channel_means[None, :, None, None]) / (channel_stds[None, :, None, None] + 1e-6)
+    X_test_norm = (X_test - channel_means[None, :, None, None]) / (channel_stds[None, :, None, None] + 1e-6)
+
+    # Clip extreme values to prevent NaN during training
+    X_train_norm = np.clip(X_train_norm, -10, 10)
+    X_test_norm = np.clip(X_test_norm, -10, 10)
 
     # Get augmentation transforms
     train_transform = get_augmentation_transforms('train')
@@ -217,13 +222,16 @@ def train_model(model_name, X_train, y_train, X_test, y_test,
     print(f"✓ Test batches: {len(test_loader)}")
 
     # Create model using factory (handles all architectures automatically!)
-    model, _ = create_model(
+    model, specs = create_model(
         model_name,
         num_classes=config['num_classes'],
         input_channels=config['input_channels'],
         pretrained=True,  # Use ImageNet pretrained weights
         device=config['device']
     )
+
+    # Calculate total parameters
+    total_params = sum(p.numel() for p in model.parameters())
 
     # Loss and optimizer
     criterion = nn.CrossEntropyLoss()
@@ -257,6 +265,10 @@ def train_model(model_name, X_train, y_train, X_test, y_test,
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
+
+            # Clip gradients to prevent exploding gradients
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
             optimizer.step()
 
             train_loss += loss.item()
