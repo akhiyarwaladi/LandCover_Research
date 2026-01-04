@@ -372,16 +372,16 @@ def train_model(model_name, X_train, y_train, X_test, y_test, config):
               f"Train Loss: {train_loss:.4f} Acc: {train_acc*100:.2f}% | "
               f"Val Loss: {val_loss:.4f} Acc: {val_acc*100:.2f}% | "
               f"Time: {epoch_time:.1f}s "
-              f"{'✓ BEST' if epoch+1 == best_epoch else ''}")
+              f"{'✓ BEST' if epoch+1 == best_epoch else ''}", flush=True)
 
-    # Save training history
-    np.savez(
-        f'{results_dir}/training_history.npz',
-        train_loss=history['train_loss'],
-        train_acc=history['train_acc'],
-        val_loss=history['val_loss'],
-        val_acc=history['val_acc']
-    )
+        # Save training history incrementally (after each epoch for real-time monitoring)
+        np.savez(
+            f'{results_dir}/training_history.npz',
+            train_loss=history['train_loss'],
+            train_acc=history['train_acc'],
+            val_loss=history['val_loss'],
+            val_acc=history['val_acc']
+        )
 
     # Final evaluation on test set with best model
     print(f"\n📊 Final evaluation (best model from epoch {best_epoch})...")
