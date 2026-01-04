@@ -291,8 +291,8 @@ for i, var1 in enumerate(VARIANTS):
         mcnemar_results.append({
             'Model 1': var1.upper(),
             'Model 2': var2.upper(),
-            'Chi-squared': f"{stat:.4f}",
-            'p-value': f"{p_val:.4f}",
+            'Chi-squared': f"{stat:.3f}",
+            'p-value': f"{p_val:.3f}",
             'Significance': sig
         })
 
@@ -306,7 +306,7 @@ print(f"✓ McNemar pairwise tests: {mcnemar_path}")
 # Create p-value matrix visualization
 fig, ax = plt.subplots(figsize=(10, 8))
 mask = np.triu(np.ones_like(p_value_matrix, dtype=bool))
-sns.heatmap(p_value_matrix, annot=True, fmt='.4f', cmap='RdYlGn_r',
+sns.heatmap(p_value_matrix, annot=True, fmt='.3f', cmap='RdYlGn_r',
             xticklabels=[v.upper() for v in VARIANTS],
             yticklabels=[v.upper() for v in VARIANTS],
             mask=mask, ax=ax, cbar_kws={'label': 'p-value'},
@@ -357,9 +357,9 @@ for variant in VARIANTS:
         'Parameters (M)': f"{specs.get('params', 0)/1e6:.1f}",
         'FLOPs (G)': f"{specs.get('flops', 0)/1e9:.1f}",
         'Epochs Trained': epochs,
-        'Accuracy (%)': f"{all_results[variant]['accuracy']*100:.2f}",
-        'F1-Macro': f"{all_results[variant]['f1_macro']:.4f}",
-        'Params/Accuracy': f"{specs.get('params', 0)/all_results[variant]['accuracy']/1e6:.2f}"
+        'Accuracy (%)': f"{all_results[variant]['accuracy']*100:.3f}",
+        'F1-Macro': f"{all_results[variant]['f1_macro']:.3f}",
+        'Params/Accuracy': f"{specs.get('params', 0)/all_results[variant]['accuracy']/1e6:.3f}"
     })
 
 df_efficiency = pd.DataFrame(efficiency_data)
@@ -413,9 +413,9 @@ for variant in VARIANTS:
         accuracy_data.append({
             'Model': variant.upper(),
             'Class': class_name,
-            'Producer Accuracy (%)': f"{prod_acc[i]*100:.2f}",
-            'User Accuracy (%)': f"{user_acc[i]*100:.2f}",
-            'Difference (%)': f"{abs(prod_acc[i] - user_acc[i])*100:.2f}"
+            'Producer Accuracy (%)': f"{prod_acc[i]*100:.3f}",
+            'User Accuracy (%)': f"{user_acc[i]*100:.3f}",
+            'Difference (%)': f"{abs(prod_acc[i] - user_acc[i])*100:.3f}"
         })
 
 df_accuracy = pd.DataFrame(accuracy_data)
@@ -450,9 +450,9 @@ for variant in VARIANTS:
         error_data.append({
             'Model': variant.upper(),
             'Class': class_name,
-            'Omission Error (%)': f"{omission*100:.2f}",
-            'Commission Error (%)': f"{commission*100:.2f}",
-            'Total Error (%)': f"{(omission + commission)*50:.2f}"
+            'Omission Error (%)': f"{omission*100:.3f}",
+            'Commission Error (%)': f"{commission*100:.3f}",
+            'Total Error (%)': f"{(omission + commission)*50:.3f}"
         })
 
 df_errors = pd.DataFrame(error_data)
@@ -490,8 +490,8 @@ for variant in VARIANTS:
 
     kappa_data.append({
         'Model': variant.upper(),
-        'Overall Accuracy (%)': f"{r['accuracy']*100:.2f}",
-        'Kappa Coefficient': f"{kappa:.4f}",
+        'Overall Accuracy (%)': f"{r['accuracy']*100:.3f}",
+        'Kappa Coefficient': f"{kappa:.3f}",
         'Interpretation': interpretation
     })
 

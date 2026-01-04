@@ -212,7 +212,7 @@ for variant in VARIANTS:
             'f1_macro': float(data['f1_macro']),
             'f1_weighted': float(data['f1_weighted'])
         }
-        print(f"✓ {variant}: Acc={data['accuracy']:.4f}, F1={data['f1_macro']:.4f}")
+        print(f"✓ {variant}: Acc={data['accuracy']:.3f}, F1={data['f1_macro']:.3f}")
     else:
         print(f"⚠️  {variant}: test_results.npz not found")
 
@@ -234,9 +234,9 @@ for variant in VARIANTS:
         r = all_results[variant]
         table_data.append({
             'Model': variant.upper(),
-            'Accuracy (%)': f"{r['accuracy']*100:.2f}",
-            'F1-Macro': f"{r['f1_macro']:.4f}",
-            'F1-Weighted': f"{r['f1_weighted']:.4f}"
+            'Accuracy (%)': f"{r['accuracy']*100:.3f}",
+            'F1-Macro': f"{r['f1_macro']:.3f}",
+            'F1-Weighted': f"{r['f1_weighted']:.3f}"
         })
 
 df = pd.DataFrame(table_data)
@@ -285,10 +285,10 @@ for idx, variant in enumerate(VARIANTS):
     cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
     ax = axes[idx]
-    sns.heatmap(cm_normalized, annot=True, fmt='.2f', cmap='Blues',
+    sns.heatmap(cm_normalized, annot=True, fmt='.3f', cmap='Blues',
                 xticklabels=CLASS_NAMES, yticklabels=CLASS_NAMES,
                 ax=ax, cbar_kws={'label': 'Proportion'})
-    ax.set_title(f'{variant.upper()} - Acc: {r["accuracy"]:.2%}, F1: {r["f1_macro"]:.4f}',
+    ax.set_title(f'{variant.upper()} - Acc: {r["accuracy"]*100:.3f}%, F1: {r["f1_macro"]:.3f}',
                 fontsize=12, fontweight='bold')
     ax.set_ylabel('True Label', fontsize=11)
     ax.set_xlabel('Predicted Label', fontsize=11)
@@ -397,6 +397,7 @@ print(f"✓ Long format (merged): {os.path.basename(class_long_path)}")
 # LAYOUT 2: Transposed format for each metric (compact for journals)
 # Precision table (Classes as rows, Models as columns)
 df_precision = df_class_numeric.pivot_table(index='Class', columns='Model', values='Precision', aggfunc='first')
+df_precision = df_precision.round(3)  # 3 decimal places
 precision_path = os.path.join(TABLES_DIR, 'per_class_precision_transposed.xlsx')
 df_precision.to_excel(precision_path, sheet_name='Precision by Class')
 format_excel_table(precision_path, header_row=1, theme='professional')
@@ -404,6 +405,7 @@ print(f"✓ Precision transposed: {os.path.basename(precision_path)}")
 
 # Recall table
 df_recall = df_class_numeric.pivot_table(index='Class', columns='Model', values='Recall', aggfunc='first')
+df_recall = df_recall.round(3)  # 3 decimal places
 recall_path = os.path.join(TABLES_DIR, 'per_class_recall_transposed.xlsx')
 df_recall.to_excel(recall_path, sheet_name='Recall by Class')
 format_excel_table(recall_path, header_row=1, theme='professional')
@@ -411,6 +413,7 @@ print(f"✓ Recall transposed: {os.path.basename(recall_path)}")
 
 # F1-Score table
 df_f1 = df_class_numeric.pivot_table(index='Class', columns='Model', values='F1-Score', aggfunc='first')
+df_f1 = df_f1.round(3)  # 3 decimal places
 f1_path = os.path.join(TABLES_DIR, 'per_class_f1_transposed.xlsx')
 df_f1.to_excel(f1_path, sheet_name='F1-Score by Class')
 format_excel_table(f1_path, header_row=1, theme='professional')
@@ -426,9 +429,11 @@ for metric in ['Precision', 'Recall', 'F1-Score']:
 
 df_compact = pd.concat(metrics_compact)
 df_compact = df_compact.reset_index().set_index(['Class', 'Metric'])
+df_compact = df_compact.round(3)  # 3 decimal places for all numeric columns
 compact_path = os.path.join(TABLES_DIR, 'per_class_all_metrics_compact.xlsx')
 df_compact.to_excel(compact_path, sheet_name='All Metrics Compact')
-format_excel_table(compact_path, header_row=1, theme='professional')
+# Merge Class column (column 1) - each class appears 3 times for 3 metrics
+format_excel_table(compact_path, header_row=1, theme='professional', merge_column=1)
 print(f"✓ All metrics compact: {os.path.basename(compact_path)}")
 
 # ============================================================================
