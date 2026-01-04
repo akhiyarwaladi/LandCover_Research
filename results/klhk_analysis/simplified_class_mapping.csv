@@ -1,7 +1,0 @@
-Simplified_Class,Simplified_Name,Total_Polygons,Percentage,Original_Codes_Count,KLHK_Codes,Original_Names
-0,Water,205,0.7322736202893374,1,5001,Tubuh Air (Water Body)
-1,Trees/Forest,13566,48.458653330951954,7,"2001, 2002, 2004, 2005, 2006, 2007, 20071",Hutan Lahan Kering Primer (Primary Dryla | Hutan Lahan Kering Sekunder (Secondary D | Hutan Rawa Sekunder (Secondary Swamp For | Hutan Mangrove Primer (Primary Mangrove  | Hutan Mangrove Sekunder (Secondary Mangr | Hutan Tanaman (Plantation Forest) | Hutan Tanaman Industri (Industrial Plant
-4,Crops/Agriculture,7938,28.35506340417932,5,"2010, 20051, 20091, 20092, 20093",Perkebunan (Plantation) | Tambak (Fishpond) | Pertanian Lahan Kering Campur (Mixed Dry | Sawah (Paddy Field) | Ladang (Shifting Cultivation)
-5,Shrub/Scrub,148,0.5286658331844972,1,20041,Belukar Rawa (Swamp Shrub)
-6,Built Area,2087,7.454902661189498,3,"2012, 20121, 20122",Pemukiman (Settlement) | Lahan Terbangun (Built-up Land) | Jaringan Jalan (Road Network)
-7,Bare Ground,4051,14.470441150205394,2,"2014, 20141",Tanah Terbuka (Bare Land) | Pertambangan (Mining)

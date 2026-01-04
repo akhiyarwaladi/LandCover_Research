@@ -1,0 +1,37 @@
+Map,Class ID,Class Name,Pixel Count,Percentage
+Ground Truth,0,Water,1312576,1.0667
+Ground Truth,1,Trees/Forest,45789822,37.2113
+Ground Truth,4,Crops/Agriculture,70538457,57.3234
+Ground Truth,5,Shrub/Scrub,229586,0.1866
+Ground Truth,6,Built Area,3359533,2.7301
+Ground Truth,7,Bare Ground,1823638,1.4820
+ResNet18,0,Water,1117938,0.9085
+ResNet18,1,Trees/Forest,49530917,40.2515
+ResNet18,4,Crops/Agriculture,67179637,54.5938
+ResNet18,5,Shrub/Scrub,234464,0.1905
+ResNet18,6,Built Area,2901659,2.3580
+ResNet18,7,Bare Ground,2088997,1.6976
+ResNet34,0,Water,1164818,0.9466
+ResNet34,1,Trees/Forest,48630067,39.5194
+ResNet34,4,Crops/Agriculture,67988569,55.2512
+ResNet34,5,Shrub/Scrub,233001,0.1893
+ResNet34,6,Built Area,3010771,2.4467
+ResNet34,7,Bare Ground,2026386,1.6468
+ResNet50,0,Water,1201852,0.9767
+ResNet50,1,Trees/Forest,47920312,38.9426
+ResNet50,4,Crops/Agriculture,68624697,55.7681
+ResNet50,5,Shrub/Scrub,232280,0.1888
+ResNet50,6,Built Area,3098139,2.5177
+ResNet50,7,Bare Ground,1976332,1.6061
+ResNet101,0,Water,1207560,0.9813
+ResNet101,1,Trees/Forest,47809297,38.8524
+ResNet101,4,Crops/Agriculture,68725082,55.8497
+ResNet101,5,Shrub/Scrub,232196,0.1887
+ResNet101,6,Built Area,3111036,2.5282
+ResNet101,7,Bare Ground,1968441,1.5997
+ResNet152,0,Water,1207765,0.9815
+ResNet152,1,Trees/Forest,47808892,38.8521
+ResNet152,4,Crops/Agriculture,68725744,55.8502
+ResNet152,5,Shrub/Scrub,232254,0.1887
+ResNet152,6,Built Area,3111439,2.5285
+ResNet152,7,Bare Ground,1967518,1.5989

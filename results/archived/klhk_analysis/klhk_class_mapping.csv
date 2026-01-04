@@ -1,0 +1,21 @@
+Original_Code,Original_Name,Polygon_Count,Simplified_Class,Simplified_Name
+2001,Hutan Lahan Kering Primer (Primary Dryland Forest),55,1,Trees/Forest
+2002,Hutan Lahan Kering Sekunder (Secondary Dryland Forest),5331,1,Trees/Forest
+2004,Hutan Rawa Sekunder (Secondary Swamp Forest),13,1,Trees/Forest
+2005,Hutan Mangrove Primer (Primary Mangrove Forest),11,1,Trees/Forest
+2006,Hutan Mangrove Sekunder (Secondary Mangrove Forest),292,1,Trees/Forest
+2007,Hutan Tanaman (Plantation Forest),7446,1,Trees/Forest
+2010,Perkebunan (Plantation),3811,4,Crops/Agriculture
+2012,Pemukiman (Settlement),2064,6,Built Area
+2014,Tanah Terbuka (Bare Land),3751,7,Bare Ground
+5001,Tubuh Air (Water Body),205,0,Water
+20041,Belukar Rawa (Swamp Shrub),148,5,Shrub/Scrub
+20051,Tambak (Fishpond),225,4,Crops/Agriculture
+20071,Hutan Tanaman Industri (Industrial Plantation Forest),418,1,Trees/Forest
+20091,Pertanian Lahan Kering Campur (Mixed Dryland Agriculture),530,4,Crops/Agriculture
+20092,Sawah (Paddy Field),2786,4,Crops/Agriculture
+20093,Ladang (Shifting Cultivation),586,4,Crops/Agriculture
+20121,Lahan Terbangun (Built-up Land),3,6,Built Area
+20122,Jaringan Jalan (Road Network),20,6,Built Area
+20141,Pertambangan (Mining),300,7,Bare Ground
+50011,Awan (Cloud),105,-1,Not Mapped

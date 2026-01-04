@@ -1,0 +1,4 @@
+method,n_train,n_val,n_test,n_epochs,time_per_epoch,total_time,total_time_minutes,training_runs,n_folds,time_per_fold
+Simple Split (70/15/15),70000,15000,15000,20,155.0,3130.0,52.166666666666664,1,,
+5-Fold Cross-Validation,80000,20000,0,20,180.0,18150.0,302.5,5,5.0,3600.0
+10-Fold Cross-Validation,90000,10000,0,20,190.0,38300.0,638.3333333333334,10,10.0,3800.0

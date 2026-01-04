@@ -89,8 +89,13 @@ def format_excel_table(file_path, header_row=1):
 
 VARIANTS = ['resnet18', 'resnet34', 'resnet101', 'resnet152']
 CLASS_NAMES = ['Water', 'Trees', 'Crops', 'Shrub', 'Built', 'Bare']
-OUTPUT_DIR = 'results/statistical_analysis'
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# New centralized paths
+TABLES_DIR = 'results/tables/statistical'
+FIGURES_DIR = 'results/figures/statistical'
+
+os.makedirs(TABLES_DIR, exist_ok=True)
+os.makedirs(FIGURES_DIR, exist_ok=True)
 
 print("\n" + "="*80)
 print("STATISTICAL ANALYSIS FOR JOURNAL PUBLICATION")
@@ -195,7 +200,7 @@ for i, var1 in enumerate(VARIANTS):
 
 # Save as Excel
 df_mcnemar = pd.DataFrame(mcnemar_results)
-mcnemar_path = os.path.join(OUTPUT_DIR, 'mcnemar_test_pairwise.xlsx')
+mcnemar_path = os.path.join(TABLES_DIR, 'mcnemar_test_pairwise.xlsx')
 df_mcnemar.to_excel(mcnemar_path, index=False, sheet_name='McNemar Test')
 format_excel_table(mcnemar_path)
 print(f"✓ McNemar pairwise tests: {mcnemar_path}")
@@ -211,7 +216,7 @@ sns.heatmap(p_value_matrix, annot=True, fmt='.4f', cmap='RdYlGn_r',
 ax.set_title('McNemar Test p-values (Lower is more significant)',
              fontsize=14, fontweight='bold', pad=15)
 plt.tight_layout()
-pval_matrix_path = os.path.join(OUTPUT_DIR, 'mcnemar_pvalue_matrix.png')
+pval_matrix_path = os.path.join(FIGURES_DIR, 'mcnemar_pvalue_matrix.png')
 plt.savefig(pval_matrix_path, dpi=300, bbox_inches='tight', facecolor='white')
 plt.close()
 print(f"✓ p-value matrix: {pval_matrix_path}")
@@ -260,7 +265,7 @@ for variant in VARIANTS:
     })
 
 df_efficiency = pd.DataFrame(efficiency_data)
-efficiency_path = os.path.join(OUTPUT_DIR, 'computational_efficiency.xlsx')
+efficiency_path = os.path.join(TABLES_DIR, 'computational_efficiency.xlsx')
 df_efficiency.to_excel(efficiency_path, index=False, sheet_name='Computational Efficiency')
 format_excel_table(efficiency_path)
 print(f"✓ Computational efficiency: {efficiency_path}")
@@ -316,7 +321,7 @@ for variant in VARIANTS:
         })
 
 df_accuracy = pd.DataFrame(accuracy_data)
-accuracy_path = os.path.join(OUTPUT_DIR, 'producer_user_accuracy.xlsx')
+accuracy_path = os.path.join(TABLES_DIR, 'producer_user_accuracy.xlsx')
 df_accuracy.to_excel(accuracy_path, index=False, sheet_name='Producer-User Accuracy')
 format_excel_table(accuracy_path)
 print(f"✓ Producer/User accuracy: {accuracy_path}")
@@ -353,7 +358,7 @@ for variant in VARIANTS:
         })
 
 df_errors = pd.DataFrame(error_data)
-errors_path = os.path.join(OUTPUT_DIR, 'omission_commission_errors.xlsx')
+errors_path = os.path.join(TABLES_DIR, 'omission_commission_errors.xlsx')
 df_errors.to_excel(errors_path, index=False, sheet_name='Error Analysis')
 format_excel_table(errors_path)
 print(f"✓ Omission/Commission errors: {errors_path}")
@@ -393,7 +398,7 @@ for variant in VARIANTS:
     })
 
 df_kappa = pd.DataFrame(kappa_data)
-kappa_path = os.path.join(OUTPUT_DIR, 'kappa_analysis.xlsx')
+kappa_path = os.path.join(TABLES_DIR, 'kappa_analysis.xlsx')
 df_kappa.to_excel(kappa_path, index=False, sheet_name='Kappa Analysis')
 format_excel_table(kappa_path)
 print(f"✓ Kappa analysis: {kappa_path}")
@@ -406,14 +411,19 @@ print("\n" + "="*80)
 print("STATISTICAL ANALYSIS COMPLETE!")
 print("="*80)
 
-print(f"\n📁 All files saved to: {OUTPUT_DIR}/")
+print(f"\n📁 Files saved to centralized structure:")
+print(f"  📊 Tables: {TABLES_DIR}/")
+print(f"  📈 Figures: {FIGURES_DIR}/")
+
 print("\n📊 Generated Statistical Tables:")
 print("  1. mcnemar_test_pairwise.xlsx - Statistical significance tests")
-print("  2. mcnemar_pvalue_matrix.png - p-value heatmap")
-print("  3. computational_efficiency.xlsx - Params/FLOPs/Time analysis")
-print("  4. producer_user_accuracy.xlsx - Per-class accuracy analysis")
-print("  5. omission_commission_errors.xlsx - Error type analysis")
-print("  6. kappa_analysis.xlsx - Kappa coefficient & interpretation")
+print("  2. computational_efficiency.xlsx - Params/FLOPs/Time analysis")
+print("  3. producer_user_accuracy.xlsx - Per-class accuracy analysis")
+print("  4. omission_commission_errors.xlsx - Error type analysis")
+print("  5. kappa_analysis.xlsx - Kappa coefficient & interpretation")
+
+print("\n📈 Generated Statistical Figures:")
+print("  6. mcnemar_pvalue_matrix.png - p-value heatmap")
 
 print("\n✨ All analyses follow journal standards!")
 print("📚 References:")

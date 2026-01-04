@@ -96,9 +96,15 @@ def format_excel_table(file_path, header_row=2):
 
 VARIANTS = ['resnet18', 'resnet34', 'resnet101', 'resnet152']
 CLASS_NAMES = ['Water', 'Trees', 'Crops', 'Shrub', 'Built', 'Bare']
-OUTPUT_DIR = 'results/publication_comparison'
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+# New centralized paths
+TABLES_DIR = 'results/tables/performance'
+FIGURES_CONFUSION_DIR = 'results/figures/confusion_matrices'
+FIGURES_TRAINING_DIR = 'results/figures/training_curves'
+
+os.makedirs(TABLES_DIR, exist_ok=True)
+os.makedirs(FIGURES_CONFUSION_DIR, exist_ok=True)
+os.makedirs(FIGURES_TRAINING_DIR, exist_ok=True)
 
 print("\n" + "="*80)
 print("PUBLICATION-QUALITY RESNET COMPARISON")
@@ -158,13 +164,13 @@ for variant in VARIANTS:
 df = pd.DataFrame(table_data)
 
 # Save as Excel with beautiful formatting
-xlsx_path = os.path.join(OUTPUT_DIR, 'performance_table.xlsx')
+xlsx_path = os.path.join(TABLES_DIR, 'performance_table.xlsx')
 df.to_excel(xlsx_path, index=False, sheet_name='Performance Comparison')
 format_excel_table(xlsx_path, header_row=1)
 print(f"✓ Saved Excel: {xlsx_path}")
 
 # Save as LaTeX
-latex_path = os.path.join(OUTPUT_DIR, 'performance_table.tex')
+latex_path = os.path.join(TABLES_DIR, 'performance_table.tex')
 with open(latex_path, 'w') as f:
     f.write("\\begin{table}[h]\n")
     f.write("\\centering\n")
@@ -211,7 +217,7 @@ for idx, variant in enumerate(VARIANTS):
     ax.tick_params(labelsize=10)
 
 plt.tight_layout()
-cm_path = os.path.join(OUTPUT_DIR, 'confusion_matrices_all.png')
+cm_path = os.path.join(FIGURES_CONFUSION_DIR, 'confusion_matrices_all.png')
 plt.savefig(cm_path, dpi=300, bbox_inches='tight', facecolor='white')
 plt.close()
 print(f"✓ Saved: {cm_path}")
@@ -264,7 +270,7 @@ ax2.legend(fontsize=9, loc='lower right')
 ax2.grid(alpha=0.3)
 
 plt.tight_layout()
-curves_path = os.path.join(OUTPUT_DIR, 'training_curves_comparison.png')
+curves_path = os.path.join(FIGURES_TRAINING_DIR, 'training_curves_comparison.png')
 plt.savefig(curves_path, dpi=300, bbox_inches='tight', facecolor='white')
 plt.close()
 print(f"✓ Saved: {curves_path}")
@@ -300,7 +306,7 @@ for variant in VARIANTS:
 df_class = pd.DataFrame(class_table_data)
 
 # Save as Excel with beautiful formatting
-class_xlsx_path = os.path.join(OUTPUT_DIR, 'per_class_performance.xlsx')
+class_xlsx_path = os.path.join(TABLES_DIR, 'per_class_performance.xlsx')
 df_class.to_excel(class_xlsx_path, index=False, sheet_name='Per-Class Performance')
 format_excel_table(class_xlsx_path, header_row=1)
 print(f"✓ Saved Excel: {class_xlsx_path}")
@@ -310,7 +316,7 @@ df_pivot = df_class.pivot_table(index='Class', columns='Model',
                                  values='F1-Score', aggfunc='first')
 
 # Save pivot table as Excel
-pivot_path = os.path.join(OUTPUT_DIR, 'per_class_f1_pivot.xlsx')
+pivot_path = os.path.join(TABLES_DIR, 'per_class_f1_pivot.xlsx')
 df_pivot.to_excel(pivot_path, sheet_name='F1-Score Pivot')
 format_excel_table(pivot_path, header_row=1)
 print(f"✓ Saved Excel pivot table: {pivot_path}")
@@ -323,7 +329,10 @@ print("\n" + "="*80)
 print("PUBLICATION COMPARISON COMPLETE!")
 print("="*80)
 
-print(f"\n📁 All files saved to: {OUTPUT_DIR}/")
+print(f"\n📁 Files saved to centralized structure:")
+print(f"  📊 Tables: {TABLES_DIR}/")
+print(f"  📈 Figures: results/figures/ (confusion_matrices/, training_curves/)")
+
 print("\n📊 TABLES (for exact numerical values):")
 print("  1. performance_table.xlsx - Overall metrics (Accuracy, F1-Macro, F1-Weighted)")
 print("  2. performance_table.tex - LaTeX format (for journal submission)")

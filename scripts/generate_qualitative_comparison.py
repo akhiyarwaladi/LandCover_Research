@@ -297,8 +297,9 @@ def main():
         'data/sentinel_new_cloudfree/S2_jambi_2024_20m_AllBands-0000010496-0000000000.tif',
         'data/sentinel_new_cloudfree/S2_jambi_2024_20m_AllBands-0000010496-0000010496.tif'
     ]
-    OUTPUT_DIR_PROVINCE = 'results/qualitative_FINAL_DRY_SEASON/province'
-    OUTPUT_DIR_CITY = 'results/qualitative_FINAL_DRY_SEASON/city'
+    # New centralized paths
+    OUTPUT_DIR_PROVINCE = 'results/figures/spatial_maps/province'
+    OUTPUT_DIR_CITY = 'results/figures/spatial_maps/city'
 
     os.makedirs(OUTPUT_DIR_PROVINCE, exist_ok=True)
     os.makedirs(OUTPUT_DIR_CITY, exist_ok=True)
