@@ -292,7 +292,8 @@ print("\n" + "-"*80)
 print("2/4: Generating Confusion Matrices (Error Pattern Analysis)")
 print("-"*80)
 
-fig, axes = plt.subplots(2, 2, figsize=(16, 14))
+# Create 2×3 grid for 5 models (one extra space will be empty)
+fig, axes = plt.subplots(2, 3, figsize=(20, 12))
 axes = axes.flatten()
 
 for idx, variant in enumerate(VARIANTS):
@@ -313,6 +314,11 @@ for idx, variant in enumerate(VARIANTS):
     ax.set_xlabel('Predicted Label', fontsize=11)
     ax.tick_params(labelsize=10)
 
+# Hide the unused 6th subplot
+if len(VARIANTS) < len(axes):
+    for idx in range(len(VARIANTS), len(axes)):
+        axes[idx].axis('off')
+
 plt.tight_layout()
 cm_path = os.path.join(FIGURES_CONFUSION_DIR, 'confusion_matrices_all.png')
 plt.savefig(cm_path, dpi=300, bbox_inches='tight', facecolor='white')
@@ -329,7 +335,8 @@ print("-"*80)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
 
-colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+# 5 distinct colors for 5 models
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
 
 for idx, variant in enumerate(VARIANTS):
     if variant not in all_training:
