@@ -1,0 +1,14 @@
+[
+  {
+    "variant": "swin_tiny",
+    "parameters": 27533664,
+    "depth": 12,
+    "best_epoch": 27,
+    "best_val_acc": 0.7954,
+    "test_acc": 0.7954,
+    "f1_macro": 0.5644351143952203,
+    "f1_weighted": 0.7835597112589526,
+    "training_time_minutes": 188.00542277097702,
+    "timestamp": "2026-01-05 23:03:01"
+  }
+]
