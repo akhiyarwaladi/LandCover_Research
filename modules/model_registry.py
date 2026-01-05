@@ -210,22 +210,22 @@ MODEL_REGISTRY = {
     },
 
     # ========================================================================
-    # Inception Family - Multi-scale Feature Extraction
+    # Swin Transformer Family - Hierarchical Vision Transformer
     # ========================================================================
-    'inception_v3': {
-        'family': 'inception',
-        'display_name': 'Inception-V3',
-        'params': 23.8e6,
-        'flops': 5.7e9,
-        'depth': 48,
-        'description': 'Inception-V3: Multi-scale parallel feature extraction',
-        'paper': 'Szegedy et al. (2016) - Rethinking Inception',
-        'best_for': 'Multi-scale features (water, crops, buildings)',
-        'data_efficiency': 'Good',
-        'expected_acc_range': (77, 80),
-        'training_time_factor': 2.3,
+    'swin_tiny': {
+        'family': 'swin',
+        'display_name': 'Swin-Tiny',
+        'params': 28.3e6,
+        'flops': 4.5e9,
+        'depth': 12,
+        'description': 'Swin-Tiny: Hierarchical vision transformer with shifted windows',
+        'paper': 'Liu et al. (2021) - Swin Transformer',
+        'best_for': 'SOTA vision transformer for remote sensing (98%+ accuracy)',
+        'data_efficiency': 'Good (better than ViT)',
+        'expected_acc_range': (78, 82),
+        'training_time_factor': 2.8,
         'recommended': True,
-        'notes': 'UNIQUE - 92% on land cover, multi-scale crucial for diverse classes'
+        'notes': 'STATE-OF-THE-ART 2024-2025: Hierarchical transformer, shifted windows, proven for remote sensing'
     },
 }
 
@@ -258,10 +258,10 @@ MODEL_FAMILIES = {
         'key_innovation': 'Feature reuse via dense connections',
         'inductive_bias': 'Strong feature reuse, gradient flow',
     },
-    'inception': {
-        'name': 'Inception Family',
-        'description': 'Multi-scale parallel feature extraction',
-        'key_innovation': 'Parallel convolutions at multiple scales',
+    'swin': {
+        'name': 'Swin Transformer Family',
+        'description': 'Hierarchical vision transformer with shifted windows',
+        'key_innovation': 'Shifted window attention for efficiency',
         'inductive_bias': 'Multi-scale spatial features',
     },
 }

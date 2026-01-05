@@ -74,8 +74,8 @@ def create_model(model_name, num_classes=6, input_channels=23,
         model = _create_convnext(model_name, num_classes, input_channels, pretrained)
     elif family == 'densenet':
         model = _create_densenet(model_name, num_classes, input_channels, pretrained)
-    elif family == 'inception':
-        model = _create_inception(model_name, num_classes, input_channels, pretrained)
+    elif family == 'swin':
+        model = _create_swin(model_name, num_classes, input_channels, pretrained)
     else:
         raise NotImplementedError(f"Family '{family}' not implemented yet")
 
@@ -230,40 +230,28 @@ def _create_densenet(model_name, num_classes, input_channels, pretrained):
     return model
 
 
-def _create_inception(model_name, num_classes, input_channels, pretrained):
-    """Create Inception family models."""
+def _create_swin(model_name, num_classes, input_channels, pretrained):
+    """Create Swin Transformer family models using timm library."""
 
-    if model_name != 'inception_v3':
-        raise ValueError(f"Unknown Inception variant: {model_name}")
+    # Map model names to timm names
+    swin_timm_names = {
+        'swin_tiny': 'swin_tiny_patch4_window7_224',
+    }
 
-    # Create base model
-    if pretrained:
-        model = models.inception_v3(weights='IMAGENET1K_V1', aux_logits=True)
-    else:
-        model = models.inception_v3(weights=None, aux_logits=True)
+    if model_name not in swin_timm_names:
+        raise ValueError(f"Unknown Swin variant: {model_name}")
 
-    # Adapt first conv layer for multispectral input
-    if input_channels != 3:
-        original_conv = model.Conv2d_1a_3x3.conv
-        model.Conv2d_1a_3x3.conv = nn.Conv2d(
-            input_channels, 32,
-            kernel_size=3, stride=2, bias=False
-        )
+    timm_name = swin_timm_names[model_name]
 
-        # Initialize using PROVEN working approach (avg RGB, repeat)
-        if pretrained:
-            with torch.no_grad():
-                weight = original_conv.weight.data
-                model.Conv2d_1a_3x3.conv.weight.data = weight.mean(dim=1, keepdim=True).repeat(1, input_channels, 1, 1)
-
-    # Adapt final FC layer for num_classes
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, num_classes)
-
-    # Adapt auxiliary classifier
-    if model.aux_logits:
-        num_ftrs_aux = model.AuxLogits.fc.in_features
-        model.AuxLogits.fc = nn.Linear(num_ftrs_aux, num_classes)
+    # Create model using timm
+    # Note: Swin Transformer handles multispectral input via timm's in_chans parameter
+    model = timm.create_model(
+        timm_name,
+        pretrained=pretrained,
+        in_chans=input_channels,  # timm handles multispectral input!
+        num_classes=num_classes,
+        img_size=32  # Our patch size - adjust from default 224
+    )
 
     return model
 

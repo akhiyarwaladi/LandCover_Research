@@ -102,7 +102,7 @@ MODELS_TO_TRAIN = [
     'efficientnet_b3',  # Efficient compound scaling
     'convnext_tiny',    # Modern CNN (likely winner)
     'densenet121',      # Lightweight dense connections
-    'inception_v3',     # Multi-scale feature extraction
+    'swin_tiny',        # SOTA hierarchical vision transformer (replaces Inception-V3)
 ]
 
 # Get architecture specs from model registry
