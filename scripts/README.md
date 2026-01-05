@@ -1,6 +1,6 @@
-# Production Scripts Index
+# Scripts Directory
 
-**Total Scripts:** 13 (down from 51 - cleaned 74% redundancy)
+**Total Scripts:** 12 active scripts (+ 6 legacy scripts in `legacy/`)
 
 This directory contains all production-ready scripts for the Land Cover Research project. All scripts follow standardized `snake_case` naming with clear action verbs.
 
@@ -50,114 +50,115 @@ python scripts/crop_sentinel_custom_boundary.py
 
 ---
 
-## 🤖 Machine Learning Workflows (2 scripts)
+## 🧠 Deep Learning Training (1 script)
 
-### 5. `run_classification.py`
-**Purpose:** Run complete Random Forest classification pipeline
-**Output:** `results/` - Classification results, visualizations, metrics
+### 5. `train_models.py` ⭐ **MAIN TRAINING SCRIPT**
+**Purpose:** Train all deep learning models for land cover classification
+**Output:** `models/{model_name}_best.pth` + `results/models/{model_name}/`
+**Models:**
+- ResNet-50 (baseline, 23.5M params)
+- EfficientNet-B3 (efficient, 10.7M params)
+- ConvNeXt-Tiny (modern CNN, 28.6M params)
+- DenseNet-121 (lightweight, 7.0M params)
+- Swin-Tiny (transformer, 28.3M params)
+
 **Features:**
-- 7 classifiers (Random Forest, Extra Trees, LightGBM, etc.)
-- 23 features (10 bands + 13 spectral indices)
-- 100,000 training samples
-**Usage:**
-```bash
-python scripts/run_classification.py
-```
+- 23 multispectral features (10 bands + 13 indices)
+- 100,000 training patches (32×32)
+- Automatic checkpointing (best validation accuracy)
+- Comprehensive evaluation metrics
 
-### 6. `run_classification_with_aoa.py`
-**Purpose:** Classification with Area of Applicability (AOA) analysis
-**Output:** `results/` - Results + AOA maps
-**Note:** Computationally intensive for large areas
 **Usage:**
 ```bash
-python scripts/run_classification_with_aoa.py
+python scripts/train_models.py
 ```
 
 ---
 
-## 🧠 Deep Learning Workflows (4 scripts)
+## 📊 Training Monitoring (3 scripts)
 
-### 7. `train_all_resnet_variants.py`
-**Purpose:** Train all 4 ResNet variants (18, 34, 101, 152)
-**Output:** `results/{variant}/` - Models, history, test results
+### 6. `monitor_training.py`
+**Purpose:** Real-time monitoring of training progress
+**Output:** Console display with epoch, accuracy, loss, ETA
+**Usage:**
+```bash
+python scripts/monitor_training.py
+```
+
+### 7. `watch_training.py`
+**Purpose:** Continuous auto-refresh monitoring
+**Output:** Live terminal updates
+**Usage:**
+```bash
+python scripts/watch_training.py
+```
+
+### 8. `plot_training_progress.py`
+**Purpose:** Generate training progress visualizations
+**Output:** `results/models/{model_name}/training_curves.png`
 **Features:**
-- Parallel training support
-- Automatic checkpointing
-- Comprehensive logging
+- Loss curves (train & validation)
+- Accuracy curves (train & validation)
+- Per-epoch timing analysis
 **Usage:**
 ```bash
-python scripts/train_all_resnet_variants.py
-```
-
-### 8. `run_resnet_training.py`
-**Purpose:** Train single ResNet variant
-**Output:** `results/{variant}/` - Model weights, training history
-**Usage:**
-```bash
-python scripts/run_resnet_training.py --variant resnet50
-```
-
-### 9. `run_resnet_prediction.py`
-**Purpose:** Generate spatial predictions using trained ResNet model
-**Output:** `results/{variant}/predictions.npy` - Full spatial classification
-**Usage:**
-```bash
-python scripts/run_resnet_prediction.py --variant resnet101
-```
-
-### 10. `run_resnet_visualization.py`
-**Purpose:** Generate comprehensive visualizations for ResNet results
-**Output:** `results/{variant}/visualizations/` - Training curves, confusion matrices, spatial maps
-**Usage:**
-```bash
-# Single variant
-python scripts/run_resnet_visualization.py --variant resnet101
-
-# All variants
-python scripts/run_resnet_visualization.py --all
+python scripts/plot_training_progress.py
 ```
 
 ---
 
-## 📊 Publication Outputs (3 scripts)
+## 📊 Publication Outputs (4 scripts)
 
-### 11. `generate_qualitative_comparison.py`
-**Purpose:** Generate spatial comparison maps (ground truth vs predictions)
-**Output:** `results/qualitative_FINAL_DRY_SEASON/` - Province & city maps
-**Features:**
-- Province-wide AND city-level maps
-- Custom administrative boundary support
-- Jambi-optimized color scheme
-- Publication-ready (300 DPI)
-**Usage:**
-```bash
-python scripts/generate_qualitative_comparison.py
-```
-
-### 12. `generate_publication_comparison.py`
+### 9. `generate_publication_comparison.py`
 **Purpose:** Generate publication-quality comparison tables and charts
-**Output:** `results/publication_comparison/` - Excel tables, PNG charts
+**Output:** `results/publication_comparison/` - Excel tables, PNG charts, LaTeX tables
 **Features:**
-- Beautiful Excel formatting with auto-adjusted columns
+- Model performance comparison (accuracy, F1, parameters, FLOPs)
 - Confusion matrices for all models
-- Per-class F1 comparison
-- Training curves comparison
-- LaTeX tables
+- Per-class F1-score comparison
+- Training time analysis
+- LaTeX tables for journal submission
 **Usage:**
 ```bash
 python scripts/generate_publication_comparison.py
 ```
 
-### 13. `generate_per_class_f1_chart.py`
+### 10. `generate_statistical_analysis.py`
+**Purpose:** Perform statistical significance testing between models
+**Output:** `results/statistical_analysis/` - Test results, confidence intervals
+**Features:**
+- McNemar's test for paired model comparison
+- Confidence intervals (95%)
+- Effect size calculation (Cohen's h)
+- Pairwise significance matrix
+**Usage:**
+```bash
+python scripts/generate_statistical_analysis.py
+```
+
+### 11. `generate_per_class_f1_chart.py`
 **Purpose:** Generate grouped bar chart for per-class F1-scores
 **Output:** `results/per_class_f1_comparison.png`
 **Features:**
+- Per-class performance comparison across all models
 - Colorblind-friendly palette
-- Journal-standard formatting
-- Publication-ready (300 DPI)
+- Journal-standard formatting (300 DPI)
 **Usage:**
 ```bash
 python scripts/generate_per_class_f1_chart.py
+```
+
+### 12. `generate_qualitative_comparison.py`
+**Purpose:** Generate spatial comparison maps (ground truth vs predictions)
+**Output:** `results/qualitative_comparison/` - Province & city-level maps
+**Features:**
+- Visual comparison of model predictions vs ground truth
+- Custom administrative boundary support
+- Jambi-optimized land cover color scheme
+- Publication-ready (300 DPI)
+**Usage:**
+```bash
+python scripts/generate_qualitative_comparison.py
 ```
 
 ---
@@ -191,74 +192,106 @@ All scripts follow standardized naming:
 ```
 scripts/
 ├── README.md                             # This file
-├── download_klhk_kmz_partitioned.py     # KLHK download
-├── download_sentinel2.py                 # Sentinel-2 download
-├── parse_klhk_kmz.py                    # KMZ parser
-├── crop_sentinel_custom_boundary.py      # Boundary cropping
-├── run_classification.py                 # ML classification
-├── run_classification_with_aoa.py        # ML with AOA
-├── train_all_resnet_variants.py         # Train all ResNets
-├── run_resnet_training.py                # Train single ResNet
-├── run_resnet_prediction.py              # ResNet prediction
-├── run_resnet_visualization.py           # ResNet visualizations
-├── generate_qualitative_comparison.py    # Spatial comparison maps
-├── generate_publication_comparison.py    # Publication tables/charts
-└── generate_per_class_f1_chart.py       # Per-class F1 chart
+│
+├── 📥 Data Download & Preparation
+│   ├── download_klhk_kmz_partitioned.py     # KLHK download
+│   ├── download_sentinel2.py                 # Sentinel-2 download
+│   ├── parse_klhk_kmz.py                    # KMZ parser
+│   └── crop_sentinel_custom_boundary.py      # Boundary cropping
+│
+├── 🧠 Deep Learning Training
+│   └── train_models.py                       # ⭐ Main training script
+│
+├── 📊 Training Monitoring
+│   ├── monitor_training.py                   # Real-time monitoring
+│   ├── watch_training.py                     # Auto-refresh monitoring
+│   └── plot_training_progress.py             # Training visualizations
+│
+├── 📊 Publication Outputs
+│   ├── generate_publication_comparison.py    # Comparison tables/charts
+│   ├── generate_statistical_analysis.py      # Statistical testing
+│   ├── generate_per_class_f1_chart.py       # Per-class F1 chart
+│   └── generate_qualitative_comparison.py    # Spatial comparison maps
+│
+└── legacy/                                   # Old scripts (archived)
+    ├── run_classification.py                 # Old Random Forest pipeline
+    ├── run_classification_with_aoa.py        # RF with AOA
+    ├── run_resnet_training.py                # Early ResNet experiment
+    ├── run_resnet_prediction.py              # Early ResNet prediction
+    ├── run_resnet_visualization.py           # Early ResNet visualization
+    └── cleanup_results_structure.py          # Old cleanup script
 ```
 
 ---
 
 ## 🔄 Typical Workflows
 
-### Complete ML Workflow
+### Complete Deep Learning Workflow (Recommended)
 ```bash
-# 1. Download data
+# 1. Download data (one-time setup)
 python scripts/download_klhk_kmz_partitioned.py
 python scripts/download_sentinel2.py
 
-# 2. Run classification
-python scripts/run_classification.py
+# 2. Train all models (~4-5 hours total)
+python scripts/train_models.py
 
-# 3. Generate visualizations
-python scripts/generate_qualitative_comparison.py
+# 3. Monitor training (in another terminal)
+python scripts/monitor_training.py
+# or
+python scripts/watch_training.py
+
+# 4. Generate publication outputs (after training completes)
 python scripts/generate_publication_comparison.py
+python scripts/generate_statistical_analysis.py
+python scripts/generate_per_class_f1_chart.py
+python scripts/generate_qualitative_comparison.py
+
+# 5. Plot training curves
+python scripts/plot_training_progress.py
 ```
 
-### Complete Deep Learning Workflow
+### Quick Monitoring During Training
 ```bash
-# 1. Train all variants
-python scripts/train_all_resnet_variants.py
+# Check current status
+python scripts/monitor_training.py
 
-# 2. Generate predictions
-python scripts/run_resnet_prediction.py --variant resnet101
-
-# 3. Visualize results
-python scripts/run_resnet_visualization.py --all
-
-# 4. Publication outputs
-python scripts/generate_publication_comparison.py
-python scripts/generate_qualitative_comparison.py
+# Or watch continuously
+python scripts/watch_training.py
 ```
 
 ---
 
-## ✨ Recent Cleanup
+## ✨ Recent Changes
 
-**Date:** 2026-01-04
-**Deleted:** 38 redundant scripts (74% reduction)
-**Standardized:** 3 script names
+**Date:** 2026-01-05
+**Changes:**
+- Organized legacy scripts into `legacy/` subdirectory
+- Updated documentation to reflect deep learning approach
+- Cleaned up temporary log files
+- Focused on production-ready scripts only
 
-**Removed Categories:**
-- Old workflow scripts (1_, 2_, 3_)
-- Test/debug scripts (test_*, check_*, quick_*, diagnose_*)
-- Exploration scripts (explore_*, find_*)
-- Legacy cropping variants (9 different approaches → 1 final)
-- Redundant table generators (3 scripts → 1)
-- Redundant visualization scripts (18 scripts → 3)
+**Legacy Scripts Moved:**
+- `run_classification.py` → `legacy/` (old Random Forest approach)
+- `run_classification_with_aoa.py` → `legacy/`
+- `run_resnet_training.py` → `legacy/` (early ResNet experiment)
+- `run_resnet_prediction.py` → `legacy/`
+- `run_resnet_visualization.py` → `legacy/`
+- `cleanup_results_structure.py` → `legacy/`
 
-**Result:** Clean, maintainable, production-ready codebase!
+**Result:** Clean, organized, production-ready codebase with clear separation between active and legacy scripts!
 
 ---
 
-**Last Updated:** 2026-01-04
+## 📋 Output Locations
+
+- **Trained models:** `models/{model_name}_best.pth`
+- **Training history:** `results/models/{model_name}/training_history.npz`
+- **Evaluation results:** `results/models/{model_name}/evaluation_results.json`
+- **Confusion matrices:** `results/models/{model_name}/confusion_matrix.png`
+- **Publication outputs:** `results/publication_comparison/`, `results/statistical_analysis/`
+- **Qualitative maps:** `results/qualitative_comparison/`
+
+---
+
+**Last Updated:** 2026-01-05
 **Maintained By:** Claude Sonnet 4.5
