@@ -1,0 +1,156 @@
+<mxfile host="app.diagrams.net" modified="2026-02-19" agent="Claude" version="24.0.0" type="device">
+  <diagram id="methodology" name="Methodology">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="595" pageHeight="842" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ===================== TITLE ===================== -->
+        <mxCell id="title" value="&lt;font style=&quot;font-size: 15px;&quot; color=&quot;#1B2631&quot;&gt;&lt;b&gt;Research Methodology Overview&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="145" y="12" width="305" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 1: DATASETS ===================== -->
+        <mxCell id="p1" value="&lt;font color=&quot;#FFFFFF&quot;&gt;&lt;b&gt;PHASE 1&lt;br&gt;DATA&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2C3E50;strokeColor=none;arcSize=30;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="10" y="58" width="58" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eurosat" value="&lt;b&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;EuroSAT&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;27,000 images &amp;bull; 10 classes&lt;br&gt;64&amp;times;64 px &amp;bull; Sentinel-2 (10 m)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#1E8449;strokeWidth=2;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="50" width="210" height="64" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ucmerced" value="&lt;b&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;UC Merced&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;2,100 images &amp;bull; 21 classes&lt;br&gt;256&amp;times;256 px &amp;bull; USGS Aerial (0.3 m)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#1E8449;strokeWidth=2;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="50" width="210" height="64" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows: Datasets → Preprocessing (symmetric V-shape) -->
+        <mxCell id="a1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.23;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="eurosat" target="preproc" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.77;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="ucmerced" target="preproc" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 2: PREPROCESSING ===================== -->
+        <mxCell id="p2" value="&lt;font color=&quot;#FFFFFF&quot;&gt;&lt;b&gt;PHASE 2&lt;br&gt;PREPROCESS&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2C3E50;strokeColor=none;arcSize=30;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="10" y="148" width="58" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="preproc" value="&lt;b&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Data Preprocessing&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Resize to 224&amp;times;224 &amp;bull; Stratified 80/20 split (seed=42) &amp;bull; RGB channels only&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2471A3;strokeWidth=2;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="140" width="440" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: Preprocessing → Augmentation -->
+        <mxCell id="a3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="preproc" target="augment" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="augment" value="&lt;b&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Data Augmentation&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Random H/V flip &amp;bull; Rotation (&amp;plusmn;15&amp;deg;) &amp;bull; Color jitter &amp;bull; ImageNet normalization&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2471A3;strokeWidth=2;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="215" width="440" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: Augmentation → Models header -->
+        <mxCell id="a4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="augment" target="mtitle" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 3: MODELS ===================== -->
+        <mxCell id="p3" value="&lt;font color=&quot;#FFFFFF&quot;&gt;&lt;b&gt;PHASE 3&lt;br&gt;MODELING&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2C3E50;strokeColor=none;arcSize=30;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="10" y="320" width="58" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mtitle" value="&lt;b&gt;&lt;i&gt;&lt;font style=&quot;font-size: 11px;&quot; color=&quot;#1B2631&quot;&gt;8 Model Architectures (3 Families) &amp;mdash; All ImageNet Pretrained&lt;/font&gt;&lt;/i&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="100" y="288" width="400" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- Three model boxes: perfectly symmetric -->
+        <mxCell id="cnn" value="&lt;b&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Classical CNN&lt;/font&gt;&lt;/b&gt;&lt;hr size=&quot;1&quot; color=&quot;#CA6F1E&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;ResNet-50 (23.5M)&lt;br&gt;ResNet-101 (42.5M)&lt;br&gt;DenseNet-121 (7.0M)&lt;br&gt;EfficientNet-B0 (4.0M)&lt;br&gt;EfficientNet-B3 (10.7M)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBD0;strokeColor=#CA6F1E;strokeWidth=2;arcSize=10;shadow=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="80" y="318" width="132" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vit" value="&lt;b&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Vision Transformer&lt;/font&gt;&lt;/b&gt;&lt;hr size=&quot;1&quot; color=&quot;#CB4335&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;ViT-B/16 (85.8M)&lt;br&gt;Swin-T (27.5M)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FADBD8;strokeColor=#CB4335;strokeWidth=2;arcSize=10;shadow=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="234" y="318" width="132" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mcnn" value="&lt;b&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Modern CNN&lt;/font&gt;&lt;/b&gt;&lt;hr size=&quot;1&quot; color=&quot;#148F77&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;ConvNeXt-Tiny (27.8M)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1F2EB;strokeColor=#148F77;strokeWidth=2;arcSize=10;shadow=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="388" y="318" width="132" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows: 3 Models → Training (symmetric fan-in) -->
+        <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="cnn" target="train" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="vit" target="train" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="mcnn" target="train" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== TRAINING PROTOCOL ===================== -->
+        <mxCell id="train" value="&lt;b&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Uniform Training Protocol&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;AdamW (lr=10&lt;sup&gt;&amp;minus;4&lt;/sup&gt;) &amp;bull; ReduceLROnPlateau &amp;bull; Early stopping (patience=10) &amp;bull; 30 epochs &amp;bull; Batch 32&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2471A3;strokeWidth=2;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="462" width="440" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: Training → Evaluation -->
+        <mxCell id="a8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="train" target="eval" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 4: EVALUATION ===================== -->
+        <mxCell id="p4" value="&lt;font color=&quot;#FFFFFF&quot;&gt;&lt;b&gt;PHASE 4&lt;br&gt;EVALUATION&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2C3E50;strokeColor=none;arcSize=30;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="10" y="548" width="58" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eval" value="&lt;b&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Performance Evaluation&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Overall Accuracy &amp;bull; F1-Macro &amp;bull; F1-Weighted &amp;bull; Cohen&amp;rsquo;s &amp;kappa; &amp;bull; Per-class Precision / Recall / F1&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DAEF;strokeColor=#7D3C98;strokeWidth=2;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="540" width="440" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows: Evaluation → 3 Analysis boxes (symmetric fan-out) -->
+        <mxCell id="a9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.15;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="eval" target="stat" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="eval" target="err" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.85;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="eval" target="eff" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Three analysis boxes: same x-positions as model boxes -->
+        <mxCell id="stat" value="&lt;b&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Statistical Testing&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;McNemar&amp;rsquo;s test&lt;br&gt;(pairwise significance)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DAEF;strokeColor=#7D3C98;strokeWidth=1.5;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="620" width="132" height="62" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="err" value="&lt;b&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Error Analysis&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;Confusion matrices&lt;br&gt;Misclassified samples&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DAEF;strokeColor=#7D3C98;strokeWidth=1.5;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="234" y="620" width="132" height="62" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eff" value="&lt;b&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Efficiency Analysis&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;Parameters vs. accuracy&lt;br&gt;Training time&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8DAEF;strokeColor=#7D3C98;strokeWidth=1.5;arcSize=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="388" y="620" width="132" height="62" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows: 3 Analysis → Findings (symmetric fan-in) -->
+        <mxCell id="a12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="stat" target="findings" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="err" target="findings" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;strokeColor=#566573;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="eff" target="findings" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== PHASE 5: FINDINGS ===================== -->
+        <mxCell id="p5" value="&lt;font color=&quot;#FFFFFF&quot;&gt;&lt;b&gt;PHASE 5&lt;br&gt;FINDINGS&lt;/b&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2C3E50;strokeColor=none;arcSize=30;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="10" y="718" width="58" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="findings" value="&lt;b&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Key Findings&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;&amp;bull; Architecture matters less than training recipe with transfer learning&lt;br&gt;&amp;bull; ConvNeXt-T best on EuroSAT (99.06%) &amp;bull; EfficientNet-B3 best on UC Merced (99.76%)&lt;br&gt;&amp;bull; Most pairwise differences not statistically significant (McNemar&amp;rsquo;s &lt;i&gt;p&lt;/i&gt; &amp;gt; 0.05)&lt;br&gt;&amp;bull; EfficientNet-B0 (4.0M params) within 1% of all models &amp;mdash; best efficiency&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F2F3F4;strokeColor=#566573;strokeWidth=2;arcSize=10;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="708" width="440" height="80" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

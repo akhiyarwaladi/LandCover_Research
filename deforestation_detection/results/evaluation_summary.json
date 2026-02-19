@@ -1,0 +1,42 @@
+{
+  "results": {
+    "PCC-ResNet101": {
+      "accuracy": 0.979363759358724,
+      "f1_macro": 0.5230097874908748,
+      "f1_weighted": 0.9798317466302423,
+      "f1_change": 0.056460036127143835,
+      "kappa": 0.04897531772813544,
+      "precision_change": 0.08888109044036302,
+      "recall_change": 0.051222222222222225,
+      "training_time": 2.8873212337493896
+    },
+    "Siamese-ResNet50": {
+      "accuracy": 0.7794117647058824,
+      "f1_macro": 0.6999117387466902,
+      "f1_weighted": 0.7771403353927626,
+      "f1_change": 0.5454545454545454,
+      "kappa": 0.4,
+      "precision_change": 0.5625,
+      "recall_change": 0.5294117647058824,
+      "training_time": 7.332766771316528
+    },
+    "RF-Change": {
+      "accuracy": 0.9992436974789916,
+      "f1_macro": 0.9989917096028758,
+      "f1_weighted": 0.9992438245530593,
+      "f1_change": 0.9984876491345992,
+      "kappa": 0.9979834193766172,
+      "precision_change": 0.9979845482028888,
+      "recall_change": 0.9989912575655683,
+      "training_time": 3.3216521739959717
+    }
+  },
+  "best_approach": "RF-Change",
+  "total_time_seconds": 17.217550039291382,
+  "configuration": {
+    "crop_size": 512,
+    "patch_size": 32,
+    "epochs_siamese": 30,
+    "device": "cuda"
+  }
+}

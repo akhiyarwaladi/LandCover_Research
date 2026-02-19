@@ -1,0 +1,385 @@
+\documentclass[journal]{IEEEtran}
+
+% ---- Packages ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+\usepackage{color}
+\usepackage{balance}
+\usepackage{float}
+
+% Column type for centering in fixed-width
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ---- Title ----
+\title{Comparative Analysis of Deep Learning Architectures for Land Cover Classification Using Sentinel-2 Imagery: A Case Study of Jambi Province, Indonesia}
+
+\author{
+  First~Author,~\IEEEmembership{}
+  Second~Author,~\IEEEmembership{}
+  and~Third~Author,~\IEEEmembership{}%
+  \thanks{Manuscript received XXX; revised XXX.}%
+  \thanks{First Author is with the Department, University, City, Country (e-mail: email@university.ac.id).}%
+  \thanks{Second Author and Third Author are with the Department, University, City, Country.}%
+}
+
+\markboth{IEEE JOURNAL OF SELECTED TOPICS IN APPLIED EARTH OBSERVATIONS AND REMOTE SENSING, VOL.~XX, NO.~XX, 2026}%
+{Author \MakeLowercase{\textit{et al.}}: Land Cover Classification in Jambi Province}
+
+\begin{document}
+
+\maketitle
+
+% ==================================================================
+% ABSTRACT
+% ==================================================================
+\begin{abstract}
+This study evaluates five deep learning architectures for pixel-based land cover classification in Jambi Province, Sumatra, Indonesia, using multi-spectral Sentinel-2 imagery at 20-m resolution. The input feature space comprises 23 channels constructed from 10 spectral bands and 13 derived spectral indices. Ground truth labels were obtained from the Indonesian Ministry of Environment and Forestry (KLHK) 2024 land cover dataset covering 28,100 polygons, mapped to six simplified classes: Water, Trees/Forest, Crops/Agriculture, Shrub/Scrub, Built Area, and Bare Ground. Five architectures were compared: Swin Transformer Tiny (Swin-T), ConvNeXt Tiny (ConvNeXt-T), DenseNet-121, ResNet-50, and EfficientNet-B3, all initialised with ImageNet pretrained weights and fine-tuned on 80,000 training patches of $32 \times 32$ pixels. Swin-T achieved the highest overall accuracy of 79.54\% with an F1-macro of 0.5644 and a Cohen's kappa of 0.587, followed by ConvNeXt-T at 79.14\%, DenseNet-121 at 78.85\%, ResNet-50 at 78.64\%, and EfficientNet-B3 at 78.29\%. McNemar's tests confirmed that Swin-T significantly outperformed all other architectures at $p < 0.05$. Per-class analysis revealed that all models achieved high F1 scores for Crops (0.839--0.846) but struggled with minority classes such as Bare Ground (0.207--0.278) and Shrub (0.174--0.367), reflecting severe class imbalance in tropical land cover distributions. The results demonstrate that modern transformer-based and convolution-based architectures offer statistically significant improvements over traditional residual networks for tropical land cover mapping.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Land cover classification, deep learning, Sentinel-2, transfer learning, Swin Transformer, ConvNeXt, Jambi Province, Indonesia.
+\end{IEEEkeywords}
+
+% ==================================================================
+% I. INTRODUCTION
+% ==================================================================
+\section{Introduction}
+\IEEEPARstart{A}{ccurate} and up-to-date land cover maps are essential for environmental monitoring, natural resource management, and climate change assessment \cite{gong2013finer}. In tropical regions such as Sumatra, Indonesia, rapid land use change driven by palm oil expansion, logging, and urbanisation has made land cover mapping both urgent and challenging \cite{hansen2013high}. Jambi Province, located in central Sumatra, exemplifies these dynamics: its landscape spans lowland tropical forest, extensive oil palm and rubber plantations, peatland ecosystems, and growing urban centres, creating a heterogeneous classification problem that demands robust methods \cite{wahyunto2004peatland}.
+
+Satellite remote sensing provides the spatial and temporal coverage needed for large-area land cover mapping. The European Space Agency's Sentinel-2 mission delivers multi-spectral imagery at 10 to 20\,m resolution with a five-day revisit cycle, making it a primary data source for land cover studies \cite{drusch2012sentinel}. Sentinel-2's spectral bands spanning visible, near-infrared, red edge, and shortwave infrared wavelengths enable discrimination among vegetation types, water bodies, built-up areas, and bare surfaces \cite{phiri2020sentinel}. Spectral indices such as the Normalised Difference Vegetation Index (NDVI) and Normalised Difference Water Index (NDWI) further enhance class separability \cite{rouse1974monitoring}.
+
+Traditional machine learning classifiers, including Random Forest and Support Vector Machines, have been widely applied to satellite image classification \cite{belgiu2016random, foody2004relative}. However, these methods typically operate on individual pixels without exploiting spatial context. Deep learning architectures, particularly Convolutional Neural Networks (CNNs), have demonstrated superior performance by learning hierarchical spatial-spectral features directly from image patches \cite{ma2019deep, li2018deep}. Transfer learning from ImageNet pretrained models further reduces data requirements \cite{cheng2020remote}.
+
+The evolution of deep learning architectures has been rapid. Residual Networks (ResNet) introduced skip connections enabling training of very deep networks \cite{he2016deep}. DenseNet improved feature reuse through dense connectivity \cite{huang2017densely}. EfficientNet achieved state-of-the-art performance through compound scaling \cite{tan2019efficientnet}. More recently, the Swin Transformer incorporated hierarchical representations with shifted window attention \cite{liu2021swin}, while ConvNeXt revisited pure convolutional designs using modern training strategies inspired by transformers \cite{liu2022convnet}.
+
+Despite these advances, comparative studies of modern architectures for tropical land cover classification remain limited. Most studies focus on temperate environments \cite{wessel2018evaluation}, use coarser-resolution imagery \cite{woodcock2020transitioning}, or compare only CNN variants without transformer-based models \cite{tong2019land}. Land cover mapping in Indonesia faces specific challenges: persistent cloud cover, spectral similarity between plantation agriculture and forest, and severe class imbalance \cite{bullock2020monitoring}.
+
+This study addresses these gaps by comparing five modern deep learning architectures for land cover classification in Jambi Province using cloud-free Sentinel-2 imagery. The architectures span three design paradigms: traditional CNNs (ResNet-50, DenseNet-121), efficient CNNs (EfficientNet-B3, ConvNeXt-T), and vision transformers (Swin-T). The comparison covers overall accuracy, per-class metrics, training dynamics, and statistical significance through McNemar's pairwise tests.
+
+% ==================================================================
+% II. RELATED WORK
+% ==================================================================
+\section{Related Work}
+
+\subsection{Deep Learning for Remote Sensing Classification}
+Deep learning has transformed remote sensing image classification. Early applications adapted CNN architectures to multi-spectral classification tasks \cite{ma2019deep}. Hu et al.~\cite{hu2015deep} demonstrated that CNNs could effectively classify hyperspectral pixels, while subsequent work showed that 2D-CNNs capture spatial-spectral features jointly \cite{li2018deep}. ResNet \cite{he2016deep} addressed the vanishing gradient problem and enabled training beyond 100 layers, with gains transferring to remote sensing \cite{zhu2017deep}. DenseNet \cite{huang2017densely} promoted feature reuse with fewer parameters. EfficientNet \cite{tan2019efficientnet} established a new efficiency frontier through compound scaling, and several remote sensing studies have adopted it for land cover classification \cite{naushad2022analysis}.
+
+\subsection{Vision Transformers for Image Classification}
+The Vision Transformer (ViT) \cite{dosovitskiy2021image} applied self-attention to image patches, demonstrating strong performance on large datasets. However, its quadratic complexity with image size poses challenges for remote sensing \cite{hong2022spectralformer}. The Swin Transformer \cite{liu2021swin} addressed these limitations through hierarchical architecture with shifted window self-attention, achieving linear complexity. In remote sensing, Swin Transformer has shown promising results for land cover mapping \cite{wang2023advancing}. ConvNeXt \cite{liu2022convnet} modernised ResNet with transformer-inspired design choices, matching Swin Transformer performance while retaining convolutional inductive biases.
+
+\subsection{Transfer Learning for Remote Sensing}
+Transfer learning from ImageNet pretraining provides generic features that transfer to satellite imagery despite the domain gap \cite{cheng2020remote, neumann2019domain}. The primary adaptation challenge for Sentinel-2 is the channel mismatch: ImageNet models expect three-channel input, whereas Sentinel-2 provides 10 or more bands \cite{foody2002status}. Common strategies include replicating pretrained weights across additional channels, or using the \texttt{timm} library \cite{wightman2019timm} for automatic adaptation.
+
+\subsection{Land Cover Classification in Indonesia}
+Indonesia's tropical landscapes present particular classification challenges. The KLHK maintains an official land cover dataset serving as the national reference for forest monitoring \cite{klhk2016frel}. Several studies have applied machine learning to land cover mapping in Sumatra \cite{belgiu2016random, miettinen2016land}, but deep learning comparisons using modern architectures and Sentinel-2 data for Indonesian provinces remain limited.
+
+% ==================================================================
+% III. MATERIALS AND METHOD
+% ==================================================================
+\section{Materials and Method}
+
+\subsection{Study Area}
+Jambi Province is located on the eastern coast of Sumatra, Indonesia, between approximately $0.45^{\circ}$\,S to $2.45^{\circ}$\,S latitude and $101.1^{\circ}$\,E to $104.55^{\circ}$\,E longitude. The province covers approximately 50,160\,km$^2$ and encompasses diverse land cover types ranging from lowland tropical rainforest in the western highlands to extensive oil palm and rubber plantations in the central lowlands and mangrove forests along the eastern coast. The tropical climate features a wet season from October to March and a drier period from April to September.
+
+\subsection{Data Sources}
+
+\subsubsection{Sentinel-2 Satellite Imagery}
+Multi-spectral satellite imagery was acquired from the Copernicus Sentinel-2 mission via Google Earth Engine \cite{gorelick2017google}. The \texttt{COPERNICUS/S2\_SR\_HARMONIZED} collection for 2024 was used, with cloud filtering via Cloud Score+ at a threshold of 0.60. A median composite was generated across the time period. The final product comprises four tiles totalling 2.7\,GB. Ten spectral bands at 20\,m resolution were retained: B2 (Blue, 490\,nm), B3 (Green, 560\,nm), B4 (Red, 665\,nm), B5--B7 (Red Edge, 705--783\,nm), B8 (NIR, 842\,nm), B8A (Red Edge~4, 865\,nm), B11 (SWIR~1, 1610\,nm), and B12 (SWIR~2, 2190\,nm).
+
+\subsubsection{KLHK Ground Truth Data}
+Ground truth labels were obtained from the Indonesian Ministry of Environment and Forestry (KLHK) 2024 land cover dataset (PL2024), downloaded in KMZ format via partitioned download across 29 spatial partitions. The dataset contains 28,100 polygons. Table~\ref{tab:klhk_mapping} shows the mapping to six simplified classes.
+
+\begin{table}[!t]
+\centering
+\caption{KLHK Land Cover Code Mapping to Simplified Classes}
+\label{tab:klhk_mapping}
+\begin{tabular}{clp{4.2cm}}
+\toprule
+\textbf{ID} & \textbf{Class Name} & \textbf{KLHK Categories} \\
+\midrule
+0 & Water & Tubuh Air (water bodies) \\
+1 & Trees/Forest & Hutan Lahan Kering Primer/Sekunder, Hutan Rawa, Hutan Mangrove, Hutan Tanaman \\
+4 & Crops/Agriculture & Pertanian Lahan Kering, Sawah, Perkebunan \\
+5 & Shrub/Scrub & Semak/Belukar, Semak Rawa \\
+6 & Built Area & Pemukiman (settlement) \\
+7 & Bare Ground & Tanah Terbuka, Pertambangan \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Feature Engineering}
+Thirteen spectral indices were calculated from the 10 Sentinel-2 bands to enhance class separability. The indices span vegetation (NDVI, EVI, SAVI, MSAVI, GNDVI), water (NDWI, MNDWI), built-up (NDBI, BSI), red edge (NDRE, CIRE), and moisture (NDMI, NBR) domains. Table~\ref{tab:indices} presents the formulations.
+
+\begin{table}[!t]
+\centering
+\caption{Spectral Indices Calculated from Sentinel-2 Bands}
+\label{tab:indices}
+\begin{tabular}{lll}
+\toprule
+\textbf{Index} & \textbf{Formula} & \textbf{Domain} \\
+\midrule
+NDVI & $\frac{\text{NIR} - \text{Red}}{\text{NIR} + \text{Red}}$ & Vegetation \\[4pt]
+EVI & $2.5 \times \frac{\text{NIR} - \text{Red}}{\text{NIR} + 6\text{R} - 7.5\text{B} + 1}$ & Vegetation \\[4pt]
+SAVI & $1.5 \times \frac{\text{NIR} - \text{Red}}{\text{NIR} + \text{Red} + 0.5}$ & Vegetation \\[4pt]
+GNDVI & $\frac{\text{NIR} - \text{Green}}{\text{NIR} + \text{Green}}$ & Vegetation \\[4pt]
+NDWI & $\frac{\text{Green} - \text{NIR}}{\text{Green} + \text{NIR}}$ & Water \\[4pt]
+MNDWI & $\frac{\text{Green} - \text{SWIR1}}{\text{Green} + \text{SWIR1}}$ & Water \\[4pt]
+NDBI & $\frac{\text{SWIR1} - \text{NIR}}{\text{SWIR1} + \text{NIR}}$ & Built-up \\[4pt]
+BSI & $\frac{(\text{SWIR1}+\text{R}) - (\text{NIR}+\text{B})}{(\text{SWIR1}+\text{R}) + (\text{NIR}+\text{B})}$ & Built-up \\[4pt]
+NDRE & $\frac{\text{NIR} - \text{RE1}}{\text{NIR} + \text{RE1}}$ & Red Edge \\[4pt]
+CIRE & $\frac{\text{NIR}}{\text{RE1}} - 1$ & Red Edge \\[4pt]
+NDMI & $\frac{\text{NIR} - \text{SWIR1}}{\text{NIR} + \text{SWIR1}}$ & Moisture \\[4pt]
+NBR & $\frac{\text{NIR} - \text{SWIR2}}{\text{NIR} + \text{SWIR2}}$ & Moisture \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 10 spectral bands and 13 indices were stacked to produce a 23-channel feature raster. NaN and infinity values were replaced with zero, and each channel was independently normalised to zero mean and unit variance.
+
+\subsection{Data Preparation}
+The KLHK polygons were rasterised onto the Sentinel-2 grid at 20\,m resolution. A sliding window approach extracted $32 \times 32$ pixel patches with a stride of 16 pixels (50\% overlap). Each patch was assigned the label of its centre pixel. A total of 100,000 patches were extracted via stratified sampling. The dataset was split into 80,000 training and 20,000 test samples using stratified random splitting (seed = 42). Table~\ref{tab:class_distribution} shows the class distribution.
+
+\begin{table}[!t]
+\centering
+\caption{Class Distribution in the Test Set (20,000 Patches)}
+\label{tab:class_distribution}
+\begin{tabular}{clrc}
+\toprule
+\textbf{ID} & \textbf{Class Name} & \textbf{Samples} & \textbf{\%} \\
+\midrule
+0 & Water & 223 & 1.12 \\
+1 & Trees/Forest & 7,416 & 37.08 \\
+2 & Crops/Agriculture & 11,470 & 57.35 \\
+3 & Shrub/Scrub & 35 & 0.18 \\
+4 & Built Area & 556 & 2.78 \\
+5 & Bare Ground & 300 & 1.50 \\
+\midrule
+  & \textbf{Total} & \textbf{20,000} & \textbf{100.00} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Model Architectures}
+Five deep learning architectures were selected representing three design paradigms. Table~\ref{tab:architectures} summarises their characteristics. All models were initialised with ImageNet pretrained weights. The first layer was modified to accept 23 input channels: for ResNet-50 and DenseNet-121, pretrained weights were averaged across the 3 RGB channels and replicated 23 times, scaled by $3/23$; for EfficientNet-B3, ConvNeXt-T, and Swin-T, the \texttt{timm} library \cite{wightman2019timm} handled channel adaptation. The final classification layer was replaced with a linear layer mapping to 6 classes. All layers were trainable for end-to-end fine-tuning.
+
+\begin{table}[!t]
+\centering
+\caption{Summary of Deep Learning Architectures}
+\label{tab:architectures}
+\begin{tabular}{llrl}
+\toprule
+\textbf{Architecture} & \textbf{Paradigm} & \textbf{Params (M)} & \textbf{Key Mechanism} \\
+\midrule
+ResNet-50 & Residual CNN & 23.6 & Skip connections \\
+DenseNet-121 & Dense CNN & 7.0 & Dense connectivity \\
+EfficientNet-B3 & Efficient CNN & 10.7 & Compound scaling \\
+ConvNeXt-T & Modern CNN & 27.9 & Large kernels, LayerNorm \\
+Swin-T & Vis. Transformer & 27.5 & Shifted window attention \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Training Protocol}
+All models were trained with identical hyperparameters: Adam optimiser with learning rate $10^{-4}$, batch size 16, 30 epochs, cross-entropy loss with inverse-frequency class weights, ReduceLROnPlateau scheduler (factor 0.5, patience 3), and gradient clipping at max norm 1.0. Data augmentation during training comprised random horizontal flip ($p = 0.5$), random vertical flip ($p = 0.5$), and random rotation by $90^{\circ}$, $180^{\circ}$, or $270^{\circ}$ ($p = 0.5$). Model selection was based on the highest validation accuracy, with the best checkpoint restored for test evaluation.
+
+\subsection{Evaluation Metrics}
+Performance was assessed using overall accuracy (OA), F1-macro, F1-weighted, and Cohen's kappa coefficient \cite{cohen1960coefficient, congalton1991review}. Per-class precision (user's accuracy), recall (producer's accuracy), and F1-score were computed. Statistical significance was assessed using McNemar's test \cite{mcnemar1947note} for all 10 pairwise comparisons at $\alpha = 0.05$.
+
+% ==================================================================
+% IV. RESULTS AND DISCUSSION
+% ==================================================================
+\section{Results and Discussion}
+
+\subsection{Overall Classification Performance}
+Table~\ref{tab:overall_performance} summarises the overall performance of all five architectures on the 20,000-sample test set. Swin-T achieved the highest accuracy of 79.54\% with an F1-macro of 0.5644, F1-weighted of 0.7836, and kappa of 0.587. ConvNeXt-T ranked second at 79.14\% accuracy, followed by DenseNet-121 at 78.85\%, ResNet-50 at 78.64\%, and EfficientNet-B3 at 78.29\%. The accuracy spread across all five models is 1.25 percentage points.
+
+\begin{table}[!t]
+\centering
+\caption{Overall Classification Performance. Best Values in Bold.}
+\label{tab:overall_performance}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & \textbf{OA (\%)} & \textbf{F1-Ma} & \textbf{F1-Wt} & \textbf{Kappa} & \textbf{Params} & \textbf{Time} \\
+ & & & & & \textbf{(M)} & \textbf{(min)} \\
+\midrule
+\textbf{Swin-T}  & \textbf{79.54} & \textbf{0.5644} & \textbf{0.7836} & \textbf{0.587} & 27.5 & 188.0 \\
+ConvNeXt-T        & 79.14 & 0.5469 & 0.7785 & 0.578 & 27.9 & 45.1 \\
+DenseNet-121      & 78.85 & 0.5390 & 0.7751 & 0.571 & \textbf{7.0} & 102.1 \\
+ResNet-50         & 78.64 & 0.5250 & 0.7727 & 0.566 & 23.6 & 96.1 \\
+EfficientNet-B3   & 78.29 & 0.5510 & 0.7685 & 0.557 & 10.7 & 218.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The relatively low F1-macro values (0.5250--0.5644) compared with F1-weighted values (0.7685--0.7836) reflect poor performance on minority classes, which pull down the unweighted average. ConvNeXt-T achieved the fastest training time at 45.1\,min, 4.2 times faster than Swin-T (188.0\,min), while sacrificing only 0.40 percentage points in accuracy. DenseNet-121 offers the most parameter-efficient option at 7.0\,M parameters yet trails the best accuracy by only 0.69 percentage points.
+
+\subsection{Per-Class Analysis}
+Per-class F1 scores are presented in Table~\ref{tab:perclass_f1}. Crops/Agriculture achieved the highest F1 scores across all models (0.839--0.846), followed by Trees/Forest (0.708--0.732). These two classes together constitute 94.43\% of the test set. Bare Ground achieved the lowest F1 scores (0.207--0.278), followed by Shrub/Scrub (0.174--0.367).
+
+\begin{table}[!t]
+\centering
+\caption{Per-Class F1 Scores. Best Value per Class in Bold.}
+\label{tab:perclass_f1}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Class} & \textbf{Swin-T} & \textbf{CNeXt} & \textbf{Dense} & \textbf{ResNet} & \textbf{EffNet} \\
+\midrule
+Water          & 0.624 & 0.626 & 0.596 & \textbf{0.663} & 0.583 \\
+Trees/Forest   & \textbf{0.732} & 0.724 & 0.719 & 0.713 & 0.708 \\
+Crops/Agri.    & \textbf{0.846} & 0.843 & 0.842 & 0.841 & 0.839 \\
+Shrub/Scrub    & \textbf{0.367} & 0.311 & 0.308 & 0.174 & 0.364 \\
+Built Area     & 0.554 & \textbf{0.570} & 0.543 & 0.546 & 0.435 \\
+Bare Ground    & 0.263 & 0.207 & 0.226 & 0.213 & \textbf{0.278} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:perclass_pa_ua} presents precision (user's accuracy, UA) and recall (producer's accuracy, PA) per class. All models exhibit a strong precision--recall trade-off. Crops achieves consistently high recall (0.951--0.965) but moderate precision (0.742--0.762), indicating many non-crop pixels are misclassified as cropland. Trees shows high precision (0.894--0.914) but moderate recall (0.577--0.616), meaning pixels classified as forest are likely correct, but many forest pixels are missed.
+
+\begin{table}[!t]
+\centering
+\caption{Per-Class Precision (UA) and Recall (PA) for All Architectures}
+\label{tab:perclass_pa_ua}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Class} & & \textbf{Swin-T} & \textbf{CNeXt} & \textbf{Dense} & \textbf{ResNet} & \textbf{EffNet} \\
+\midrule
+\multirow{2}{*}{Water}
+  & UA & 0.726 & 0.809 & 0.699 & 0.831 & 0.882 \\
+  & PA & 0.547 & 0.511 & 0.520 & 0.552 & 0.435 \\
+\multirow{2}{*}{Trees}
+  & UA & 0.904 & 0.907 & 0.894 & 0.899 & 0.914 \\
+  & PA & 0.616 & 0.603 & 0.602 & 0.591 & 0.577 \\
+\multirow{2}{*}{Crops}
+  & UA & 0.762 & 0.757 & 0.755 & 0.752 & 0.742 \\
+  & PA & 0.951 & 0.952 & 0.951 & 0.954 & 0.965 \\
+\multirow{2}{*}{Shrub}
+  & UA & 0.643 & 0.700 & 0.471 & 0.364 & 0.387 \\
+  & PA & 0.257 & 0.200 & 0.229 & 0.114 & 0.343 \\
+\multirow{2}{*}{Built}
+  & UA & 0.681 & 0.644 & 0.761 & 0.770 & 0.889 \\
+  & PA & 0.468 & 0.511 & 0.423 & 0.423 & 0.288 \\
+\multirow{2}{*}{Bare}
+  & UA & 0.671 & 0.638 & 0.583 & 0.417 & 0.573 \\
+  & PA & 0.163 & 0.123 & 0.140 & 0.143 & 0.183 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Confusion Matrix Analysis}
+The normalised confusion matrices for all five architectures are shown in Fig.~\ref{fig:confusion_matrices}. The most common misclassification across all models is Trees being classified as Crops, accounting for approximately 2,800--3,100 misclassified samples per model out of 7,416 total Trees samples. This confusion reflects the spectral similarity between forest canopy and plantation crops such as oil palm and rubber at 20\,m resolution. Bare Ground is predominantly misclassified as Crops (193--206 out of 300 samples) and Trees (36--57 samples).
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_confusion_matrices.png}
+\caption{Normalised confusion matrices for all five architectures on the 20,000-sample test set. Each cell shows the proportion of actual class samples (rows) classified as the predicted class (columns). Darker shading indicates higher proportions.}
+\label{fig:confusion_matrices}
+\end{figure*}
+
+\subsection{Training Dynamics}
+Fig.~\ref{fig:training_curves} presents the training and validation loss and accuracy curves for all architectures over 30 epochs. All models exhibit rapid initial improvement in the first 5--10 epochs, followed by gradual convergence. Swin-T reached its best validation accuracy at epoch 27, indicating that the transformer architecture benefits from extended training. DenseNet-121 peaked at epoch 25. ResNet-50 achieved its best performance at epoch 18, suggesting the simpler residual architecture saturates earlier. EfficientNet-B3 peaked at epoch 19. The gap between training and validation accuracy remains moderate (approximately 1--3 percentage points at convergence), indicating adequate regularisation.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_training_curves.png}
+\caption{Training and validation loss (left) and accuracy (right) curves for all five architectures over 30 training epochs. Solid lines represent training metrics; dashed lines represent validation metrics.}
+\label{fig:training_curves}
+\end{figure*}
+
+\subsection{Statistical Significance}
+McNemar's test was applied to all 10 pairwise comparisons. Table~\ref{tab:mcnemar} presents the results, and Fig.~\ref{fig:mcnemar} shows the $p$-value matrix.
+
+\begin{table}[!t]
+\centering
+\caption{McNemar's Test Results for Pairwise Comparisons ($\alpha = 0.05$)}
+\label{tab:mcnemar}
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Comparison} & \textbf{$\chi^2$} & \textbf{$p$-value} & \textbf{Sig.} \\
+\midrule
+Swin-T vs EfficientNet-B3  & 44.068 & ${<}0.001$ & *** \\
+Swin-T vs ResNet-50        & 29.075 & ${<}0.001$ & *** \\
+Swin-T vs DenseNet-121     & 17.019 & ${<}0.001$ & *** \\
+Swin-T vs ConvNeXt-T       &  6.537 & 0.011      & *   \\
+ConvNeXt-T vs EfficientNet-B3 & 19.292 & ${<}0.001$ & *** \\
+ConvNeXt-T vs ResNet-50    &  8.629 & 0.003      & **  \\
+ConvNeXt-T vs DenseNet-121 &  2.906 & 0.088      & ns  \\
+DenseNet-121 vs EfficientNet-B3 & 8.915 & 0.003  & **  \\
+DenseNet-121 vs ResNet-50  &  1.628 & 0.202      & ns  \\
+EfficientNet-B3 vs ResNet-50 & 3.287 & 0.070    & ns  \\
+\bottomrule
+\multicolumn{4}{l}{\footnotesize *** $p < 0.001$, ** $p < 0.01$, * $p < 0.05$, ns = not significant}
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_mcnemar_pvalues.png}
+\caption{McNemar's test $p$-value matrix. Green cells indicate statistically significant differences ($p < 0.05$); red cells indicate non-significant differences.}
+\label{fig:mcnemar}
+\end{figure}
+
+The results establish a partial ordering. Swin-T significantly outperforms all other architectures at $p < 0.05$, with the strongest separation from EfficientNet-B3 ($\chi^2 = 44.068$, $p < 0.001$) and the weakest from ConvNeXt-T ($\chi^2 = 6.537$, $p = 0.011$). ConvNeXt-T significantly outperforms EfficientNet-B3 ($p < 0.001$) and ResNet-50 ($p = 0.003$) but not DenseNet-121 ($p = 0.088$). The differences among DenseNet-121, ResNet-50, and EfficientNet-B3 are not statistically significant, placing them in a second performance tier.
+
+\subsection{Spatial Prediction Analysis}
+Fig.~\ref{fig:study_area} presents the Sentinel-2 true-colour composite and the KLHK ground truth land cover map for Jambi Province. The dense forest cover in the western highlands, extensive plantation agriculture in the central and eastern lowlands, and urban areas around the provincial capital are clearly visible.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.49\textwidth]{figures/fig_rgb_province.png}
+\hfill
+\includegraphics[width=0.49\textwidth]{figures/fig_groundtruth_province.png}
+\caption{Study area overview. Left: Sentinel-2 true-colour (RGB) composite of Jambi Province, 2024 dry season. Right: KLHK 2024 ground truth land cover map showing the six classified land cover types.}
+\label{fig:study_area}
+\end{figure*}
+
+Fig.~\ref{fig:prediction_map} shows the ResNet-50 prediction map at the province scale. The model correctly captures the broad spatial distribution of forest and cropland but produces a smoother map than the reference data, particularly along class boundaries. This smoothing effect is expected because the $32 \times 32$ pixel patch-based classification integrates spatial context over a $640 \times 640$\,m window.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_resnet50_province.png}
+\caption{ResNet-50 land cover prediction map for Jambi Province, demonstrating the spatial distribution of classified land cover types.}
+\label{fig:prediction_map}
+\end{figure}
+
+\subsection{Discussion}
+The results demonstrate that modern architectures offer statistically significant but modest improvements over traditional residual networks. Swin-T's advantage of 0.90 percentage points over ResNet-50, while statistically significant ($p < 0.001$), translates to approximately 180 additional correctly classified patches out of 20,000.
+
+The persistent challenge across all architectures is minority class classification. Bare Ground and Shrub, representing less than 2\% of the dataset, achieve F1 scores below 0.40 regardless of architecture. This limitation stems from insufficient training samples and genuine spectral overlap with more common classes.
+
+The comparison between Swin-T and ConvNeXt-T is informative. Despite representing different computational paradigms (self-attention versus convolution), these architectures achieve nearly identical accuracy (79.54\% versus 79.14\%) with similar parameter counts. ConvNeXt-T's 4.2$\times$ faster training makes it practical when computational resources are constrained, while Swin-T's marginally better F1-macro (0.5644 versus 0.5469) suggests self-attention may capture subtle patterns benefiting minority class recognition.
+
+DenseNet-121 presents an attractive efficiency trade-off. With only 7.0\,M parameters (one-quarter of Swin-T and ConvNeXt-T), it achieves 78.85\% accuracy. For deployment scenarios where model size is critical, DenseNet-121 offers the best accuracy-per-parameter ratio.
+
+The moderate kappa values (0.557--0.587) indicate that while the models outperform random classification, there is room for improvement. This is consistent with the spectral similarity between natural forest and plantation crops at 20\,m resolution.
+
+Several limitations should be noted. First, a single year of imagery was used, missing temporal dynamics. Second, the 20\,m resolution limits detection of small-scale features. Third, the patch-based approach introduces boundary effects. Fourth, the KLHK reference data itself contains uncertainties from visual interpretation. Fifth, only five architectures were compared.
+
+% ==================================================================
+% V. CONCLUSION
+% ==================================================================
+\section{Conclusion}
+This study compared five deep learning architectures for land cover classification in Jambi Province, Indonesia, using 23-channel Sentinel-2 imagery and KLHK ground truth data across six land cover classes. Swin Transformer Tiny achieved the best overall accuracy of 79.54\% with an F1-macro of 0.5644, statistically outperforming all other architectures at $p < 0.05$ in McNemar's pairwise tests. ConvNeXt Tiny ranked second at 79.14\% with 4.2$\times$ faster training, making it preferred when computational efficiency is prioritised. DenseNet-121 offered the best parameter efficiency at 7.0\,M parameters while achieving 78.85\% accuracy.
+
+All architectures struggled with minority classes, particularly Bare Ground (F1 = 0.207--0.278) and Shrub/Scrub (F1 = 0.174--0.367). The dominant confusion between Trees/Forest and Crops/Agriculture highlights the fundamental challenge of distinguishing natural forest from plantation crops at 20\,m resolution.
+
+Future work should address minority class performance through focal loss or class-balanced sampling, incorporate temporal features from multi-date composites, explore multi-scale architectures combining 10\,m and 20\,m bands, and integrate SAR data from Sentinel-1 for structural discrimination.
+
+% ==================================================================
+% REFERENCES
+% ==================================================================
+\balance
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
