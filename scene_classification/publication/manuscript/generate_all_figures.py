@@ -48,16 +48,16 @@ np.random.seed(42)
 COL_W = 3.45   # IEEE single-column width in inches
 FULL_W = 7.16  # IEEE two-column (full page) width in inches
 
-# Professional 8-color palette (colorblind-friendly, muted tones)
+# Okabe-Ito + Paul Tol palette (colorblind-safe, Nature Methods standard)
 MODEL_COLORS = [
-    '#2166AC',  # ResNet-50     (deep blue)
-    '#4393C3',  # ResNet-101    (medium blue)
-    '#66BD63',  # DenseNet-121  (green)
-    '#F4A582',  # EffNet-B0     (salmon)
-    '#D6604D',  # EffNet-B3     (brick red)
-    '#9970AB',  # ViT-B/16      (purple)
-    '#E08214',  # Swin-T        (amber)
-    '#1A9876',  # ConvNeXt-T    (teal)
+    '#0072B2',  # ResNet-50     (blue        — Okabe-Ito)
+    '#56B4E9',  # ResNet-101    (sky blue    — Okabe-Ito)
+    '#009E73',  # DenseNet-121  (teal green  — Okabe-Ito)
+    '#E69F00',  # EffNet-B0     (orange      — Okabe-Ito)
+    '#D55E00',  # EffNet-B3     (vermillion  — Okabe-Ito)
+    '#CC79A7',  # ViT-B/16      (rose        — Okabe-Ito)
+    '#882255',  # Swin-T        (wine        — Paul Tol)
+    '#332288',  # ConvNeXt-T    (indigo      — Paul Tol)
 ]
 
 MODEL_DISPLAY = {
@@ -69,9 +69,9 @@ MODEL_DISPLAY = {
 }
 
 FAMILY_COLORS = {
-    'cnn': '#2166AC',
-    'transformer': '#D6604D',
-    'cnn_modern': '#1A9876',
+    'cnn': '#0072B2',        # blue       (Okabe-Ito)
+    'transformer': '#D55E00', # vermillion (Okabe-Ito)
+    'cnn_modern': '#009E73',  # teal green (Okabe-Ito)
 }
 FAMILY_MARKERS = {'cnn': 'o', 'transformer': 's', 'cnn_modern': 'D'}
 FAMILY_LABELS = {
@@ -422,35 +422,44 @@ def gen_accuracy(data):
     mo = model_order()
     datasets = [d for d in ['eurosat', 'ucmerced'] if d in results]
     ds_lbl = {'eurosat': 'EuroSAT', 'ucmerced': 'UC Merced'}
-    ds_col = ['#2166AC', '#D6604D']
+    ds_col = ['#0072B2', '#D55E00']  # Okabe-Ito blue + vermillion
+    ds_hatch = ['', '///']
 
-    fig, ax = plt.subplots(figsize=(COL_W, 3.5))
+    fig, ax = plt.subplots(figsize=(COL_W, 2.6))
     x = np.arange(len(mo))
-    w = 0.38
+    w = 0.36
 
     for i, ds in enumerate(datasets):
         accs = [results[ds].get(m, {}).get('accuracy', 0) * 100 for m in mo]
         bars = ax.bar(x + i*w - w/2, accs, w, label=ds_lbl.get(ds, ds),
-                      color=ds_col[i], edgecolor='white', lw=0.6, alpha=0.92)
-        # Annotations inside bars (white text near top)
+                      color=ds_col[i], edgecolor='#555555', lw=0.3,
+                      alpha=0.85, hatch=ds_hatch[i], zorder=3)
+        # Value labels above each bar
         for bar, a in zip(bars, accs):
             if a > 0:
                 ax.text(bar.get_x() + bar.get_width()/2,
-                        bar.get_height() - 0.18,
-                        f'{a:.1f}', ha='center', va='top',
-                        fontsize=5, fontweight='bold', color='white')
+                        bar.get_height() + 0.03,
+                        f'{a:.1f}', ha='center', va='bottom',
+                        fontsize=4.5, color='#333333')
 
     disp = [MODEL_DISPLAY.get(m, m) for m in mo]
     ax.set_xticks(x)
-    ax.set_xticklabels(disp, rotation=30, ha='right', fontsize=6.5)
-    ax.set_ylabel('Overall Accuracy (%)', fontsize=8, fontweight='bold')
+    ax.set_xticklabels(disp, rotation=30, ha='right', fontsize=6)
+    ax.set_ylabel('Overall Accuracy (%)', fontsize=7.5, fontweight='bold')
     ax.set_title('Accuracy Comparison Across Datasets',
-                 fontweight='bold', fontsize=9, pad=5)
-    ax.set_ylim(97.8, 100.0)
+                 fontweight='bold', fontsize=8.5, pad=5)
+    ax.set_ylim(98.0, 100.2)
     ax.yaxis.set_major_locator(mticker.MultipleLocator(0.5))
-    ax.legend(fontsize=6.5, loc='lower right', edgecolor='#CCCCCC')
-    ax.grid(axis='y', alpha=0.20, linewidth=0.4)
-    ax.tick_params(labelsize=7)
+    ax.legend(fontsize=6, loc='lower left', edgecolor='#CCCCCC',
+              framealpha=0.95, fancybox=True, borderpad=0.4)
+    ax.grid(axis='y', alpha=0.15, linewidth=0.3, linestyle='--', zorder=0)
+    ax.set_axisbelow(True)
+    ax.tick_params(labelsize=6.5)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
+    for spine in ['bottom', 'left']:
+        ax.spines[spine].set_linewidth(0.4)
+        ax.spines[spine].set_color('#888888')
     plt.tight_layout()
     savefig(fig, 'accuracy_comparison.pdf')
 
@@ -459,6 +468,9 @@ def gen_accuracy(data):
 # 7. Per-Class F1 Heatmap (models x classes)
 # ============================================================
 def gen_f1_heatmap(ds, eval_data):
+    from matplotlib.transforms import Bbox
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
     tag = ds
     ds_disp = 'EuroSAT' if ds == 'eurosat' else 'UC Merced'
     print(f"[7] Per-class F1 heatmap ({ds_disp})...")
@@ -472,36 +484,64 @@ def gen_f1_heatmap(ds, eval_data):
         mat[i] = eval_data[m]['per_class']['f1']
 
     disp_models = [MODEL_DISPLAY.get(m, m) for m in mo]
-    height = max(2.8, len(mo) * 0.38)
 
-    if n_cls <= 12:
-        show_annot = True
-        annot_kws = {'size': 5.5, 'fontweight': 'medium'}
+    if ds == 'eurosat':
         x_labels = [EURO_SHORT.get(c, c[:5]) for c in classes]
-        x_tick_size = 6
     else:
-        show_annot = False
-        annot_kws = {}
         x_labels = [UCM_SHORT.get(c, c[:4]) for c in classes]
-        x_tick_size = 5
 
-    fig, ax = plt.subplots(figsize=(COL_W, height))
+    # Single-column square figure
+    sq = COL_W
+    fig, ax = plt.subplots(figsize=(sq, sq))
+
+    vmin_val = 0.93 if ds == 'eurosat' else 0.92
+    show_annot = (n_cls <= 12)
+    annot_kws = {'size': 5.5} if show_annot else {}
+    x_tick_size = 6 if show_annot else 5
+
+    # Blues colormap, NO colorbar inside heatmap (we add it manually at bottom)
+    sns.heatmap(mat, annot=show_annot,
+                fmt='.2f' if show_annot else '',
+                cmap='Blues',
+                vmin=vmin_val, vmax=1.0,
+                xticklabels=x_labels, yticklabels=disp_models, ax=ax,
+                annot_kws=annot_kws,
+                linewidths=0.3, linecolor='#CCCCCC',
+                cbar=False)
+
+    ax.set_title(f'Per-Class F1-Score on {ds_disp}',
+                 fontweight='bold', fontsize=8.5, pad=6)
+    ax.tick_params(axis='x', rotation=45, labelsize=x_tick_size)
+    ax.tick_params(axis='y', rotation=0, labelsize=6)
+    ax.set_xlabel('')
+    ax.set_ylabel('')
 
     for sp in ax.spines.values():
         sp.set_visible(True)
+        sp.set_linewidth(0.4)
+        sp.set_color('#888888')
 
-    fmt = '.2f' if show_annot else ''
-    sns.heatmap(mat, annot=show_annot, fmt=fmt, cmap='YlGn',
-                vmin=0.9 if ds == 'eurosat' else 0.85, vmax=1.0,
-                xticklabels=x_labels, yticklabels=disp_models, ax=ax,
-                annot_kws=annot_kws, linewidths=0.4, linecolor='white',
-                cbar_kws={'shrink': 0.8, 'label': 'F1'})
-    ax.set_title(f'Per-Class F1-Score on {ds_disp}',
-                 fontweight='bold', fontsize=9, pad=6)
-    ax.tick_params(axis='x', rotation=40, labelsize=x_tick_size)
-    ax.tick_params(axis='y', rotation=0, labelsize=6.5)
-    plt.tight_layout()
-    savefig(fig, f'per_class_f1_{tag}.pdf')
+    # Horizontal colorbar at bottom — frees right side so grid fills the width
+    import matplotlib.cm as cm
+    import matplotlib.colors as mcolors
+    norm = mcolors.Normalize(vmin=vmin_val, vmax=1.0)
+    sm = cm.ScalarMappable(cmap='Blues', norm=norm)
+    sm.set_array([])
+    cbar_ax = fig.add_axes([0.20, 0.04, 0.60, 0.02])  # [left, bottom, width, height]
+    cbar = fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
+    cbar.ax.tick_params(labelsize=5.5)
+    cbar.set_label('F1-Score', fontsize=6.5, fontweight='bold')
+
+    # Position grid: no colorbar on right, so grid goes wider
+    fig.subplots_adjust(left=0.22, right=0.98, top=0.91, bottom=0.18)
+
+    # Force exact square PDF
+    p = os.path.join(FIG_DIR, f'per_class_f1_{tag}.pdf')
+    fig.savefig(p, dpi=300, facecolor='white',
+                bbox_inches=Bbox.from_bounds(0, 0, sq, sq),
+                pad_inches=0)
+    plt.close(fig)
+    print(f"  per_class_f1_{tag}.pdf: {os.path.getsize(p)/1024:.0f} KB")
 
 
 # ============================================================
@@ -538,7 +578,8 @@ def gen_mcnemar(ds, eval_data):
         sp.set_visible(True)
 
     mask = np.triu(np.ones_like(pmat, dtype=bool), k=0)
-    sns.heatmap(pmat, mask=mask, annot=True, fmt='.3f', cmap='RdYlGn',
+    # PuOr: colorblind-safe diverging (purple=low p/significant, orange=high p)
+    sns.heatmap(pmat, mask=mask, annot=True, fmt='.3f', cmap='PuOr',
                 vmin=0, vmax=0.1, xticklabels=disp, yticklabels=disp, ax=ax,
                 linewidths=0.6, linecolor='white', square=True,
                 annot_kws={'size': 6, 'fontweight': 'bold'},
@@ -570,21 +611,10 @@ def gen_efficiency(data):
     if ds not in results:
         return
 
-    fig, ax = plt.subplots(figsize=(COL_W, 3.2))
-    plotted = set()
+    fig, ax = plt.subplots(figsize=(COL_W, 3.3))
 
-    # Custom offsets to avoid label overlap (model_key -> (dx, dy))
-    label_offsets = {
-        'resnet50': (5, -8),
-        'resnet101': (5, -8),
-        'densenet121': (5, 4),
-        'efficientnet_b0': (5, 4),
-        'efficientnet_b3': (-40, 6),
-        'vit_b_16': (5, -8),
-        'swin_t': (5, 5),
-        'convnext_tiny': (-48, 6),
-    }
-
+    # Collect data
+    points = []
     for m in model_order():
         if m not in results[ds]:
             continue
@@ -592,25 +622,69 @@ def gen_efficiency(data):
         acc = results[ds][m]['accuracy'] * 100
         fam = info.get('family', 'cnn')
         par = results[ds][m].get('params_m', info.get('params_m', 0))
-        lbl = FAMILY_LABELS.get(fam, fam) if fam not in plotted else ''
-        plotted.add(fam)
-        ax.scatter(par, acc, c=FAMILY_COLORS.get(fam, 'gray'),
-                   marker=FAMILY_MARKERS.get(fam, 'o'),
-                   s=65, edgecolors='#333333', lw=0.7, label=lbl,
-                   zorder=3, alpha=0.92)
-        dx, dy = label_offsets.get(m, (5, 5))
+        points.append((m, par, acc, fam))
+
+    plotted_families = set()
+
+    # Label offsets: (dx, dy, ha) — hand-tuned to prevent all overlap
+    label_cfg = {
+        'efficientnet_b0': (-7, -7, 'right'),
+        'densenet121':     (7, -5, 'left'),
+        'efficientnet_b3': (-7, -7, 'right'),
+        'resnet50':        (7, -5, 'left'),
+        'swin_t':          (7, -5, 'left'),
+        'convnext_tiny':   (-7, 7, 'right'),
+        'resnet101':       (7, 3, 'left'),
+        'vit_b_16':        (-7, 5, 'right'),
+    }
+
+    for m, par, acc, fam in points:
+        fam_color = FAMILY_COLORS.get(fam, 'gray')
+        fam_marker = FAMILY_MARKERS.get(fam, 'o')
+        lbl = FAMILY_LABELS.get(fam, fam) if fam not in plotted_families else ''
+        plotted_families.add(fam)
+
+        # Main marker
+        ax.scatter(par, acc, c=fam_color, marker=fam_marker,
+                   s=55, edgecolors='#333333', lw=0.6,
+                   label=lbl, zorder=4, alpha=0.9)
+
+        # Label with thin leader line
+        dx, dy, ha = label_cfg.get(m, (7, 3, 'left'))
         ax.annotate(MODEL_DISPLAY.get(m, m), (par, acc),
-                    textcoords='offset points', xytext=(dx, dy), fontsize=5.5,
-                    bbox=dict(boxstyle='round,pad=0.15', fc='white',
-                              ec='#BBBBBB', alpha=0.9, lw=0.4))
+                    textcoords='offset points', xytext=(dx, dy),
+                    fontsize=5.5, ha=ha, va='center', color='#333333',
+                    arrowprops=dict(arrowstyle='-', color='#AAAAAA',
+                                    lw=0.35, shrinkA=0, shrinkB=2),
+                    zorder=6)
 
     ax.set_xlabel('Parameters (M)', fontsize=8, fontweight='bold')
     ax.set_ylabel('Accuracy (%)', fontsize=8, fontweight='bold')
     ax.set_title('Accuracy vs. Parameter Count on EuroSAT',
-                 fontweight='bold', fontsize=9, pad=5)
-    ax.grid(True, alpha=0.20, linewidth=0.4)
-    ax.legend(fontsize=6, loc='lower right', edgecolor='#CCCCCC')
+                 fontweight='bold', fontsize=9, pad=6)
+
+    # Clean grid
+    ax.grid(True, alpha=0.15, linewidth=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+
+    # Axis limits
+    param_values = [p for (_, p, _, _) in points]
+    y_vals = [a for (_, _, a, _) in points]
+    ax.set_xlim(-4, max(param_values) * 1.05)
+    y_span = max(y_vals) - min(y_vals)
+    ax.set_ylim(min(y_vals) - y_span * 0.25, max(y_vals) + y_span * 0.18)
+
+    # Legend
+    leg = ax.legend(fontsize=6, loc='lower right', framealpha=0.95,
+                    edgecolor='#CCCCCC', fancybox=True, borderpad=0.5,
+                    handletextpad=0.3, labelspacing=0.4)
+    leg.get_frame().set_linewidth(0.4)
+
     ax.tick_params(labelsize=7)
+    for spine in ax.spines.values():
+        spine.set_linewidth(0.4)
+        spine.set_color('#888888')
+
     plt.tight_layout()
     savefig(fig, 'efficiency_eurosat.pdf')
 
@@ -633,26 +707,33 @@ def gen_prediction(eval_data):
     short = EURO_SHORT
     short_classes = [short.get(c, c[:5]) for c in classes]
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(COL_W, 4.6))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(COL_W, 4.4))
 
-    # Top: per-class correct vs wrong
+    # Top: per-class correct vs wrong (stacked bar)
     corr = [np.sum(ok & (yt == c)) for c in range(len(classes))]
     wrng = [np.sum(bad & (yt == c)) for c in range(len(classes))]
     x = np.arange(len(classes))
-    ax1.bar(x, corr, color='#27AE60', alpha=0.88, edgecolor='white',
-            lw=0.4, label='Correct')
-    ax1.bar(x, wrng, bottom=corr, color='#C0392B', alpha=0.88,
-            edgecolor='white', lw=0.4, label='Misclassified')
+    ax1.bar(x, corr, color='#0072B2', alpha=0.85, edgecolor='#555555',
+            lw=0.3, label='Correct', zorder=3)
+    ax1.bar(x, wrng, bottom=corr, color='#D55E00', alpha=0.85,
+            edgecolor='#555555', lw=0.3, label='Misclassified', zorder=3)
     ax1.set_xticks(x)
-    ax1.set_xticklabels(short_classes, rotation=35, ha='right', fontsize=6)
-    ax1.set_ylabel('Samples', fontsize=8, fontweight='bold')
+    ax1.set_xticklabels(short_classes, rotation=35, ha='right', fontsize=5.5)
+    ax1.set_ylabel('Samples', fontsize=7.5, fontweight='bold')
     ax1.set_title('Per-Class Prediction Breakdown (ConvNeXt-T)',
-                  fontweight='bold', fontsize=8, pad=5)
-    ax1.legend(fontsize=6, edgecolor='#CCCCCC', loc='upper right')
-    ax1.grid(axis='y', alpha=0.20, linewidth=0.4)
-    ax1.tick_params(labelsize=7)
+                  fontweight='bold', fontsize=8, pad=4)
+    ax1.legend(fontsize=5.5, edgecolor='#CCCCCC', loc='upper right',
+               framealpha=0.95, fancybox=True)
+    ax1.grid(axis='y', alpha=0.15, linewidth=0.3, linestyle='--', zorder=0)
+    ax1.set_axisbelow(True)
+    ax1.tick_params(labelsize=6.5)
+    for sp in ['top', 'right']:
+        ax1.spines[sp].set_visible(False)
+    for sp in ['bottom', 'left']:
+        ax1.spines[sp].set_linewidth(0.4)
+        ax1.spines[sp].set_color('#888888')
 
-    # Bottom: top misclassification patterns
+    # Bottom: top misclassification patterns (horizontal bar)
     cm = confusion_matrix(yt, yp)
     np.fill_diagonal(cm, 0)
     flat = np.argsort(cm.ravel())[::-1][:6]
@@ -666,21 +747,29 @@ def gen_prediction(eval_data):
             vals.append(cm[r, c])
     if vals:
         yp2 = np.arange(len(vals))
-        clrs = plt.cm.Reds(np.linspace(0.35, 0.75, len(vals)))
-        ax2.barh(yp2, vals, color=clrs, edgecolor='white', lw=0.4, height=0.65)
+        # Single muted red gradient
+        clrs = plt.cm.OrRd(np.linspace(0.3, 0.7, len(vals)))
+        ax2.barh(yp2, vals, color=clrs, edgecolor='#555555', lw=0.3,
+                 height=0.6, zorder=3)
         ax2.set_yticks(yp2)
-        ax2.set_yticklabels(lbs, fontsize=6.5)
-        ax2.set_xlabel('Count', fontsize=8, fontweight='bold')
+        ax2.set_yticklabels(lbs, fontsize=6)
+        ax2.set_xlabel('Count', fontsize=7.5, fontweight='bold')
         ax2.set_title('Top Misclassification Patterns',
-                      fontweight='bold', fontsize=8, pad=5)
+                      fontweight='bold', fontsize=8, pad=4)
         ax2.invert_yaxis()
-        ax2.grid(axis='x', alpha=0.20, linewidth=0.4)
-        ax2.tick_params(labelsize=7)
+        ax2.grid(axis='x', alpha=0.15, linewidth=0.3, linestyle='--', zorder=0)
+        ax2.set_axisbelow(True)
+        ax2.tick_params(labelsize=6.5)
         for i, v in enumerate(vals):
-            ax2.text(v + 0.3, i, str(int(v)), va='center',
-                     fontsize=6.5, fontweight='bold')
+            ax2.text(v + 0.2, i, str(int(v)), va='center',
+                     fontsize=6, color='#333333')
+        for sp in ['top', 'right']:
+            ax2.spines[sp].set_visible(False)
+        for sp in ['bottom', 'left']:
+            ax2.spines[sp].set_linewidth(0.4)
+            ax2.spines[sp].set_color('#888888')
 
-    fig.subplots_adjust(hspace=0.50)
+    fig.subplots_adjust(hspace=0.55)
     savefig(fig, 'prediction_analysis.pdf')
 
 

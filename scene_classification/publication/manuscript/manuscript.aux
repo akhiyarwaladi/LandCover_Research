@@ -19,19 +19,27 @@
 \citation{tan2019efficientnet}
 \citation{nogueira2017towards}
 \citation{ma2019deep,zhu2017deep}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{1}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}CNN-Based Scene Classification}{1}{}\protected@file@percent }
 \citation{dosovitskiy2021image}
 \citation{wang2023advancing}
 \citation{liu2021swin}
 \citation{hong2022spectralformer}
-\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}CNN-Based Scene Classification}{1}{}\protected@file@percent }
 \citation{liu2022convnet}
 \citation{yang2010bag}
 \citation{helber2019eurosat}
 \citation{cheng2017nwpu}
 \citation{xia2017aid}
 \citation{helber2019eurosat}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Transformer-Based Approaches}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Modernized CNNs}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-D}}Benchmark Datasets}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Methodology}{2}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Overview of the research methodology. Two benchmark datasets are preprocessed with a uniform pipeline and used to train eight architectures from three design families under identical conditions. The trained models are evaluated using classification metrics, statistical significance tests, error analysis, and computational efficiency measures.}}{2}{}\protected@file@percent }
+\newlabel{fig:methodology}{{1}{2}{}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Datasets}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-A}1}EuroSAT}{2}{}\protected@file@percent }
 \citation{yang2010bag}
 \citation{he2016deep}
 \citation{he2016deep}
@@ -41,81 +49,67 @@
 \citation{dosovitskiy2021image}
 \citation{liu2021swin}
 \citation{liu2022convnet}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Transformer-Based Approaches}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Modernized CNNs}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-D}}Benchmark Datasets}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {III}Methodology}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Datasets}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-A}1}EuroSAT}{2}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Overview of the research methodology. Two benchmark datasets are preprocessed with a uniform pipeline and used to train eight architectures from three design families under identical conditions. The trained models are evaluated using classification metrics, statistical significance tests, error analysis, and computational efficiency measures.}}{2}{}\protected@file@percent }
-\newlabel{fig:methodology}{{1}{2}{}{figure.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-A}2}UC Merced Land Use}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-A}3}Data Partitioning}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Model Architectures}{2}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Sample images from EuroSAT. One randomly selected Sentinel-2 patch (64$\times $64 pixels, 10\,m resolution) is shown for each of the 10 classes.}}{3}{}\protected@file@percent }
-\newlabel{fig:sample_eurosat}{{2}{3}{}{figure.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Sample images from UC Merced. One randomly selected aerial image (256$\times $256 pixels, 0.3\,m resolution) is shown for each of the 21 classes.}}{3}{}\protected@file@percent }
-\newlabel{fig:sample_ucmerced}{{3}{3}{}{figure.3}{}}
 \citation{wightman2019timm}
 \citation{loshchilov2019adamw}
 \citation{paszke2019pytorch}
 \citation{cohen1960coefficient}
 \citation{congalton1991review,foody2002status}
 \citation{mcnemar1947note,dietterich1998approximate}
-\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Model architectures evaluated in this study. Parameter counts refer to the ImageNet-pretrained backbone before replacing the classifier head.}}{4}{}\protected@file@percent }
-\newlabel{tab:models}{{I}{4}{}{table.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Training Protocol}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Evaluation Metrics}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}1}Classification Metrics}{4}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Data augmentation pipeline. The leftmost column shows original EuroSAT images resized to 224$\times $224 pixels. The two columns to the right show augmented versions produced by random flips, rotation, and color jitter.}}{4}{}\protected@file@percent }
-\newlabel{fig:augmentation}{{4}{4}{}{figure.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}2}Statistical Significance}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}3}Computational Efficiency}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Results}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Overall Performance}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-A}2}UC Merced Land Use}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-A}3}Data Partitioning}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Model Architectures}{3}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Model architectures evaluated in this study. Parameter counts refer to the ImageNet-pretrained backbone before replacing the classifier head.}}{3}{}\protected@file@percent }
+\newlabel{tab:models}{{I}{3}{}{table.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Training Protocol}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Evaluation Metrics}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}1}Classification Metrics}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}2}Statistical Significance}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}3}Computational Efficiency}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Results}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Overall Performance}{3}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Dataset samples. Left: one randomly selected Sentinel-2 patch per class from EuroSAT (64$\times $64 pixels, 10\,m resolution, 10 classes). Right: one randomly selected aerial image per class from UC Merced (256$\times $256 pixels, 0.3\,m resolution, 21 classes).}}{4}{}\protected@file@percent }
+\newlabel{fig:samples}{{2}{4}{}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Data augmentation pipeline. The leftmost column shows original EuroSAT images resized to 224$\times $224 pixels. The two columns to the right show augmented versions produced by random flips, rotation, and color jitter.}}{5}{}\protected@file@percent }
+\newlabel{fig:augmentation}{{3}{5}{}{figure.3}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Classification performance on EuroSAT (5{,}400 test images). Best results in bold.}}{5}{}\protected@file@percent }
 \newlabel{tab:eurosat}{{II}{5}{}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Training Dynamics}{5}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Classification performance on UC Merced (420 test images). Best results in bold.}}{5}{}\protected@file@percent }
 \newlabel{tab:ucmerced}{{III}{5}{}{table.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Accuracy comparison across both datasets. All models exceed 98\%, and the entire performance range spans less than one percentage point per dataset.}}{5}{}\protected@file@percent }
-\newlabel{fig:accuracy}{{5}{5}{}{figure.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Training Dynamics}{5}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Training dynamics on EuroSAT. Top: validation loss. Bottom: validation accuracy. Each line represents one architecture.}}{5}{}\protected@file@percent }
-\newlabel{fig:curves_eurosat}{{6}{5}{}{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Accuracy comparison across both datasets. All models exceed 98\%, and the entire performance range spans less than one percentage point per dataset.}}{5}{}\protected@file@percent }
+\newlabel{fig:accuracy}{{4}{5}{}{figure.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Per-Class Analysis}{5}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}1}EuroSAT}{5}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Training dynamics on UC Merced. Top: validation loss. Bottom: validation accuracy. Convergence is faster due to the smaller dataset.}}{6}{}\protected@file@percent }
-\newlabel{fig:curves_ucmerced}{{7}{6}{}{figure.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Per-class F1-score heatmap on EuroSAT. Rows are models, columns are classes. Darker green is higher F1. PermanentCrop and River show the most variation.}}{6}{}\protected@file@percent }
-\newlabel{fig:f1_eurosat}{{8}{6}{}{figure.8}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}2}UC Merced}{6}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Per-class F1-score heatmap on UC Merced (21 classes). Most cells are at F1 = 1.0 (dark green). Residential classes show the most variation.}}{6}{}\protected@file@percent }
-\newlabel{fig:f1_ucmerced}{{9}{6}{}{figure.9}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}2}UC Merced}{5}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Training dynamics on EuroSAT. Top: validation loss. Bottom: validation accuracy. Each line represents one architecture.}}{6}{}\protected@file@percent }
+\newlabel{fig:curves_eurosat}{{5}{6}{}{figure.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Statistical Significance}{6}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Error Analysis}{6}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Training dynamics on UC Merced. Top: validation loss. Bottom: validation accuracy. Convergence is faster due to the smaller dataset.}}{6}{}\protected@file@percent }
+\newlabel{fig:curves_ucmerced}{{6}{6}{}{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Per-class F1-score heatmap on EuroSAT. Rows are models, columns are classes. Darker blue indicates higher F1. PermanentCrop and Pasture show the most variation across models.}}{6}{}\protected@file@percent }
+\newlabel{fig:f1_eurosat}{{7}{6}{}{figure.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Per-class F1-score heatmap on UC Merced (21 classes). Most cells are at F1 = 1.0 (dark blue). Residential sub-types show the most variation.}}{7}{}\protected@file@percent }
+\newlabel{fig:f1_ucmerced}{{8}{7}{}{figure.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces McNemar's test p-value matrix for EuroSAT. Cells shaded green indicate model pairs whose accuracy difference is not statistically significant ($p > 0.05$); red cells denote pairs where the null hypothesis of equal error rate is rejected ($p < 0.05$). Significance levels: * $p < 0.05$, ** $p < 0.01$.}}{7}{}\protected@file@percent }
+\newlabel{fig:mcnemar}{{9}{7}{}{figure.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Error analysis for ConvNeXt-Tiny on EuroSAT. Top: per-class correct (green) and misclassified (red) counts. Bottom: the most common misclassification patterns.}}{7}{}\protected@file@percent }
+\newlabel{fig:prediction}{{10}{7}{}{figure.10}{}}
 \citation{liu2022convnet}
-\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces McNemar's test p-value matrix for EuroSAT. Green = $p > 0.05$ (no significant difference); red = $p < 0.05$ (significant difference). Asterisks: * $p < 0.05$, ** $p < 0.01$.}}{7}{}\protected@file@percent }
-\newlabel{fig:mcnemar}{{10}{7}{}{figure.10}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Error analysis for ConvNeXt-Tiny on EuroSAT. Top: per-class correct (green) and misclassified (red) counts. Bottom: the most common misclassification patterns.}}{7}{}\protected@file@percent }
-\newlabel{fig:prediction}{{11}{7}{}{figure.11}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-F}}Computational Efficiency}{7}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Training time comparison (seconds). Models sorted by EuroSAT time.}}{7}{}\protected@file@percent }
-\newlabel{tab:efficiency}{{IV}{7}{}{table.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Misclassified EuroSAT examples. Left (red border): misclassified test image. Right (blue border): correctly classified example from the predicted class. The visual similarity between each pair explains why models confuse them.}}{8}{}\protected@file@percent }
-\newlabel{fig:misclassified_eurosat}{{12}{8}{}{figure.12}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Misclassified UC Merced examples. Same layout as Fig.~\ref {fig:misclassified_eurosat}. Residential density classes are the main source of confusion.}}{8}{}\protected@file@percent }
-\newlabel{fig:misclassified_ucmerced}{{13}{8}{}{figure.13}{}}
 \citation{cheng2020remote,cheng2017nwpu}
-\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Accuracy vs.\ parameter count on EuroSAT. Blue circles = classical CNNs, red squares = transformers, green diamonds = modernized CNN.}}{9}{}\protected@file@percent }
-\newlabel{fig:efficiency}{{14}{9}{}{figure.14}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Discussion}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Architecture Family Comparison}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}The Depth Paradox}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Parameter Efficiency}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Dataset Saturation}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-E}}Transfer Learning Dominance}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Limitations}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-F}}Computational Efficiency}{8}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Training time comparison (seconds). Models sorted by EuroSAT time.}}{8}{}\protected@file@percent }
+\newlabel{tab:efficiency}{{IV}{8}{}{table.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Discussion}{8}{}\protected@file@percent }
+\newlabel{sec:discussion}{{V}{8}{}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Architecture Family Comparison}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}The Depth Paradox}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Parameter Efficiency}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Dataset Saturation}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-E}}Transfer Learning Dominance}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Limitations}{8}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Misclassified examples from EuroSAT (left) and UC Merced (right). In each pair, the red-bordered image was misclassified and the blue-bordered image is a correctly classified example from the predicted class. The visual similarity within each pair explains the confusion. On UC Merced, residential density classes are the main source of errors.}}{9}{}\protected@file@percent }
+\newlabel{fig:misclassified}{{11}{9}{}{figure.11}{}}
 \bibstyle{IEEEtran}
 \bibdata{references}
 \bibcite{cheng2020remote}{1}
@@ -145,8 +139,11 @@
 \bibcite{loshchilov2019adamw}{25}
 \bibcite{paszke2019pytorch}{26}
 \bibcite{cohen1960coefficient}{27}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Accuracy vs.\ parameter count on EuroSAT. Blue circles = classical CNNs, red squares = transformers, green diamonds = modernized CNN.}}{10}{}\protected@file@percent }
+\newlabel{fig:efficiency}{{12}{10}{}{figure.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{10}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{10}{}\protected@file@percent }
 \bibcite{congalton1991review}{28}
 \bibcite{foody2002status}{29}
 \bibcite{dietterich1998approximate}{30}
-\@writefile{toc}{\contentsline {section}{References}{10}{}\protected@file@percent }
-\gdef \@abspage@last{10}
+\gdef \@abspage@last{11}
