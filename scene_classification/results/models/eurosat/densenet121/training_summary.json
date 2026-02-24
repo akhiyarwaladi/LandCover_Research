@@ -1,8 +1,8 @@
 {
   "model_name": "densenet121",
   "dataset_name": "eurosat",
-  "best_acc": 0.9846296296296296,
-  "best_epoch": 6,
-  "total_epochs": 10,
-  "training_time": 507.17335629463196
+  "best_acc": 0.9896296296296296,
+  "best_epoch": 30,
+  "total_epochs": 30,
+  "training_time": 1685.5133583545685
 }

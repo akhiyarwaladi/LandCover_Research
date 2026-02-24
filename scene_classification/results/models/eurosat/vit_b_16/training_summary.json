@@ -1,0 +1,8 @@
+{
+  "model_name": "vit_b_16",
+  "dataset_name": "eurosat",
+  "best_acc": 0.9872222222222222,
+  "best_epoch": 30,
+  "total_epochs": 30,
+  "training_time": 3402.739871740341
+}

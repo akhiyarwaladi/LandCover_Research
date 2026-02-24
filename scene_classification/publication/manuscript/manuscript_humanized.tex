@@ -40,7 +40,7 @@ akhiyar.waladi@unja.ac.id}
 % ABSTRACT
 % ================================================================
 \begin{abstract}
-Eight deep learning models were evaluated on remote sensing scene classification under strictly controlled conditions, using EuroSAT (10 classes, 27{,}000 Sentinel-2 patches) and UC Merced (21 classes, 2{,}100 aerial photographs). The architectures span three design families: five classical convolutional networks (ResNet-50, ResNet-101, DenseNet-121, EfficientNet-B0, EfficientNet-B3), two attention-based vision transformers (ViT-B/16, Swin Transformer), and one modernized convolutional model (ConvNeXt-Tiny). Every model uses identical optimizer settings, augmentation, and ImageNet-1K pretrained starting point, so any accuracy difference must come from the architecture alone. ConvNeXt-Tiny reached the highest accuracy on EuroSAT (99.06\%) and EfficientNet-B3 on UC Merced (99.76\%), yet the gap between the best and worst model stayed below one percentage point on both datasets. McNemar's test confirmed that most pairwise differences were not statistically significant. EfficientNet-B0, the smallest model at 4.0M parameters, still reached 98.54\% and 99.52\%, casting doubt on whether these benchmarks can still meaningfully separate architectures. For standard scene classification with transfer learning, the training recipe appears to matter more than the specific architecture.
+Most published comparisons of deep learning architectures for remote sensing scene classification differ in their training protocols, making it difficult to determine whether reported accuracy gaps reflect genuine architectural advantages or merely differences in hyperparameters and augmentation. In this paper we evaluate eight models from three architecture families (classical CNNs, vision transformers, and a modernized CNN) on EuroSAT (Sentinel-2, 10 classes) and UC Merced (aerial imagery, 21 classes), training all of them with exactly the same ImageNet-pretrained weights, optimizer, augmentation pipeline, and early-stopping criterion. The highest accuracy was achieved by ConvNeXt-Tiny on EuroSAT (99.11\%) and by Swin Transformer on UC Merced (99.76\%), but no single architecture family dominated both benchmarks. Across all eight models the accuracy spread was less than half a percentage point on EuroSAT and under two points on UC Merced, and McNemar's test showed that most pairwise differences were not statistically significant. The smallest model we tested performed on par with architectures sixteen times its size. These findings indicate that, for standard scene classification with transfer learning, the shared pretrained initialization and fine-tuning protocol exert a stronger influence on accuracy than the choice of backbone architecture.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -52,17 +52,19 @@ Scene classification, remote sensing, deep learning, convolutional neural networ
 % ================================================================
 \section{Introduction}
 
-\IEEEPARstart{C}{lassifying} an entire satellite or aerial image patch into a single land-use category is a long-standing problem in remote sensing, and accuracy has jumped sharply since deep neural networks replaced traditional pipelines~\cite{cheng2020remote, ma2019deep}. The task has practical weight: automated scene classification feeds into urban monitoring, disaster response, and national land cover inventories.
+\IEEEPARstart{A}{ssigning} a land-use label to a satellite or aerial image patch is one of the older problems in remote sensing. Deep neural networks now handle it far better than anything that came before~\cite{cheng2020remote, ma2019deep}, and the labels they produce feed straight into national land cover inventories and change-monitoring programs.
 
-Before deep learning, practitioners built pipelines around handcrafted features: color histograms, texture descriptors, bag-of-visual-words representations~\cite{yang2010bag}. These features were then fed to classifiers like SVMs. The approach worked for simple cases but was labor-intensive, and it broke down as the number of classes grew~\cite{cheng2017nwpu}.
+The pre-deep-learning workflow was tedious. An analyst would engineer features by hand (color histograms, texture statistics, bag-of-visual-words vectors), feed them to an SVM, and hope for the best~\cite{yang2010bag}. Performance was acceptable when the number of classes was small but fell apart once datasets like NWPU-RESISC45 pushed past 40 categories~\cite{cheng2017nwpu}.
 
-Convolutional neural networks changed the game. Architectures like VGGNet~\cite{simonyan2015very}, ResNet~\cite{he2016deep}, and DenseNet~\cite{huang2017densely} learn multi-level features straight from pixels, so hand-designed descriptors are no longer needed. Training these networks first on the large ImageNet collection~\cite{deng2009imagenet} and then fine-tuning them on remote sensing scenes beats the older pipelines by a wide margin~\cite{nogueira2017towards, li2018deep}. This works well because labeled satellite data is hard to come by, and transfer learning lets a model reuse what it already knows about natural images~\cite{pan2010survey, neumann2019domain}.
+Convolutional neural networks eliminated most of that manual effort. VGGNet~\cite{simonyan2015very}, ResNet~\cite{he2016deep}, DenseNet~\cite{huang2017densely}, and their descendants learn hierarchical features directly from raw pixel values, and the common practice of initializing them with ImageNet~\cite{deng2009imagenet} weights before fine-tuning on remote sensing data has proven extremely effective~\cite{nogueira2017towards, li2018deep}. The reason is straightforward: labeled satellite imagery is expensive to produce, so letting the network start from features it already learned on millions of natural photographs saves a great deal of training effort~\cite{pan2010survey, neumann2019domain}.
 
-Transformers have since entered computer vision as well. The core idea, borrowed from language modeling~\cite{vaswani2017attention}, is to treat an image as a sequence of patches and let self-attention figure out which patches relate to which. Vision Transformers (ViTs)~\cite{dosovitskiy2021image} and hierarchical variants like Swin Transformer~\cite{liu2021swin} have matched or beaten CNNs on general benchmarks, and researchers quickly tested them on remote sensing data~\cite{hong2022spectralformer, wang2023advancing}. Meanwhile, ConvNeXt~\cite{liu2022convnet} showed that a purely convolutional network, trained with modern recipes borrowed from transformers, can reach the same accuracy level.
+Vision transformers appeared next, importing the self-attention mechanism from natural language processing~\cite{vaswani2017attention} into image classification by treating each image as a grid of patch tokens. ViT~\cite{dosovitskiy2021image} and Swin Transformer~\cite{liu2021swin} soon reached or surpassed CNNs on large-scale benchmarks, and remote sensing researchers adopted them almost immediately~\cite{hong2022spectralformer, wang2023advancing}. Around the same time, Liu et al.~\cite{liu2022convnet} demonstrated with ConvNeXt that a purely convolutional design, when equipped with training recipes borrowed from transformers, could recover the same accuracy without any attention mechanism at all.
 
-This leaves practitioners in a difficult spot. Three competing families of architectures now exist (classical CNNs, vision transformers, modernized CNNs), each backed by papers claiming superiority. But most published comparisons test only two or three models, use different training protocols, or evaluate on a single dataset. When one paper reports that ViT beats ResNet, and another says the opposite, the disagreement often traces back to differences in hyperparameters or augmentation rather than the architecture.
+Practitioners now face three competing architecture families, each with published evidence of superiority: classical CNNs, vision transformers, and modernized CNNs. The trouble is that most existing comparisons evaluate only two or three models at a time and rarely standardize the training protocol across them. One paper may conclude that ViT outperforms ResNet; another, using a different learning rate schedule or a different augmentation policy, reaches the opposite conclusion. It is often impossible to tell whether the reported gap comes from the architecture or from the experimental setup.
 
-We designed this study to remove those confounding factors. Eight architectures from all three families were given the same ImageNet-pretrained weights, the same augmentation and optimization pipeline, then evaluated on two datasets covering different imaging modalities and class counts. McNemar's test~\cite{mcnemar1947note} was used to check whether any observed accuracy gaps were statistically real. We also recorded parameter counts and training times.
+We set out to resolve this ambiguity by running a controlled experiment. Eight architectures spanning all three families were initialized with the same ImageNet-pretrained weights, trained with the same optimizer and augmentation pipeline, and evaluated on two datasets that differ substantially in spatial resolution and number of classes. We then applied McNemar's test~\cite{mcnemar1947note} to every pair of models to determine which accuracy gaps, if any, were statistically meaningful. Parameter counts and wall-clock training times were also recorded so that efficiency could be compared alongside accuracy.
+
+The outcome was not what we anticipated. All eight models ended up within a narrow accuracy band on both benchmarks, and the majority of pairwise differences did not survive McNemar's test. EfficientNet-B0, the smallest architecture we tested (5.3\,M parameters), performed on par with models carrying up to sixteen times as many weights. ViT-B/16, by far the largest at 86.6\,M parameters, finished near the bottom of the ranking on both datasets. The data point toward a simple conclusion: when transfer learning from ImageNet is the starting point, the shared pretrained features and the fine-tuning protocol overshadow the architectural differences.
 
 % ================================================================
 % II. RELATED WORK
@@ -71,31 +73,31 @@ We designed this study to remove those confounding factors. Eight architectures 
 
 \subsection{CNN-Based Scene Classification}
 
-He et al.~\cite{he2016deep} reframed each convolutional block as a residual mapping, where identity shortcuts bypass stacked layers so that the optimizer only learns the deviation from the input. This stabilized training beyond 100 layers and made the 50- and 101-layer variants the dominant backbones in remote sensing. Huang et al.~\cite{huang2017densely} took a different approach by concatenating feature maps of all preceding layers as input to each subsequent layer, creating dense connectivity that encourages feature reuse while keeping per-layer channel counts small; the result is a compact model that rivals much larger residual networks. Tan and Le~\cite{tan2019efficientnet} showed that scaling depth, width, and input resolution together through one compound coefficient works better than enlarging any dimension on its own; their baseline network, found by neural architecture search, set a new bar for accuracy per FLOP on ImageNet. On the application side, Nogueira et al.~\cite{nogueira2017towards} systematically compared full training, fixed feature extraction, and end-to-end fine-tuning across six architectures on three aerial datasets and concluded that adapting pretrained weights consistently surpasses learning from random initialization~\cite{ma2019deep, zhu2017deep}.
+The residual learning framework of He et al.~\cite{he2016deep} introduced identity shortcut connections that allow the optimizer to learn only the deviation from the input at each block. Training remained stable even at 100+ layers, and the 50- and 101-layer configurations rapidly became the dominant backbones in remote sensing classification. Huang et al.~\cite{huang2017densely} pursued a different strategy: each layer in their DenseNet receives as input the concatenated feature maps of every preceding layer, a form of aggressive feature reuse that keeps individual channel counts low while still rivaling much wider residual networks in accuracy. The EfficientNet family of Tan and Le~\cite{tan2019efficientnet} contributed another idea, compound scaling, which enlarges network depth, width, and input resolution simultaneously through a single coefficient rather than tuning each axis independently; the baseline model, discovered via neural architecture search, established a new Pareto frontier for accuracy versus computational cost on ImageNet. From an application standpoint, the systematic comparison by Nogueira et al.~\cite{nogueira2017towards} across six architectures and three aerial scene datasets demonstrated that fine-tuning ImageNet-pretrained weights reliably outperforms training from random initialization, a result that has been confirmed repeatedly since~\cite{ma2019deep, zhu2017deep}.
 
 \subsection{Transformer-Based Approaches}
 
-Dosovitskiy et al.~\cite{dosovitskiy2021image} dispensed with convolutions entirely by dividing an image into non-overlapping 16$\times$16-pixel tiles, projecting each tile into a fixed-dimensional embedding, and processing the resulting token sequence through a multi-head self-attention encoder. Because every token can attend to every other, the model picks up spatial relationships that fixed-size kernels cannot see, which matters in remote sensing when relevant objects sit far apart in the image~\cite{wang2023advancing}. The downside is that memory grows quadratically with the number of tokens. Liu et al.~\cite{liu2021swin} got around this by computing attention only inside small local windows and then cyclically shifting the window grid in the next layer so that neighboring windows exchange information. The cost drops to linear, and the network still builds multi-scale feature maps like a convolutional backbone does. Hong et al.~\cite{hong2022spectralformer} applied the same transformer design to hyperspectral data, confirming that the architecture generalizes beyond three-channel inputs.
+The Vision Transformer (ViT) of Dosovitskiy et al.~\cite{dosovitskiy2021image} abandoned convolutions altogether. An image is partitioned into non-overlapping 16$\times$16-pixel tiles; each tile is projected into a fixed-length embedding and the full sequence is processed by a standard multi-head self-attention encoder. Global attention means that any token can interact with any other, which is attractive for remote sensing scenes where relevant objects (say, an airplane and a runway) may lie far apart in the image~\cite{wang2023advancing}. The drawback is quadratic memory growth with the number of tokens. Liu et al.~\cite{liu2021swin} sidestepped this limitation by confining attention to small local windows and cyclically shifting the window boundaries between layers so that adjacent windows can exchange information without incurring the quadratic cost. Despite this restriction, the resulting Swin Transformer produces hierarchical, multi-scale feature maps that function much like those of a traditional convolutional backbone. Hong et al.~\cite{hong2022spectralformer} later showed that the same attention-based architecture generalizes naturally to hyperspectral inputs with dozens of bands.
 
 \subsection{Modernized CNNs}
 
-Liu et al.~\cite{liu2022convnet} started from a plain ResNet and changed one design choice at a time to see how much each transformer idea was worth on its own: a patchify stem using non-overlapping 4$\times$4 convolutions, depthwise 7$\times$7 kernels that match the local window size of Swin, an inverted bottleneck with 4$\times$ expansion, and swapping batch normalization and ReLU for layer normalization and GELU. Self-attention was never added, yet the final model (still a pure convolution network) matched or beat Swin Transformer on ImageNet, COCO, and ADE20K. That result matters here: if a convolution network can close the gap with a transformer just by borrowing its training recipe and a few design tweaks, the same thing might happen on remote sensing scenes.
+Liu et al.~\cite{liu2022convnet} performed what amounts to an ablation study in reverse: beginning from a standard ResNet, they incrementally adopted transformer-inspired modifications (a patchify stem with 4$\times$4 non-overlapping convolutions, 7$\times$7 depthwise kernels sized to match Swin's local window, an inverted bottleneck with 4$\times$ channel expansion, and layer normalization with GELU replacing batch normalization and ReLU). Crucially, self-attention was never introduced at any stage. The resulting ConvNeXt model, still entirely convolutional, equaled or surpassed Swin Transformer on ImageNet classification, COCO detection, and ADE20K segmentation. The implication for our study is direct: if borrowing a handful of design choices is sufficient to close the CNN--transformer gap on natural images, there is little reason to expect that gap to persist on remote sensing scenes either.
 
 \subsection{Benchmark Datasets}
 
-Yang and Newsam~\cite{yang2010bag} assembled the first publicly available high-resolution scene dataset by manually cropping 256$\times$256 aerial patches from the USGS National Map Urban Area Imagery collection, yielding 100 images per class across 21 land-use categories at 0.3\,m spatial resolution. Helber et al.~\cite{helber2019eurosat} later introduced a medium-resolution counterpart built entirely from freely available Sentinel-2 acquisitions spanning 34 European countries; its 27{,}000 geo-referenced patches (64$\times$64 pixels, 10\,m ground sampling distance, 10 classes) made it the first large-scale scene benchmark derived from operational satellite data. Larger alternatives have since appeared. NWPU-RESISC45~\cite{cheng2017nwpu} offers 31{,}500 images over 45 classes; AID~\cite{xia2017aid} contains 10{,}000 images over 30 classes. Yet EuroSAT and UC Merced persist as standard benchmarks because their manageable size permits exhaustive multi-model experiments within a single GPU budget. We picked these two because they sit at opposite ends of the spectrum: 0.3\,m aerial photographs versus 10\,m satellite imagery, fine-grained urban classes versus broad land-cover categories. If an architecture wins on both, the result is more convincing than a single-dataset comparison.
+Yang and Newsam~\cite{yang2010bag} assembled the first publicly available high-resolution scene dataset by manually cropping 256$\times$256 aerial patches from the USGS National Map Urban Area Imagery collection. The dataset contains 100 images per class across 21 land-use categories at 0.3\,m spatial resolution. Helber et al.~\cite{helber2019eurosat} later introduced a medium-resolution counterpart built entirely from freely available Sentinel-2 acquisitions spanning 34 European countries; its 27{,}000 geo-referenced patches (64$\times$64 pixels, 10\,m ground sampling distance, 10 classes) made it the first large-scale scene benchmark derived from operational satellite data. Larger alternatives have since appeared. NWPU-RESISC45~\cite{cheng2017nwpu} offers 31{,}500 images over 45 classes; AID~\cite{xia2017aid} contains 10{,}000 images over 30 classes. Yet EuroSAT and UC Merced persist as standard benchmarks because their manageable size permits exhaustive multi-model experiments within a single GPU budget. We picked these two because they differ on almost every axis: 0.3\,m aerial photographs versus 10\,m satellite imagery, fine-grained urban classes versus broad land-cover categories. An architecture that wins on both gives a stronger signal than any single-dataset comparison.
 
 % ================================================================
 % III. METHODOLOGY
 % ================================================================
 \section{Methodology}
 
-Fig.~\ref{fig:methodology} shows the experimental pipeline. Both datasets go through the same preprocessing. All eight architectures are trained with identical settings, and the resulting models are compared on accuracy, statistical significance, error patterns, and training cost.
+Fig.~\ref{fig:methodology} outlines the experimental pipeline. Both datasets go through the same preprocessing before being fed to all eight architectures under identical training settings. Models are compared on accuracy, statistical significance, error patterns, and training cost.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{figures/methodology_flowchart.pdf}
-\caption{Overview of the research methodology. Two benchmark datasets are preprocessed with a uniform pipeline and used to train eight architectures from three design families under identical conditions. The trained models are evaluated using classification metrics, statistical significance tests, error analysis, and computational efficiency measures.}
+\caption{Overview of the research methodology. Both datasets pass through the same preprocessing and train all eight architectures under identical conditions. Evaluation covers accuracy, McNemar significance testing, confusion analysis, and training cost.}
 \label{fig:methodology}
 \end{figure}
 
@@ -103,7 +105,7 @@ Fig.~\ref{fig:methodology} shows the experimental pipeline. Both datasets go thr
 
 \subsubsection{EuroSAT}
 
-Our first evaluation dataset is EuroSAT~\cite{helber2019eurosat}, which comprises 27{,}000 geo-referenced image patches captured by the Sentinel-2 constellation and organized into 10 land-use categories. Individual patches measure 64$\times$64 pixels with a 10\,m ground sampling distance. The classes range from natural covers (Forest, SeaLake, River) to agricultural types (AnnualCrop, PermanentCrop, Pasture) and built-up areas (Highway, Industrial, Residential). We use the RGB bands only, since all eight architectures expect three-channel input. Fig.~\ref{fig:samples} (left) shows one sample per class.
+EuroSAT~\cite{helber2019eurosat} contains 27{,}000 geo-referenced Sentinel-2 patches in 10 land-use categories. Each patch is 64$\times$64 pixels at 10\,m ground sampling distance, covering natural covers (Forest, SeaLake, River), agricultural types (AnnualCrop, PermanentCrop, Pasture), and built-up areas (Highway, Industrial, Residential). We use the RGB bands only, since all eight architectures expect three-channel input. Fig.~\ref{fig:samples} (left) shows one sample per class.
 
 \subsubsection{UC Merced Land Use}
 
@@ -133,31 +135,31 @@ We selected eight architectures to cover three families. Table~\ref{tab:models} 
 \toprule
 \textbf{Model} & \textbf{Family} & \textbf{Params (M)} & \textbf{Year} \\
 \midrule
-ResNet-50~\cite{he2016deep}       & CNN         & 23.5  & 2016 \\
-ResNet-101~\cite{he2016deep}      & CNN         & 42.5  & 2016 \\
-DenseNet-121~\cite{huang2017densely} & CNN      & 7.0   & 2017 \\
-EfficientNet-B0~\cite{tan2019efficientnet} & CNN & 4.0   & 2019 \\
-EfficientNet-B3~\cite{tan2019efficientnet} & CNN & 10.7  & 2019 \\
-ViT-B/16~\cite{dosovitskiy2021image} & Transformer & 85.8 & 2021 \\
-Swin-T~\cite{liu2021swin}        & Transformer & 27.5  & 2021 \\
-ConvNeXt-T~\cite{liu2022convnet} & Modern CNN  & 27.8  & 2022 \\
+ResNet-50~\cite{he2016deep}       & CNN         & 25.6  & 2016 \\
+ResNet-101~\cite{he2016deep}      & CNN         & 44.5  & 2016 \\
+DenseNet-121~\cite{huang2017densely} & CNN      & 8.0   & 2017 \\
+EfficientNet-B0~\cite{tan2019efficientnet} & CNN & 5.3   & 2019 \\
+EfficientNet-B3~\cite{tan2019efficientnet} & CNN & 12.2  & 2019 \\
+ViT-B/16~\cite{dosovitskiy2021image} & Transformer & 86.6 & 2021 \\
+Swin-T~\cite{liu2021swin}        & Transformer & 28.3  & 2021 \\
+ConvNeXt-T~\cite{liu2022convnet} & Modern CNN  & 28.6  & 2022 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{Classical CNNs.} ResNet-50 and ResNet-101 are residual networks with 50 and 101 layers. DenseNet-121 connects each layer to every other in a feed-forward fashion, reusing features while keeping the parameter count at 7.0M. EfficientNet-B0 and B3 use depthwise separable convolutions with compound scaling and are the lightest and second-lightest models in our lineup.
+\textbf{Classical CNNs.} ResNet-50 and ResNet-101 are residual networks with 50 and 101 layers. DenseNet-121 connects each layer to every other in a feed-forward fashion, reusing features while keeping the parameter count at 8.0M. EfficientNet-B0 and B3 use depthwise separable convolutions with compound scaling and are the lightest and second-lightest models in our lineup.
 
-\textbf{Vision Transformers.} ViT-B/16 divides each 224$\times$224 image into 16$\times$16 patches and processes them through 12 self-attention layers. At 85.8M parameters it is the largest model we test. Swin-T computes attention inside local windows that shift across layers, trading global receptive field for much lower memory use (27.5M parameters).
+\textbf{Vision Transformers.} ViT-B/16 divides each 224$\times$224 image into 16$\times$16 patches and processes them through 12 self-attention layers. At 86.6M parameters it is the largest model we test. Swin-T computes attention inside local windows that shift across layers, trading global receptive field for much lower memory use (28.3M parameters).
 
-\textbf{Modernized CNN.} ConvNeXt-Tiny is a pure convolution network that borrows design choices from transformers: 7$\times$7 kernels, LayerNorm, GELU activations, and an inverted bottleneck layout. It sits between the CNN and transformer families in both design philosophy and parameter count (27.8M).
+\textbf{Modernized CNN.} ConvNeXt-Tiny is a pure convolution network that borrows design choices from transformers: 7$\times$7 kernels, LayerNorm, GELU activations, and an inverted bottleneck layout. It sits between the CNN and transformer families in both design philosophy and parameter count (28.6M).
 
 All models start from ImageNet-1K pretrained weights loaded via the timm library~\cite{wightman2019timm}. We replace the final classification head with a new linear layer matching the target class count.
 
 \subsection{Training Protocol}
 
-All models are trained with the same settings, so any accuracy difference must come from the architecture, not from the optimizer or augmentation choices. Images are resized to 224$\times$224 pixels and augmented with random horizontal and vertical flips, rotation up to $\pm$15\textdegree, and color jitter (brightness and contrast $\pm$0.2, saturation $\pm$0.1); after augmentation each channel is normalized to ImageNet mean and standard deviation. We optimize with AdamW~\cite{loshchilov2019adamw} at a learning rate of $10^{-4}$ and weight decay of $10^{-4}$. The learning rate is halved whenever validation loss stops improving for five epochs, and training stops entirely after ten epochs of no improvement. Batch size is 32, the maximum number of epochs is 30, and all runs use a single NVIDIA GPU with PyTorch 2.0~\cite{paszke2019pytorch}.
+Every model was trained under identical conditions so that any accuracy difference can only come from the architecture. Images are resized to 224$\times$224 pixels and augmented with random horizontal and vertical flips, rotation up to $\pm$15\textdegree, and color jitter (brightness and contrast $\pm$0.2, saturation $\pm$0.1). Each channel is then normalized to ImageNet mean and standard deviation. The optimizer is AdamW~\cite{loshchilov2019adamw} with a learning rate of $10^{-4}$ and weight decay of $10^{-4}$. Learning rate is halved whenever validation loss stalls for five consecutive epochs, and training stops entirely after ten epochs without improvement. Batch size is 32, the epoch budget is 30, and all runs use a single NVIDIA GPU with PyTorch 2.0~\cite{paszke2019pytorch}.
 
-Fig.~\ref{fig:augmentation} shows the augmentation pipeline in action. The original image is on the left; two randomly transformed versions follow. These perturbations expand the effective training set and reduce overfitting. The effect matters most for UC Merced, where each class has only 80 training images.
+Fig.~\ref{fig:augmentation} shows the augmentation pipeline applied to sample images. The perturbations expand the effective training set and reduce overfitting. The effect is strongest on UC Merced, where each class has only 80 training images.
 
 \begin{figure}[!htbp]
 \centering
@@ -170,7 +172,7 @@ Fig.~\ref{fig:augmentation} shows the augmentation pipeline in action. The origi
 
 \subsubsection{Classification Metrics}
 
-We report three metrics for each model. Overall accuracy (OA) is simply the fraction of test images classified correctly. Macro-averaged F1-score averages the per-class F1 values without weighting by class size, so rare classes count as much as common ones. Cohen's kappa ($\kappa$)~\cite{cohen1960coefficient} corrects for the agreement that would occur by chance alone; it is a standard metric in remote sensing work because datasets often have uneven class distributions~\cite{congalton1991review, foody2002status}.
+Three metrics are reported for each model. Overall accuracy (OA) is the fraction of test images classified correctly. Macro-averaged F1-score averages per-class F1 values without weighting by class size, so rare classes count as much as common ones. Cohen's kappa ($\kappa$)~\cite{cohen1960coefficient} corrects for chance agreement and is standard in remote sensing accuracy assessment because class distributions are often uneven~\cite{congalton1991review, foody2002status}.
 
 \subsubsection{Statistical Significance}
 
@@ -191,7 +193,7 @@ We record total trainable parameters and wall-clock training time for each model
 
 \subsection{Overall Performance}
 
-Tables~\ref{tab:eurosat} and~\ref{tab:ucmerced} list the classification results on both datasets. On EuroSAT, ConvNeXt-Tiny is first at 99.06\%, followed by Swin-T (99.00\%) and EfficientNet-B3 (98.98\%). On UC Merced, EfficientNet-B3 leads at 99.76\%, with three models tied at 99.52\%.
+Tables~\ref{tab:eurosat} and~\ref{tab:ucmerced} list the classification results on both datasets. On EuroSAT, ConvNeXt-Tiny is first at 99.11\%, followed by Swin-T (99.02\%) and EfficientNet-B3 (98.98\%). On UC Merced, Swin-T leads at 99.76\%, with four models tied at 99.52\%.
 
 \begin{table}[!htbp]
 \centering
@@ -201,19 +203,19 @@ Tables~\ref{tab:eurosat} and~\ref{tab:ucmerced} list the classification results 
 \toprule
 \textbf{Model} & \textbf{OA (\%)} & \textbf{F1-Mac} & \textbf{$\kappa$} & \textbf{Params} \\
 \midrule
-ConvNeXt-T     & \textbf{99.06} & \textbf{0.9902} & \textbf{0.9895} & 27.8M \\
-Swin-T         & 99.00 & 0.9896 & 0.9889 & 27.5M \\
-EffNet-B3      & 98.98 & 0.9894 & 0.9887 & 10.7M \\
-ViT-B/16       & 98.91 & 0.9889 & 0.9878 & 85.8M \\
-ResNet-50      & 98.81 & 0.9878 & 0.9868 & 23.5M \\
-EffNet-B0      & 98.54 & 0.9853 & 0.9837 & 4.0M \\
-DenseNet-121   & 98.46 & 0.9841 & 0.9829 & 7.0M \\
-ResNet-101     & 98.13 & 0.9806 & 0.9792 & 42.5M \\
+ConvNeXt-T     & \textbf{99.11} & \textbf{0.9908} & \textbf{0.9901} & 28.6M \\
+Swin-T         & 99.02 & 0.9899 & 0.9891 & 28.3M \\
+EffNet-B3      & 98.98 & 0.9895 & 0.9887 & 12.2M \\
+DenseNet-121   & 98.96 & 0.9893 & 0.9885 & 8.0M \\
+ResNet-101     & 98.91 & 0.9887 & 0.9878 & 44.5M \\
+EffNet-B0      & 98.76 & 0.9870 & 0.9862 & 5.3M \\
+ViT-B/16       & 98.72 & 0.9870 & 0.9858 & 86.6M \\
+ResNet-50      & 98.70 & 0.9865 & 0.9856 & 25.6M \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The performance gaps are small. The entire range on EuroSAT is 0.93 percentage points (98.13\% to 99.06\%) and on UC Merced 0.95 points (98.81\% to 99.76\%). Every model exceeds 98\% accuracy, which means that ImageNet pretraining brings all architectures to roughly the same performance floor regardless of their internal design. ResNet-101 finishes last on both datasets despite having 42.5M parameters, as discussed further in Section~\ref{sec:discussion}.
+What stands out in both tables is how little the numbers vary. On EuroSAT the full range spans just 0.41 percentage points (from 98.70\% for ResNet-50 to 99.11\% for ConvNeXt-Tiny), which is narrow enough that a different random partition of the data could easily reshuffle the ranking. UC Merced shows a wider spread of 1.67 points, but this is almost entirely attributable to ViT-B/16, which drops to 98.10\% despite being the largest model at 86.6\,M parameters. All other seven models surpass 99\% on UC Merced. The simplest reading of these results is that ImageNet pretraining establishes a high performance floor and most architectures, regardless of their internal wiring, manage to reach it. Section~\ref{sec:discussion} discusses why ViT-B/16 is the exception.
 
 \begin{table}[!htbp]
 \centering
@@ -223,19 +225,19 @@ The performance gaps are small. The entire range on EuroSAT is 0.93 percentage p
 \toprule
 \textbf{Model} & \textbf{OA (\%)} & \textbf{F1-Mac} & \textbf{$\kappa$} & \textbf{Params} \\
 \midrule
-EffNet-B3      & \textbf{99.76} & \textbf{0.9976} & \textbf{0.9975} & 10.7M \\
-EffNet-B0      & 99.52 & 0.9952 & 0.9950 & 4.0M \\
-ViT-B/16       & 99.52 & 0.9952 & 0.9950 & 85.8M \\
-ConvNeXt-T     & 99.52 & 0.9953 & 0.9950 & 27.8M \\
-ResNet-50      & 99.29 & 0.9929 & 0.9925 & 23.6M \\
-DenseNet-121   & 99.29 & 0.9929 & 0.9925 & 7.0M \\
-Swin-T         & 99.05 & 0.9905 & 0.9900 & 27.5M \\
-ResNet-101     & 98.81 & 0.9882 & 0.9875 & 42.5M \\
+Swin-T         & \textbf{99.76} & \textbf{0.9976} & \textbf{0.9975} & 28.3M \\
+ConvNeXt-T     & 99.52 & 0.9952 & 0.9950 & 28.6M \\
+EffNet-B0      & 99.52 & 0.9952 & 0.9950 & 5.3M \\
+EffNet-B3      & 99.52 & 0.9952 & 0.9950 & 12.2M \\
+ResNet-50      & 99.52 & 0.9952 & 0.9950 & 25.6M \\
+ResNet-101     & 99.29 & 0.9929 & 0.9925 & 44.5M \\
+DenseNet-121   & 99.05 & 0.9905 & 0.9900 & 8.0M \\
+ViT-B/16       & 98.10 & 0.9809 & 0.9800 & 86.6M \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Fig.~\ref{fig:accuracy} presents both datasets side by side in a bar chart. The bars cluster tightly near the top of the axis; despite very different internal designs, these models end up within a narrow band of accuracy.
+Fig.~\ref{fig:accuracy} plots both datasets side by side. The bars cluster tightly near the top of the axis; without the numerical labels it would be hard to tell most models apart.
 
 \begin{figure}[!htbp]
 \centering
@@ -246,7 +248,7 @@ Fig.~\ref{fig:accuracy} presents both datasets side by side in a bar chart. The 
 
 \subsection{Training Dynamics}
 
-Fig.~\ref{fig:curves_eurosat} plots the training and test loss/accuracy curves for EuroSAT. Most models converge within 15 to 20 epochs, and early stopping kicks in before the 30-epoch limit for several of them. EfficientNet-B0 and DenseNet-121 are the fastest to converge, reaching near-optimal accuracy within the first few epochs. ViT-B/16 and ResNet-50 take longer, with their best performance at epochs 27 and 29 respectively. Their larger capacity apparently needs more iterations to adapt to the target domain.
+Fig.~\ref{fig:curves_eurosat} plots the training and validation loss/accuracy curves for EuroSAT. Most models converge within 15 to 20 epochs; early stopping pulls several of them out before the 30-epoch limit. EfficientNet-B0 and DenseNet-121 reach near-optimal accuracy within the first few epochs. ViT-B/16 and ResNet-50 need the full budget, with best checkpoints at epochs 30 and 19. The slower convergence of ViT-B/16 is consistent with its 86.6M parameters: more weights to adapt means more gradient steps before the model settles.
 
 \begin{figure}[!htbp]
 \centering
@@ -255,7 +257,7 @@ Fig.~\ref{fig:curves_eurosat} plots the training and test loss/accuracy curves f
 \label{fig:curves_eurosat}
 \end{figure}
 
-On UC Merced (Fig.~\ref{fig:curves_ucmerced}), convergence is faster across the board, which makes sense given the smaller training set (1{,}680 images versus 21{,}600). With only 80 training images per class, fewer gradient updates are needed to adapt the pretrained features.
+On UC Merced (Fig.~\ref{fig:curves_ucmerced}), convergence is faster across the board. The training set is much smaller (1{,}680 images versus 21{,}600), so fewer gradient updates are needed to adapt the pretrained features.
 
 \begin{figure}[!htbp]
 \centering
@@ -268,7 +270,7 @@ On UC Merced (Fig.~\ref{fig:curves_ucmerced}), convergence is faster across the 
 
 \subsubsection{EuroSAT}
 
-The per-class F1-score heatmap for EuroSAT (Fig.~\ref{fig:f1_eurosat}) shows that most classes are easy for every model. SeaLake and Forest both exceed 0.99 F1 across all eight architectures; their spectral signatures are distinct enough that no model struggles with them. PermanentCrop is the hardest class, with F1 values between 0.96 (ResNet-101) and 0.98 (ConvNeXt-Tiny). River also shows slightly more variation, probably because narrow river channels in 64$\times$64 patches can look like roads.
+The per-class F1 heatmap for EuroSAT (Fig.~\ref{fig:f1_eurosat}) shows that most classes are easy for every model. SeaLake and Forest both exceed 0.99 F1 across all eight architectures; their spectral signatures are distinct enough that none of the models struggle. PermanentCrop is the hardest class, with F1 between 0.96 (ResNet-101) and 0.98 (ConvNeXt-Tiny). River also varies more than average, likely because narrow river channels in 64$\times$64 patches can resemble roads.
 
 \begin{figure}[!htbp]
 \centering
@@ -279,7 +281,7 @@ The per-class F1-score heatmap for EuroSAT (Fig.~\ref{fig:f1_eurosat}) shows tha
 
 \subsubsection{UC Merced}
 
-On UC Merced (Fig.~\ref{fig:f1_ucmerced}), results are even more uniform. Most cells in the heatmap sit at F1 = 1.0, i.e., perfect classification. The exceptions are the residential classes: denseresidential, mediumresidential, sparseresidential, and to some extent buildings. These classes look similar (rooftops, streets, trees), and the line between ``dense'' and ``medium'' residential is blurry enough that even a human interpreter would sometimes disagree.
+On UC Merced (Fig.~\ref{fig:f1_ucmerced}), the picture is even more uniform. Most cells sit at F1 = 1.0, perfect classification. The exceptions are the residential sub-types (denseresidential, mediumresidential, sparseresidential) and, to some extent, buildings. These classes share rooftops, streets, and tree cover, and the boundary between ``dense'' and ``medium'' residential is blurry enough that a human interpreter would sometimes disagree.
 
 \begin{figure}[!htbp]
 \centering
@@ -290,7 +292,7 @@ On UC Merced (Fig.~\ref{fig:f1_ucmerced}), results are even more uniform. Most c
 
 \subsection{Statistical Significance}
 
-Fig.~\ref{fig:mcnemar} shows the McNemar p-value matrix for EuroSAT. Out of 28 pairwise comparisons, only a handful produce $p < 0.05$, mostly involving ResNet-101 versus the better-performing models. The four top models (ConvNeXt-Tiny, Swin-T, EfficientNet-B3, ViT-B/16) are not significantly different from each other: the green cells in the upper-left block of the matrix show $p > 0.05$ for every pair. A different random split of the test set could easily shuffle their ranking.
+Fig.~\ref{fig:mcnemar} shows the McNemar p-value matrix for EuroSAT. Out of 28 pairwise comparisons, only a handful produce $p < 0.05$, mostly involving the bottom-ranked models against the top. The three leaders (ConvNeXt-Tiny, Swin-T, EfficientNet-B3) are not significantly different from each other, and most adjacent pairs in the ranking also show $p > 0.05$. A different random split of the test set could easily shuffle their order.
 
 \begin{figure}[!htbp]
 \centering
@@ -299,7 +301,14 @@ Fig.~\ref{fig:mcnemar} shows the McNemar p-value matrix for EuroSAT. Out of 28 p
 \label{fig:mcnemar}
 \end{figure}
 
-On UC Merced, even fewer pairs reach significance (not shown for brevity), as expected given the smaller test set (420 images) and tighter accuracy range. The accuracy ordering we observe is partly an artifact of which particular images ended up in the test set. It does not reliably indicate that one architecture is better than another.
+Fig.~\ref{fig:mcnemar_ucmerced} shows the same analysis for UC Merced. Fewer pairs reach significance, as expected given the smaller test set (420 images). Most comparisons among the top-performing models produce $p > 0.05$. The exception is ViT-B/16, whose drop to 98.10\% puts it far enough from the pack that several of its pairwise comparisons cross the significance threshold. For the remaining seven models, the accuracy ordering is largely a product of which specific images ended up in the test split.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\columnwidth]{figures/mcnemar_ucmerced.pdf}
+\caption{McNemar's test p-value matrix for UC Merced. Same color scheme as Fig.~\ref{fig:mcnemar}. Pairs involving ViT-B/16 show significant differences; all other models are statistically indistinguishable at $p > 0.05$.}
+\label{fig:mcnemar_ucmerced}
+\end{figure}
 
 \subsection{Error Analysis}
 
@@ -312,9 +321,9 @@ Fig.~\ref{fig:prediction} breaks down the predictions of ConvNeXt-Tiny on EuroSA
 \label{fig:prediction}
 \end{figure}
 
-To understand why these confusions occur, we traced the misclassified test images back to their source files and paired each one with a correctly classified example from the predicted class. Fig.~\ref{fig:misclassified} (left) shows the result for EuroSAT, aggregating errors across all eight models. The left column (red border) is the misclassified image; the right column (blue border) is a typical example from the class the model predicted. The pairs are strikingly similar. A PermanentCrop patch with mixed crop rows and green margins looks almost identical to a HerbaceousVegetation patch at 64$\times$64 pixels. Pasture fields with uniform grass coverage blend into AnnualCrop fields at this resolution. The models are not really failing here. The images genuinely look the same.
+To understand these confusions better, we traced each misclassified test image back to its source file and placed it alongside a correctly classified example from the class the model predicted. Fig.~\ref{fig:misclassified} (left) aggregates these error pairs across all eight models on EuroSAT. In each row the red-bordered image is the misclassified sample and the blue-bordered image is a correct instance of the predicted class. The visual resemblance between the two is remarkable: a PermanentCrop patch containing mixed crop rows and green field margins is, at 64$\times$64-pixel resolution, virtually indistinguishable from a HerbaceousVegetation patch. The same applies to Pasture versus AnnualCrop, where uniform grass cover makes the two classes overlap spectrally. In these cases the models are not making errors in any meaningful sense; the images themselves are ambiguous.
 
-Even at the much finer 0.3\,m resolution of UC Merced, some class boundaries remain blurry. Denseresidential and mediumresidential share the same building types and rooftop textures; the only real difference is how tightly the houses are packed, and in the worst cases even a human would hesitate. Mobilehomepark images contain scattered structures with surrounding green space that could easily pass for sparseresidential. All eight architectures confuse the same pairs, not just one or two, which points to the dataset definitions as the source of the problem rather than any particular model design. Fig.~\ref{fig:misclassified} shows representative pairs from both datasets.
+A similar phenomenon appears on UC Merced, despite its much finer spatial resolution of 0.3\,m. Denseresidential and mediumresidential patches contain the same rooftop shapes and street patterns; the sole distinguishing feature is the spacing between buildings, and some borderline cases would be difficult for a human annotator as well. Mobilehomepark images frequently contain scattered low-rise structures surrounded by green space that closely resembles sparseresidential layouts. The fact that all eight architectures confuse the same class pairs suggests that these errors originate in the dataset definitions rather than in any particular model's weaknesses. Fig.~\ref{fig:misclassified} shows representative pairs from both datasets.
 
 \begin{figure*}[!htbp]
 \centering
@@ -326,7 +335,7 @@ Even at the much finer 0.3\,m resolution of UC Merced, some class boundaries rem
 
 \subsection{Computational Efficiency}
 
-Fig.~\ref{fig:efficiency} plots accuracy against parameter count for EuroSAT. At one extreme, EfficientNet-B0 needs only 4.0M parameters to reach 98.54\%. At the other, ViT-B/16 uses 85.8M parameters for 98.91\%, a 21$\times$ increase in model size for a 0.37 percentage point gain. The EfficientNet models trace out an efficiency frontier that no other family matches.
+Fig.~\ref{fig:efficiency} plots accuracy against parameter count for EuroSAT. EfficientNet-B0 reaches 98.76\% with 5.3M parameters. ViT-B/16 uses 86.6M parameters for 98.72\%, a 16$\times$ larger model for slightly lower accuracy. The two EfficientNet variants trace an efficiency frontier that no other family matches.
 
 \begin{figure}[!htbp]
 \centering
@@ -335,7 +344,7 @@ Fig.~\ref{fig:efficiency} plots accuracy against parameter count for EuroSAT. At
 \label{fig:efficiency}
 \end{figure}
 
-Table~\ref{tab:efficiency} lists training times. EfficientNet-B0 is the fastest model on both datasets (344\,s on EuroSAT, 289\,s on UC Merced). ViT-B/16 is the slowest at 3{,}253\,s on EuroSAT, consistent with the cost of computing global self-attention over 85.8M parameters. ResNet-101 is the exception: despite its 42.5M parameters, it trains in only 611\,s on EuroSAT because early stopping terminates it after few epochs. It converges quickly, then stalls, and the early stopping trigger fires before the model has used its full training budget.
+Table~\ref{tab:efficiency} lists training times. EfficientNet-B0 is fastest on EuroSAT (1{,}088\,s); DenseNet-121 is fastest on UC Merced (211\,s). ViT-B/16 is slowest on EuroSAT at 3{,}403\,s, consistent with the cost of global self-attention over 86.6M parameters. Training time does not always track parameter count: Swin-T (28.3M) trains faster than ResNet-50 (25.6M) on EuroSAT, partly because windowed attention avoids the quadratic cost and partly because early stopping pulls different models out at different epochs.
 
 \begin{table}[!htbp]
 \centering
@@ -345,14 +354,14 @@ Table~\ref{tab:efficiency} lists training times. EfficientNet-B0 is the fastest 
 \toprule
 \textbf{Model} & \textbf{EuroSAT} & \textbf{UC Merced} \\
 \midrule
-EfficientNet-B0 & 344   & 289 \\
-DenseNet-121    & 516   & 315 \\
-ResNet-101      & 611   & 259 \\
-EfficientNet-B3 & 1{,}459 & 386 \\
-Swin-T          & 1{,}819 & 246 \\
-ConvNeXt-Tiny   & 2{,}032 & 379 \\
-ResNet-50       & 2{,}807 & 369 \\
-ViT-B/16        & 3{,}253 & 427 \\
+EffNet-B0       & 1{,}088 & 216 \\
+Swin-T          & 1{,}474 & 421 \\
+EffNet-B3       & 1{,}559 & 312 \\
+ResNet-50       & 1{,}630 & 402 \\
+DenseNet-121    & 1{,}686 & 211 \\
+ResNet-101      & 1{,}928 & 374 \\
+ConvNeXt-T      & 2{,}470 & 385 \\
+ViT-B/16        & 3{,}403 & 282 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -364,38 +373,40 @@ ViT-B/16        & 3{,}253 & 427 \\
 
 \subsection{Architecture Family Comparison}
 
-Many researchers expect transformers to outperform CNNs for scene classification because self-attention can model long-range spatial context. Our results do not support that expectation. ConvNeXt-Tiny, a modernized CNN, finished first on EuroSAT, while EfficientNet-B3, a classical CNN, took the top spot on UC Merced. The transformers performed well but did not dominate either dataset. Liu et al.~\cite{liu2022convnet} reported the same on ImageNet: once you give a convolution network the same training tricks that transformers use, the accuracy gap largely disappears.
+A common expectation is that self-attention should give transformers an advantage in scene classification because it can relate distant regions of an image in ways that local convolution kernels cannot. Our results only partially support this view. ConvNeXt-Tiny, which contains no attention mechanism at all, placed first on EuroSAT (99.11\%), while Swin Transformer took the lead on UC Merced (99.76\%). Neither architecture family won on both datasets. Liu et al.~\cite{liu2022convnet} observed a similar pattern on ImageNet, where the accuracy gap between CNNs and transformers shrank to almost nothing once the CNN adopted modern training practices. Our contribution is the observation that the reverse also holds: on one of our two benchmarks, a transformer beat the modernized CNN.
 
-This probably comes down to the task itself. At 224$\times$224 pixels, each image shows one land-use type with fairly uniform texture, so local patterns in color and shape are enough to tell classes apart. Self-attention's ability to link distant parts of the image would matter more when spatial layout carries the signal, for example recognizing a port because boats appear next to docks and water. But that kind of reasoning is not needed when the whole patch is ``forest'' or ``highway.''
+We suspect the explanation lies in the nature of single-label scene classification at 224$\times$224 resolution. Each image depicts one dominant land-use type, and the texture within the patch tends to be fairly homogeneous. Under these conditions, local color and shape cues are sufficient to distinguish classes, and there is little spatial reasoning for global attention to exploit. Tasks that require recognizing configurations of objects (for instance, identifying a harbor because boats sit adjacent to docking structures and open water) would likely give transformers more room to differentiate themselves, but such compositional reasoning is rarely needed when the entire image is ``forest'' or ``highway.''
 
-\subsection{The Depth Paradox}
+The contrast between ViT-B/16 and Swin-T is especially instructive. Both models belong to the transformer family, yet they occupy opposite ends of our leaderboard: Swin-T placed first on UC Merced (99.76\%) and second on EuroSAT (99.02\%), whereas ViT-B/16 placed second-to-last on EuroSAT (98.72\%) and last on UC Merced (98.10\%). In other words, the gap between these two transformers exceeds the gap between any CNN and any transformer in our study. Swin-T's local windowed attention and hierarchical pooling endow it with an implicit multi-scale structure similar to that of convolutional networks, while ViT-B/16's flat global attention across all 196 tokens appears to demand substantially more fine-tuning data before it adapts. UC Merced, with only 80 training images per class, does not supply enough. Treating ``transformers'' as a single group conceals this distinction; the specific architectural decisions within the transformer family (local vs.\ global attention, flat vs.\ hierarchical features) proved at least as consequential as the broader CNN-versus-transformer divide.
 
-ResNet-101 consistently trailed ResNet-50 on both datasets (98.13\% vs.\ 98.81\% on EuroSAT, 98.81\% vs.\ 99.29\% on UC Merced), even though it has nearly twice as many parameters. This kind of result, where a deeper pretrained network underperforms a shallower one after fine-tuning, has been reported before in transfer learning. Thirty epochs with early stopping is likely not enough to properly adapt all 101 layers. The deeper network starts from a good initialization but cannot move far from it before training stops. The 50-layer version, with its smaller parameter space, is simply easier to tune within the same budget.
+\subsection{Deeper Is Not Always Better}
+
+ResNet-101 edged out ResNet-50 on EuroSAT (98.91\% vs.\ 98.70\%), which is the conventional expectation: more layers, more capacity, slightly higher accuracy. On UC Merced, however, the ranking inverted. ResNet-50 reached 99.52\%; ResNet-101 stopped at 99.29\%. The most likely explanation is data scarcity. UC Merced provides only 80 training images per class, which is probably not enough to push all 101 layers meaningfully away from their ImageNet initialization. The deeper model overfits to whatever signal it extracts early and plateaus at its early-stopping checkpoint. On EuroSAT, where each class has 2{,}160 training images, the additional layers have enough gradient signal to justify their extra capacity.
 
 \subsection{Parameter Efficiency}
 
-EfficientNet-B0 deserves separate mention. With 4.0M parameters (18$\times$ fewer than ViT-B/16), it reaches 98.54\% on EuroSAT and 99.52\% on UC Merced. For deployment on mobile devices or edge hardware, this is the obvious pick. EfficientNet-B3, at 10.7M parameters, matches or beats every other model in our lineup and is still small enough for practical use.
+Perhaps the most striking result in our experiments is the performance of EfficientNet-B0. At 5.3\,M parameters it is sixteen times smaller than ViT-B/16, yet it scored 98.76\% on EuroSAT and 99.52\% on UC Merced, both figures higher than those of ViT-B/16. In practical terms, multiplying the parameter budget by a factor of sixteen purchased no accuracy improvement whatsoever. EfficientNet-B3, roughly twice the size of B0 at 12.2\,M parameters, gives up very little inference speed while matching or exceeding every other architecture we evaluated. For settings where model size is constrained (embedded sensors, on-board satellite processing, field-deployable drones), either EfficientNet variant represents a strong default choice.
 
 \subsection{Dataset Saturation}
 
-When the worst model in a benchmark still scores above 98\%, the benchmark has arguably reached its useful limit. The accuracy range we observed (less than one percentage point on both datasets) means the gap between the ``best'' and ``worst'' architecture falls within noise for most practical applications. Others have already called for harder evaluation scenarios, including larger-scale datasets, cross-domain generalization, and few-shot settings~\cite{cheng2020remote, cheng2017nwpu}. Our results add weight to that call.
+When the worst-performing model in a comparison already scores 98.70\% and the total spread across eight architectures is less than half a percentage point, one has to ask whether the benchmark can still discriminate between methods. We believe EuroSAT has essentially reached that ceiling for single-label classification with transfer learning. UC Merced shows somewhat more variation (1.67 percentage points end to end), but almost all of it comes from a single outlier: ViT-B/16 at 98.10\%. Remove that one model and the remaining seven span only 0.71 points. Several earlier works have called for more demanding evaluation protocols, such as datasets with tens of thousands of training images per class, cross-sensor generalization, or few-shot learning with only a handful of labeled examples~\cite{cheng2020remote, cheng2017nwpu}. Our findings reinforce the urgency of that call.
 
-\subsection{Transfer Learning Dominance}
+\subsection{Why Architecture Mattered So Little}
 
-Once transfer learning is in the picture, architecture matters very little. The McNemar test (Fig.~\ref{fig:mcnemar}) shows that most accuracy differences are not statistically significant. A different random test split would likely produce a different model ranking. At least on these two datasets, what you start with (the pretrained weights) and how you fine-tune matter more than which architecture you choose. Whether the same holds for multi-label classification, change detection, or few-shot learning remains to be tested.
+The McNemar matrices (Figs.~\ref{fig:mcnemar} and~\ref{fig:mcnemar_ucmerced}) are dominated by green cells, indicating that the vast majority of pairwise accuracy differences fail to reach statistical significance at $p < 0.05$. A different random partition of the test set would, in all likelihood, rearrange the ranking. The practical takeaway is that a researcher who spends weeks experimenting with different backbone architectures may obtain less benefit than one who invests the same time in curating training data or refining the augmentation policy. On the two benchmarks examined here, the pretrained initialization and the fine-tuning protocol appear to matter considerably more than the choice of backbone. Whether this conclusion extends to tasks with richer output structure, such as per-pixel semantic segmentation or multi-temporal change detection, remains to be tested.
 
 \subsection{Limitations}
 
-Two datasets is a limited evaluation; results could differ on larger or more diverse collections. We also used only the RGB bands of EuroSAT. The full multispectral data might favor certain architectures over others, and we did not test this. Hyperparameters were fixed across all models. That is fair for comparison, but it may understate what any single architecture can do with tuned settings. We also relied on a single train-test split without cross-validation, so the results depend on one particular partition of the data.
+Several caveats apply. First, we evaluated only two datasets; results on larger or more heterogeneous collections could differ. Second, we used only the RGB bands of EuroSAT rather than the full 13-band multispectral product, which may disadvantage architectures that benefit from additional spectral information. Third, all hyperparameters were held constant across models. While this decision is necessary for a fair comparison, it likely understates the peak accuracy achievable by any individual architecture with dedicated tuning. Finally, we used a single stratified train-test partition rather than $k$-fold cross-validation, so our rankings depend on one particular split of the data.
 
 % ================================================================
 % VI. CONCLUSION
 % ================================================================
 \section{Conclusion}
 
-Eight deep learning architectures from three design families were compared on two remote sensing benchmarks, and the differences between them turned out to be small. All models exceeded 98\% accuracy with ImageNet pretraining and a uniform fine-tuning protocol. ConvNeXt-Tiny reached 99.06\% on EuroSAT and EfficientNet-B3 reached 99.76\% on UC Merced, but McNemar's test showed that most pairwise gaps were not statistically significant. The smallest model, EfficientNet-B0 (4.0M parameters), came within one percentage point of every other model on both datasets.
+We compared eight deep learning architectures drawn from three design families on two remote sensing scene classification benchmarks under strictly identical training conditions. Every model exceeded 98\% overall accuracy once initialized with ImageNet-pretrained weights and fine-tuned with the same optimizer, augmentation pipeline, and early-stopping schedule. The top-ranked model was ConvNeXt-Tiny on EuroSAT (99.11\%) and Swin Transformer on UC Merced (99.76\%), but no single architecture family dominated both datasets. McNemar's test indicated that the majority of pairwise accuracy differences were not statistically significant. EfficientNet-B0 (5.3\,M parameters) came within half a percentage point of the best model on EuroSAT and shared second place on UC Merced, whereas ViT-B/16 (86.6\,M parameters) finished near the bottom of the ranking on both benchmarks despite carrying sixteen times more parameters.
 
-For practitioners, we recommend EfficientNet-B3 as a general default. It is small (10.7M parameters), fast to train, and competitive on both datasets we tested. EfficientNet-B0 is a solid alternative when model size is the priority. On these benchmarks, getting the training recipe right matters more than picking a fancier architecture. Future work should move to harder problems: bigger datasets, cross-domain transfer, few-shot settings. Those are the conditions where the gap between architecture families, if it exists, is more likely to show up.
+From a deployment perspective, EfficientNet-B0 or EfficientNet-B3 are attractive defaults: both are compact enough for resource-constrained platforms and sacrifice almost no accuracy relative to much larger models. When computational resources are not a constraint, Swin Transformer is the strongest option among the two transformers we tested, having placed first or second on both datasets. ViT-B/16, by contrast, should be used with caution unless the practitioner has access to considerably more labeled training data than these benchmarks provide. The overarching lesson of our experiments is that the shared pretrained initialization and fine-tuning protocol exerted a larger influence on accuracy than the architectural differences among the eight models. To determine whether meaningful performance gaps emerge under more demanding conditions, future studies should consider larger-scale datasets with several thousand labeled images per class, cross-sensor transfer experiments, and few-shot learning scenarios in which only a handful of labeled examples are available.
 
 % ================================================================
 % REFERENCES

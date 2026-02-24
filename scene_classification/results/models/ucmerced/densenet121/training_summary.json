@@ -1,0 +1,8 @@
+{
+  "model_name": "densenet121",
+  "dataset_name": "ucmerced",
+  "best_acc": 0.9904761904761905,
+  "best_epoch": 6,
+  "total_epochs": 16,
+  "training_time": 211.3503749370575
+}

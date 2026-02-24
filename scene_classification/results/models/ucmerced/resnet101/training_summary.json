@@ -1,0 +1,8 @@
+{
+  "model_name": "resnet101",
+  "dataset_name": "ucmerced",
+  "best_acc": 0.9928571428571429,
+  "best_epoch": 17,
+  "total_epochs": 27,
+  "training_time": 374.3951771259308
+}

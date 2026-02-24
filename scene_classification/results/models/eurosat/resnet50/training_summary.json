@@ -1,0 +1,8 @@
+{
+  "model_name": "resnet50",
+  "dataset_name": "eurosat",
+  "best_acc": 0.987037037037037,
+  "best_epoch": 19,
+  "total_epochs": 29,
+  "training_time": 1629.6729137897491
+}

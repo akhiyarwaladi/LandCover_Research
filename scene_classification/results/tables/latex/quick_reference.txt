@@ -1,0 +1,61 @@
+=================================================================
+  MANUSCRIPT QUICK REFERENCE - ALL NUMBERS
+  (Copy these into the manuscript after retraining)
+=================================================================
+
+─────────────────────────────────────────────────────────────────
+  EUROSAT
+─────────────────────────────────────────────────────────────────
+
+  Model                OA (%)     F1-Mac     Kappa      Time (s)  
+  ────────────────────────────────────────────────────────────
+  ConvNeXt-T           99.11      0.9908     0.9901     2470      
+  Swin-T               99.02      0.9899     0.9891     1474      
+  EffNet-B3            98.98      0.9895     0.9887     1559      
+  DenseNet-121         98.96      0.9893     0.9885     1686      
+  ResNet-101           98.91      0.9887     0.9878     1928      
+  EffNet-B0            98.76      0.9870     0.9862     1088      
+  ViT-B/16             98.72      0.9870     0.9858     3403      
+  ResNet-50            98.70      0.9865     0.9856     1630      
+
+  Best:  ConvNeXt-T (99.11%)
+  Worst: ResNet-50 (98.70%)
+  Range: 0.41 percentage points
+
+─────────────────────────────────────────────────────────────────
+  UCMERCED
+─────────────────────────────────────────────────────────────────
+
+  Model                OA (%)     F1-Mac     Kappa      Time (s)  
+  ────────────────────────────────────────────────────────────
+  Swin-T               99.76      0.9976     0.9975     421       
+  ConvNeXt-T           99.52      0.9952     0.9950     385       
+  EffNet-B0            99.52      0.9952     0.9950     216       
+  EffNet-B3            99.52      0.9952     0.9950     312       
+  ResNet-50            99.52      0.9952     0.9950     402       
+  ResNet-101           99.29      0.9929     0.9925     374       
+  DenseNet-121         99.05      0.9905     0.9900     211       
+  ViT-B/16             98.10      0.9809     0.9800     282       
+
+  Best:  Swin-T (99.76%)
+  Worst: ViT-B/16 (98.10%)
+  Range: 1.67 percentage points
+
+─────────────────────────────────────────────────────────────────
+  ABSTRACT / CONCLUSION KEY NUMBERS
+─────────────────────────────────────────────────────────────────
+
+  EUROSAT best: ConvNeXt-T = 99.11%
+
+  UCMERCED best: Swin-T = 99.76%
+  EffNet-B0 on eurosat: 98.76% (5.3M params)
+  EffNet-B0 on ucmerced: 99.52% (5.3M params)
+
+  DEPTH PARADOX (ResNet-101 vs ResNet-50):
+    eurosat: R50=98.70% vs R101=98.91%
+    ucmerced: R50=99.52% vs R101=99.29%
+
+  EFFICIENCY (for Discussion section):
+    ViT params / EffNet-B0 params = 16x
+    Accuracy gap: -0.04 pp
+

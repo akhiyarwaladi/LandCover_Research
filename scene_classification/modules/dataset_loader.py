@@ -237,7 +237,10 @@ def download_ucmerced(target_dir=None):
         target_dir = DATASET_PATHS['ucmerced']
     os.makedirs(target_dir, exist_ok=True)
 
-    url = 'http://weegee.vision.ucmerced.edu/datasets/UCMerced_LandUse.zip'
+    urls = [
+        'https://hf.co/datasets/torchgeo/ucmerced/resolve/7c5ef3454d9b1cccfa7ccde0c01fc8f00a45909a/UCMerced_LandUse.zip',
+        'http://weegee.vision.ucmerced.edu/datasets/UCMerced_LandUse.zip',
+    ]
     zip_path = os.path.join(target_dir, 'UCMerced_LandUse.zip')
 
     images_dir = os.path.join(target_dir, 'UCMerced_LandUse', 'Images')
@@ -249,10 +252,20 @@ def download_ucmerced(target_dir=None):
             return
 
     if not os.path.exists(zip_path):
-        print(f"Downloading UC Merced from {url}...")
-        print("  (~317 MB, may take a few minutes)")
-        urllib.request.urlretrieve(url, zip_path)
-        print(f"  Saved to {zip_path}")
+        for url in urls:
+            try:
+                print(f"Downloading UC Merced from {url}...")
+                print("  (~317 MB, may take a few minutes)")
+                urllib.request.urlretrieve(url, zip_path)
+                print(f"  Saved to {zip_path}")
+                break
+            except Exception as e:
+                print(f"  Failed: {e}")
+                if os.path.exists(zip_path):
+                    os.remove(zip_path)
+                continue
+        else:
+            raise RuntimeError("All UC Merced download URLs failed.")
 
     print("Extracting UC Merced...")
     with zipfile.ZipFile(zip_path, 'r') as zf:

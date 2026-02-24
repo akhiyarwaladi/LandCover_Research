@@ -35,9 +35,10 @@ os.makedirs(FIG_DIR, exist_ok=True)
 SC_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 sys.path.insert(0, SC_ROOT)
 from config import RESULTS_DIR, MODELS, DATASETS
+from modules.dataset_loader import find_dataset_root
 
-EUROSAT_DIR = os.path.join(SC_ROOT, 'data', 'eurosat', 'eurosat', '2750')
-UCMERCED_DIR = os.path.join(SC_ROOT, 'data', 'ucmerced', 'UCMerced_LandUse', 'Images')
+EUROSAT_DIR = find_dataset_root('eurosat')
+UCMERCED_DIR = find_dataset_root('ucmerced')
 
 random.seed(42)
 np.random.seed(42)

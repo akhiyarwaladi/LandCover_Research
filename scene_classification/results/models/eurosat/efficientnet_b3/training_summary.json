@@ -1,0 +1,8 @@
+{
+  "model_name": "efficientnet_b3",
+  "dataset_name": "eurosat",
+  "best_acc": 0.9898148148148148,
+  "best_epoch": 25,
+  "total_epochs": 30,
+  "training_time": 1558.9833984375
+}

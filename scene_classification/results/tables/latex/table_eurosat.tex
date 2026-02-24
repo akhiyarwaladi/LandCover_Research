@@ -1,0 +1,19 @@
+\begin{table}[!htbp]
+\centering
+\caption{Classification performance on EuroSAT (5,400 test images). Best results in bold.}
+\label{tab:eurosat}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{OA (\%)} & \textbf{F1-Mac} & \textbf{$\kappa$} & \textbf{Params} \\
+\midrule
+ConvNeXt-T      & \textbf{99.11} & \textbf{0.9908} & \textbf{0.9901} & 28.6M \\
+Swin-T          & 99.02 & 0.9899 & 0.9891 & 28.3M \\
+EffNet-B3       & 98.98 & 0.9895 & 0.9887 & 12.2M \\
+DenseNet-121    & 98.96 & 0.9893 & 0.9885 & 8.0M \\
+ResNet-101      & 98.91 & 0.9887 & 0.9878 & 44.5M \\
+EffNet-B0       & 98.76 & 0.9870 & 0.9862 & 5.3M \\
+ViT-B/16        & 98.72 & 0.9870 & 0.9858 & 86.6M \\
+ResNet-50       & 98.70 & 0.9865 & 0.9856 & 25.6M \\
+\bottomrule
+\end{tabular}
+\end{table}

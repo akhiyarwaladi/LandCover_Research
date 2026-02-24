@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.2.17)  23 FEB 2026 17:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.2.17)  24 FEB 2026 09:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -354,18 +354,21 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 (C:\Users\MyPC PRO\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sy
 s.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
-)) [1{C:/Users/MyPC PRO/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Us
-ers/MyPC PRO/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
+))
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [1{C:/Users/MyPC PRO/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/User
+s/MyPC PRO/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
 
 
 ]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 78.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 80.
 
 
 (C:\Users\MyPC PRO\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 78.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 80.
 
 
 (C:\Users\MyPC PRO\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
@@ -374,113 +377,132 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 pdfTeX warning: pdflatex.exe (file ./figures/methodology_flowchart.pdf): PDF in
 clusion: found PDF version <1.7>, but at most version <1.5> allowed
-<figures/methodology_flowchart.pdf, id=9, 429.52469pt x 608.2725pt>
+<figures/methodology_flowchart.pdf, id=8, 429.52469pt x 608.2725pt>
 File: figures/methodology_flowchart.pdf Graphic file (type pdf)
 <use figures/methodology_flowchart.pdf>
 Package pdftex.def Info: figures/methodology_flowchart.pdf  used on input line 
-97.
+99.
 (pdftex.def)             Requested size: 252.0pt x 356.87286pt.
-[2 <./figures/methodology_flowchart.pdf>]
-<figures/sample_eurosat.pdf, id=73, 171.10756pt x 374.64766pt>
+<figures/sample_eurosat.pdf, id=9, 171.10756pt x 374.64766pt>
 File: figures/sample_eurosat.pdf Graphic file (type pdf)
 <use figures/sample_eurosat.pdf>
-Package pdftex.def Info: figures/sample_eurosat.pdf  used on input line 114.
+Package pdftex.def Info: figures/sample_eurosat.pdf  used on input line 116.
 (pdftex.def)             Requested size: 247.6778pt x 542.33911pt.
-<figures/sample_ucmerced.pdf, id=74, 181.30682pt x 400.08673pt>
+<figures/sample_ucmerced.pdf, id=10, 181.30682pt x 400.08673pt>
 File: figures/sample_ucmerced.pdf Graphic file (type pdf)
 <use figures/sample_ucmerced.pdf>
-Package pdftex.def Info: figures/sample_ucmerced.pdf  used on input line 115.
+Package pdftex.def Info: figures/sample_ucmerced.pdf  used on input line 117.
 (pdftex.def)             Requested size: 247.6778pt x 546.57098pt.
+[2]
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 1
-58.
-
-(C:\Users\MyPC PRO\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
+60.
+ (C:\Users\MyPC PRO\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-<figures/augmentation.pdf, id=75, 212.54042pt x 230.22816pt>
+<figures/augmentation.pdf, id=16, 212.54042pt x 230.22816pt>
 File: figures/augmentation.pdf Graphic file (type pdf)
 <use figures/augmentation.pdf>
-Package pdftex.def Info: figures/augmentation.pdf  used on input line 164.
+Package pdftex.def Info: figures/augmentation.pdf  used on input line 166.
 (pdftex.def)             Requested size: 252.0pt x 272.98073pt.
-
-[3] [4 <./figures/sample_eurosat.pdf> <./figures/sample_ucmerced.pdf>]
+ [3 <./figures/methodology_flowchart.pdf>] [4 <./figures/sample_eurosat.pdf> <.
+/figures/sample_ucmerced.pdf>]
 <figures/accuracy_comparison.pdf, id=224, 237.67984pt x 175.96526pt>
 File: figures/accuracy_comparison.pdf Graphic file (type pdf)
 <use figures/accuracy_comparison.pdf>
 Package pdftex.def Info: figures/accuracy_comparison.pdf  used on input line 24
-2.
+4.
 (pdftex.def)             Requested size: 252.0pt x 186.5706pt.
-<figures/curves_eurosat.pdf, id=225, 232.54504pt x 291.29703pt>
+<figures/curves_eurosat.pdf, id=225, 229.03192pt x 291.29703pt>
 File: figures/curves_eurosat.pdf Graphic file (type pdf)
 <use figures/curves_eurosat.pdf>
-Package pdftex.def Info: figures/curves_eurosat.pdf  used on input line 253.
-(pdftex.def)             Requested size: 252.0pt x 315.68507pt.
+Package pdftex.def Info: figures/curves_eurosat.pdf  used on input line 255.
+(pdftex.def)             Requested size: 252.0pt x 320.50772pt.
 <figures/curves_ucmerced.pdf, id=226, 229.03192pt x 291.29703pt>
 File: figures/curves_ucmerced.pdf Graphic file (type pdf)
 <use figures/curves_ucmerced.pdf>
-Package pdftex.def Info: figures/curves_ucmerced.pdf  used on input line 262.
+Package pdftex.def Info: figures/curves_ucmerced.pdf  used on input line 264.
 (pdftex.def)             Requested size: 252.0pt x 320.50772pt.
-<figures/per_class_f1_eurosat.pdf, id=227, 249.3315pt x 249.3315pt>
+
+Underfull \hbox (badness 1701) in paragraph at lines 273--274
+ \T1/ptm/m/it/10 1) Eu-roSAT: [][] \T1/ptm/m/n/10 The per-class F1 heatmap for 
+Eu-roSAT
+ []
+
+[5 <./figures/augmentation.pdf> <./figures/accuracy_comparison.pdf>]
+<figures/per_class_f1_eurosat.pdf, id=349, 249.3315pt x 249.3315pt>
 File: figures/per_class_f1_eurosat.pdf Graphic file (type pdf)
 <use figures/per_class_f1_eurosat.pdf>
 Package pdftex.def Info: figures/per_class_f1_eurosat.pdf  used on input line 2
-75.
+77.
 (pdftex.def)             Requested size: 252.0pt x 252.00162pt.
-<figures/per_class_f1_ucmerced.pdf, id=228, 249.3315pt x 249.3315pt>
+<figures/per_class_f1_ucmerced.pdf, id=350, 249.3315pt x 249.3315pt>
 File: figures/per_class_f1_ucmerced.pdf Graphic file (type pdf)
 <use figures/per_class_f1_ucmerced.pdf>
 Package pdftex.def Info: figures/per_class_f1_ucmerced.pdf  used on input line 
-286.
+288.
 (pdftex.def)             Requested size: 252.0pt x 252.00162pt.
- [5 <./figures/augmentation.pdf> <./figures/accuracy_comparison.pdf>]
-<figures/mcnemar_eurosat.pdf, id=350, 240.08011pt x 192.94019pt>
+<figures/mcnemar_eurosat.pdf, id=351, 240.08011pt x 192.94019pt>
 File: figures/mcnemar_eurosat.pdf Graphic file (type pdf)
 <use figures/mcnemar_eurosat.pdf>
-Package pdftex.def Info: figures/mcnemar_eurosat.pdf  used on input line 297.
+Package pdftex.def Info: figures/mcnemar_eurosat.pdf  used on input line 299.
 (pdftex.def)             Requested size: 252.0pt x 202.51955pt.
-<figures/prediction_analysis.pdf, id=351, 251.23988pt x 283.05037pt>
+ [6 <./figures/curves_eurosat.pdf> <./figures/curves_ucmerced.pdf> <./figures/p
+er_class_f1_eurosat.pdf>]
+<figures/mcnemar_ucmerced.pdf, id=562, 240.08011pt x 192.94019pt>
+File: figures/mcnemar_ucmerced.pdf Graphic file (type pdf)
+<use figures/mcnemar_ucmerced.pdf>
+Package pdftex.def Info: figures/mcnemar_ucmerced.pdf  used on input line 308.
+(pdftex.def)             Requested size: 252.0pt x 202.51955pt.
+<figures/prediction_analysis.pdf, id=563, 251.23988pt x 283.05037pt>
 File: figures/prediction_analysis.pdf Graphic file (type pdf)
 <use figures/prediction_analysis.pdf>
 Package pdftex.def Info: figures/prediction_analysis.pdf  used on input line 31
-0.
+9.
 (pdftex.def)             Requested size: 252.0pt x 283.90913pt.
- [6 <./figures/curves_eurosat.pdf> <./figures/curves_ucmerced.pdf> <./figures/p
-er_class_f1_eurosat.pdf>]
-<figures/misclassified_eurosat.pdf, id=561, 230.56915pt x 562.22449pt>
+ [7 <./figures/per_class_f1_ucmerced.pdf> <./figures/mcnemar_eurosat.pdf> <./fi
+gures/mcnemar_ucmerced.pdf>]
+<figures/misclassified_eurosat.pdf, id=798, 230.56915pt x 562.22449pt>
 File: figures/misclassified_eurosat.pdf Graphic file (type pdf)
 <use figures/misclassified_eurosat.pdf>
 Package pdftex.def Info: figures/misclassified_eurosat.pdf  used on input line 
-321.
+330.
 (pdftex.def)             Requested size: 247.6778pt x 603.9506pt.
-<figures/misclassified_ucmerced.pdf, id=562, 229.189pt x 562.22449pt>
+<figures/misclassified_ucmerced.pdf, id=799, 229.189pt x 562.22449pt>
 File: figures/misclassified_ucmerced.pdf Graphic file (type pdf)
 <use figures/misclassified_ucmerced.pdf>
 Package pdftex.def Info: figures/misclassified_ucmerced.pdf  used on input line
- 322.
+ 331.
 (pdftex.def)             Requested size: 247.6778pt x 607.57945pt.
-<figures/efficiency_eurosat.pdf, id=563, 237.55374pt x 226.4115pt>
+<figures/efficiency_eurosat.pdf, id=800, 237.55374pt x 226.4115pt>
 File: figures/efficiency_eurosat.pdf Graphic file (type pdf)
 <use figures/efficiency_eurosat.pdf>
-Package pdftex.def Info: figures/efficiency_eurosat.pdf  used on input line 333
+Package pdftex.def Info: figures/efficiency_eurosat.pdf  used on input line 342
 .
 (pdftex.def)             Requested size: 252.0pt x 240.18504pt.
- [7 <./figures/per_class_f1_ucmerced.pdf> <./figures/mcnemar_eurosat.pdf> <./fi
-gures/prediction_analysis.pdf>] [8 <./figures/misclassified_eurosat.pdf> <./fig
-ures/misclassified_ucmerced.pdf>] [9 <./figures/efficiency_eurosat.pdf>]
-(manuscript_humanized.bbl) [10] (manuscript_humanized.aux)
+
+Underfull \vbox (badness 1308) has occurred while \output is active []
+
+ [8 <./figures/prediction_analysis.pdf>] [9 <./figures/misclassified_eurosat.pd
+f> <./figures/misclassified_ucmerced.pdf>] [10 <./figures/efficiency_eurosat.pd
+f>]
+Underfull \hbox (badness 7522) in paragraph at lines 409--410
+[]\T1/ptm/m/n/10 From a de-ploy-ment per-spec-tive, EfficientNet-B0 or
+ []
+
+(manuscript_humanized.bbl) [11] (manuscript_humanized.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4798 strings out of 467871
- 77726 string characters out of 5416888
- 521681 words of memory out of 5000000
- 33610 multiletter control sequences out of 15000+600000
+ 4806 strings out of 467871
+ 78016 string characters out of 5416888
+ 521592 words of memory out of 5000000
+ 33618 multiletter control sequences out of 15000+600000
  747076 words of font info for 158 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 57i,9n,65p,1348b,303s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,9n,65p,1468b,303s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/MyPC PRO/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
 cm/cmmi10.pfb><C:/Users/MyPC PRO/AppData/Local/Programs/MiKTeX/fonts/type1/publ
 ic/amsfonts/cm/cmmi8.pfb><C:/Users/MyPC PRO/AppData/Local/Programs/MiKTeX/fonts
@@ -495,9 +517,9 @@ es/utmb8a.pfb><C:/Users/MyPC PRO/AppData/Local/Programs/MiKTeX/fonts/type1/urw/
 times/utmbi8a.pfb><C:/Users/MyPC PRO/AppData/Local/Programs/MiKTeX/fonts/type1/
 urw/times/utmr8a.pfb><C:/Users/MyPC PRO/AppData/Local/Programs/MiKTeX/fonts/typ
 e1/urw/times/utmri8a.pfb>
-Output written on manuscript_humanized.pdf (10 pages, 4381155 bytes).
+Output written on manuscript_humanized.pdf (11 pages, 4279698 bytes).
 PDF statistics:
- 1072 PDF objects out of 1200 (max. 8388607)
+ 1162 PDF objects out of 1200 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 71 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 76 words of extra memory for PDF output out of 10000 (max. 10000000)
 

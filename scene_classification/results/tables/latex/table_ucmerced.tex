@@ -1,0 +1,19 @@
+\begin{table}[!htbp]
+\centering
+\caption{Classification performance on UC Merced (420 test images). Best results in bold.}
+\label{tab:ucmerced}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{OA (\%)} & \textbf{F1-Mac} & \textbf{$\kappa$} & \textbf{Params} \\
+\midrule
+Swin-T          & \textbf{99.76} & \textbf{0.9976} & \textbf{0.9975} & 28.3M \\
+ConvNeXt-T      & 99.52 & 0.9952 & 0.9950 & 28.6M \\
+EffNet-B0       & 99.52 & 0.9952 & 0.9950 & 5.3M \\
+EffNet-B3       & 99.52 & 0.9952 & 0.9950 & 12.2M \\
+ResNet-50       & 99.52 & 0.9952 & 0.9950 & 25.6M \\
+ResNet-101      & 99.29 & 0.9929 & 0.9925 & 44.5M \\
+DenseNet-121    & 99.05 & 0.9905 & 0.9900 & 8.0M \\
+ViT-B/16        & 98.10 & 0.9809 & 0.9800 & 86.6M \\
+\bottomrule
+\end{tabular}
+\end{table}

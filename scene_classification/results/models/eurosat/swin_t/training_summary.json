@@ -1,0 +1,8 @@
+{
+  "model_name": "swin_t",
+  "dataset_name": "eurosat",
+  "best_acc": 0.9901851851851852,
+  "best_epoch": 13,
+  "total_epochs": 23,
+  "training_time": 1474.0292909145355
+}

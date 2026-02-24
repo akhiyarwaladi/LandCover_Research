@@ -1,0 +1,8 @@
+{
+  "model_name": "vit_b_16",
+  "dataset_name": "ucmerced",
+  "best_acc": 0.9809523809523809,
+  "best_epoch": 6,
+  "total_epochs": 16,
+  "training_time": 282.47129821777344
+}

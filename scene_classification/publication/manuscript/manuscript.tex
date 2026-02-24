@@ -195,20 +195,20 @@ Tables~\ref{tab:eurosat} and~\ref{tab:ucmerced} list the classification results 
 
 \begin{table}[!htbp]
 \centering
-\caption{Classification performance on EuroSAT (5{,}400 test images). Best results in bold.}
+\caption{Classification performance on EuroSAT (5,400 test images). Best results in bold.}
 \label{tab:eurosat}
 \begin{tabular}{lcccc}
 \toprule
 \textbf{Model} & \textbf{OA (\%)} & \textbf{F1-Mac} & \textbf{$\kappa$} & \textbf{Params} \\
 \midrule
-ConvNeXt-T     & \textbf{99.06} & \textbf{0.9902} & \textbf{0.9895} & 27.8M \\
-Swin-T         & 99.00 & 0.9896 & 0.9889 & 27.5M \\
-EffNet-B3      & 98.98 & 0.9894 & 0.9887 & 10.7M \\
-ViT-B/16       & 98.91 & 0.9889 & 0.9878 & 85.8M \\
-ResNet-50      & 98.81 & 0.9878 & 0.9868 & 23.5M \\
-EffNet-B0      & 98.54 & 0.9853 & 0.9837 & 4.0M \\
-DenseNet-121   & 98.46 & 0.9841 & 0.9829 & 7.0M \\
-ResNet-101     & 98.13 & 0.9806 & 0.9792 & 42.5M \\
+ConvNeXt-T      & \textbf{99.06} & \textbf{0.9902} & \textbf{0.9895} & 27.8M \\
+Swin-T          & 99.00 & 0.9896 & 0.9889 & 27.5M \\
+EffNet-B3       & 98.98 & 0.9894 & 0.9887 & 10.7M \\
+ViT-B/16        & 98.91 & 0.9889 & 0.9878 & 85.8M \\
+ResNet-50       & 98.81 & 0.9878 & 0.9868 & 23.5M \\
+EffNet-B0       & 98.54 & 0.9853 & 0.9837 & 4.0M \\
+DenseNet-121    & 98.46 & 0.9841 & 0.9829 & 7.0M \\
+ResNet-101      & 98.13 & 0.9806 & 0.9792 & 42.5M \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -223,14 +223,14 @@ The performance gaps are small. The entire range on EuroSAT is 0.93 percentage p
 \toprule
 \textbf{Model} & \textbf{OA (\%)} & \textbf{F1-Mac} & \textbf{$\kappa$} & \textbf{Params} \\
 \midrule
-EffNet-B3      & \textbf{99.76} & \textbf{0.9976} & \textbf{0.9975} & 10.7M \\
-EffNet-B0      & 99.52 & 0.9952 & 0.9950 & 4.0M \\
-ViT-B/16       & 99.52 & 0.9952 & 0.9950 & 85.8M \\
-ConvNeXt-T     & 99.52 & 0.9953 & 0.9950 & 27.8M \\
-ResNet-50      & 99.29 & 0.9929 & 0.9925 & 23.6M \\
-DenseNet-121   & 99.29 & 0.9929 & 0.9925 & 7.0M \\
-Swin-T         & 99.05 & 0.9905 & 0.9900 & 27.5M \\
-ResNet-101     & 98.81 & 0.9882 & 0.9875 & 42.5M \\
+EffNet-B3       & \textbf{99.76} & \textbf{0.9976} & \textbf{0.9975} & 10.7M \\
+EffNet-B0       & 99.52 & 0.9952 & 0.9950 & 4.0M \\
+ViT-B/16        & 99.52 & 0.9952 & 0.9950 & 85.8M \\
+ConvNeXt-T      & 99.52 & 0.9953 & 0.9950 & 27.8M \\
+ResNet-50       & 99.29 & 0.9929 & 0.9925 & 23.6M \\
+DenseNet-121    & 99.29 & 0.9929 & 0.9925 & 7.0M \\
+Swin-T          & 99.05 & 0.9905 & 0.9900 & 27.5M \\
+ResNet-101      & 98.81 & 0.9882 & 0.9875 & 42.5M \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -345,12 +345,12 @@ Table~\ref{tab:efficiency} lists training times. EfficientNet-B0 is the fastest 
 \toprule
 \textbf{Model} & \textbf{EuroSAT} & \textbf{UC Merced} \\
 \midrule
-EfficientNet-B0 & 344   & 289 \\
-DenseNet-121    & 516   & 315 \\
-ResNet-101      & 611   & 259 \\
-EfficientNet-B3 & 1{,}459 & 386 \\
+EffNet-B0       & 344 & 289 \\
+DenseNet-121    & 516 & 315 \\
+ResNet-101      & 611 & 259 \\
+EffNet-B3       & 1{,}459 & 386 \\
 Swin-T          & 1{,}819 & 246 \\
-ConvNeXt-Tiny   & 2{,}032 & 379 \\
+ConvNeXt-T      & 2{,}032 & 379 \\
 ResNet-50       & 2{,}807 & 369 \\
 ViT-B/16        & 3{,}253 & 427 \\
 \bottomrule

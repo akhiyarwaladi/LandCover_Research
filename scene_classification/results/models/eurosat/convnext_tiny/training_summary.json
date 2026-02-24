@@ -1,0 +1,8 @@
+{
+  "model_name": "convnext_tiny",
+  "dataset_name": "eurosat",
+  "best_acc": 0.9911111111111112,
+  "best_epoch": 30,
+  "total_epochs": 30,
+  "training_time": 2469.582492828369
+}

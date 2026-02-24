@@ -1,154 +1,153 @@
 {
+  "timestamp": "2026-02-24T00:53:27.903673",
   "results": {
     "eurosat": {
-      "resnet50": {
-        "accuracy": 0.9881481481481481,
-        "f1_macro": 0.9878372361608717,
-        "f1_weighted": 0.9881415994128431,
-        "kappa": 0.9868066722048612,
-        "params_m": 23.5,
-        "training_time": 2807.2,
-        "best_epoch": 29
-      },
-      "resnet101": {
-        "accuracy": 0.9812962962962963,
-        "f1_macro": 0.9805931789193008,
-        "f1_weighted": 0.9812953347771047,
-        "kappa": 0.9791824115424252,
-        "params_m": 42.52065,
-        "training_time": 611.1404116153717,
-        "best_epoch": 0
+      "convnext_tiny": {
+        "accuracy": 0.9911111111111112,
+        "f1_macro": 0.9908032995990874,
+        "f1_weighted": 0.9911162109012718,
+        "kappa": 0.9901065303769977,
+        "training_time": 2469.582492828369,
+        "params_m": 28.6,
+        "best_epoch": 30
       },
       "densenet121": {
-        "accuracy": 0.9846296296296296,
-        "f1_macro": 0.9840817349260412,
-        "f1_weighted": 0.9846375167610724,
-        "kappa": 0.9828918238033437,
-        "params_m": 6.964106,
-        "training_time": 515.8659307956696,
-        "best_epoch": 0
+        "accuracy": 0.9896296296296296,
+        "f1_macro": 0.9893331952174449,
+        "f1_weighted": 0.9896173866341067,
+        "kappa": 0.9884574425448591,
+        "training_time": 1685.5133583545685,
+        "params_m": 8.0,
+        "best_epoch": 30
       },
       "efficientnet_b0": {
-        "accuracy": 0.9853703703703703,
-        "f1_macro": 0.9852531981524704,
-        "f1_weighted": 0.9853881794255791,
-        "kappa": 0.9837176815444157,
-        "params_m": 4.020358,
-        "training_time": 344.4338641166687,
-        "best_epoch": 0
+        "accuracy": 0.9875925925925926,
+        "f1_macro": 0.9870486448163949,
+        "f1_weighted": 0.9875855830309455,
+        "kappa": 0.9861907342804144,
+        "training_time": 1087.654934644699,
+        "params_m": 5.3,
+        "best_epoch": 21
       },
       "efficientnet_b3": {
         "accuracy": 0.9898148148148148,
-        "f1_macro": 0.9893665329922848,
-        "f1_weighted": 0.9898221163934531,
-        "kappa": 0.9886643817317161,
-        "params_m": 10.711602,
-        "training_time": 1458.7827725410461,
-        "best_epoch": 27
+        "f1_macro": 0.9895197400624811,
+        "f1_weighted": 0.9898137747893395,
+        "kappa": 0.9886636029131105,
+        "training_time": 1558.9833984375,
+        "params_m": 12.2,
+        "best_epoch": 25
       },
-      "vit_b_16": {
+      "resnet101": {
         "accuracy": 0.9890740740740741,
-        "f1_macro": 0.9889196143013048,
-        "f1_weighted": 0.989077259203292,
-        "kappa": 0.9878397410696905,
-        "params_m": 85.806346,
-        "training_time": 3253.1806406974792,
-        "best_epoch": 27
+        "f1_macro": 0.9887031337958833,
+        "f1_weighted": 0.9890730406388604,
+        "kappa": 0.9878390912526194,
+        "training_time": 1928.099274635315,
+        "params_m": 44.5,
+        "best_epoch": 26
+      },
+      "resnet50": {
+        "accuracy": 0.987037037037037,
+        "f1_macro": 0.9865022853476677,
+        "f1_weighted": 0.987038332097363,
+        "kappa": 0.9855716379626237,
+        "training_time": 1629.6729137897491,
+        "params_m": 25.6,
+        "best_epoch": 19
       },
       "swin_t": {
-        "accuracy": 0.99,
-        "f1_macro": 0.9896106784688776,
-        "f1_weighted": 0.9900052055932775,
-        "kappa": 0.9888709511214921,
-        "params_m": 27.527044,
-        "training_time": 1819.3894164562225,
-        "best_epoch": 29
+        "accuracy": 0.9901851851851852,
+        "f1_macro": 0.9898819612599488,
+        "f1_weighted": 0.9901915809835945,
+        "kappa": 0.9890765443407569,
+        "training_time": 1474.0292909145355,
+        "params_m": 28.3,
+        "best_epoch": 13
       },
-      "convnext_tiny": {
-        "accuracy": 0.9905555555555555,
-        "f1_macro": 0.9902213658271904,
-        "f1_weighted": 0.9905553786568648,
-        "kappa": 0.9894883088925701,
-        "params_m": 27.827818,
-        "training_time": 2032.3734664916992,
-        "best_epoch": 16
+      "vit_b_16": {
+        "accuracy": 0.9872222222222222,
+        "f1_macro": 0.9869984774436796,
+        "f1_weighted": 0.9872227458213874,
+        "kappa": 0.9857794943820225,
+        "training_time": 3402.739871740341,
+        "params_m": 86.6,
+        "best_epoch": 30
       }
     },
     "ucmerced": {
-      "resnet50": {
-        "accuracy": 0.9928571428571429,
-        "f1_macro": 0.9929079824550209,
-        "f1_weighted": 0.9929079824550209,
-        "kappa": 0.9925,
-        "params_m": 23.551061,
-        "training_time": 369.13044238090515,
-        "best_epoch": 18
-      },
-      "resnet101": {
-        "accuracy": 0.9880952380952381,
-        "f1_macro": 0.9881998953427524,
-        "f1_weighted": 0.9881998953427524,
-        "kappa": 0.9875,
-        "params_m": 42.543189,
-        "training_time": 259.34498167037964,
-        "best_epoch": 8
+      "convnext_tiny": {
+        "accuracy": 0.9952380952380953,
+        "f1_macro": 0.9952351171863368,
+        "f1_weighted": 0.9952351171863367,
+        "kappa": 0.995,
+        "training_time": 384.7073669433594,
+        "params_m": 28.6,
+        "best_epoch": 15
       },
       "densenet121": {
-        "accuracy": 0.9928571428571429,
-        "f1_macro": 0.992852675779505,
-        "f1_weighted": 0.9928526757795051,
-        "kappa": 0.9925,
-        "params_m": 6.975381,
-        "training_time": 315.02026200294495,
-        "best_epoch": 13
+        "accuracy": 0.9904761904761905,
+        "f1_macro": 0.9904612778260312,
+        "f1_weighted": 0.9904612778260311,
+        "kappa": 0.99,
+        "training_time": 211.3503749370575,
+        "params_m": 8.0,
+        "best_epoch": 6
       },
       "efficientnet_b0": {
         "accuracy": 0.9952380952380953,
         "f1_macro": 0.995236606212216,
         "f1_weighted": 0.995236606212216,
         "kappa": 0.995,
-        "params_m": 4.034449,
-        "training_time": 289.2607545852661,
-        "best_epoch": 13
+        "training_time": 215.58475708961487,
+        "params_m": 5.3,
+        "best_epoch": 8
       },
       "efficientnet_b3": {
-        "accuracy": 0.9976190476190476,
-        "f1_macro": 0.9976175585931684,
-        "f1_weighted": 0.9976175585931684,
-        "kappa": 0.9975,
-        "params_m": 10.728509,
-        "training_time": 386.48528814315796,
+        "accuracy": 0.9952380952380953,
+        "f1_macro": 0.9952351171863366,
+        "f1_weighted": 0.9952351171863367,
+        "kappa": 0.995,
+        "training_time": 312.32804584503174,
+        "params_m": 12.2,
+        "best_epoch": 14
+      },
+      "resnet101": {
+        "accuracy": 0.9928571428571429,
+        "f1_macro": 0.9928526757795052,
+        "f1_weighted": 0.992852675779505,
+        "kappa": 0.9925,
+        "training_time": 374.3951771259308,
+        "params_m": 44.5,
         "best_epoch": 17
       },
-      "vit_b_16": {
+      "resnet50": {
         "accuracy": 0.9952380952380953,
         "f1_macro": 0.9952351171863368,
         "f1_weighted": 0.9952351171863367,
         "kappa": 0.995,
-        "params_m": 85.814805,
-        "training_time": 426.570805311203,
-        "best_epoch": 14
+        "training_time": 401.7651484012604,
+        "params_m": 25.6,
+        "best_epoch": 20
       },
       "swin_t": {
-        "accuracy": 0.9904761904761905,
-        "f1_macro": 0.9904627668519106,
-        "f1_weighted": 0.9904627668519105,
-        "kappa": 0.99,
-        "params_m": 27.535503,
-        "training_time": 246.48949098587036,
-        "best_epoch": 7
+        "accuracy": 0.9976190476190476,
+        "f1_macro": 0.9976175585931684,
+        "f1_weighted": 0.9976175585931684,
+        "kappa": 0.9975,
+        "training_time": 421.44423937797546,
+        "params_m": 28.3,
+        "best_epoch": 27
       },
-      "convnext_tiny": {
-        "accuracy": 0.9952380952380953,
-        "f1_macro": 0.9952904238618524,
-        "f1_weighted": 0.9952904238618525,
-        "kappa": 0.995,
-        "params_m": 27.836277,
-        "training_time": 379.38322615623474,
-        "best_epoch": 14
+      "vit_b_16": {
+        "accuracy": 0.9809523809523809,
+        "f1_macro": 0.9809002756089702,
+        "f1_weighted": 0.9809002756089702,
+        "kappa": 0.98,
+        "training_time": 282.47129821777344,
+        "params_m": 86.6,
+        "best_epoch": 6
       }
     }
-  },
-  "device": "cuda",
-  "dataset": "eurosat"
+  }
 }
